@@ -1,17 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { 
-  Download, 
-  FileText, 
-  Filter, 
-  Calendar, 
-  Settings,
-  Check,
-  FileSpreadsheet,
-  FilePdf,
-  FileJson,
-  FileCode
-} from 'lucide-react';
+import { Download, FileText, Filter, Calendar, Settings, Check, FileSpreadsheet, File as FilePdf, FileJson, FileCode } from 'lucide-react';
 import { Button } from '../ui/Button';
 import { Input } from '../ui/Input';
 import { LoadingSpinner } from '../LoadingSpinner';
