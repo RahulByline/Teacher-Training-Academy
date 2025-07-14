@@ -15,7 +15,8 @@ import {
   MoreVertical,
   Trash2,
   Eye,
-  Settings
+  Settings,
+  Clock
 } from 'lucide-react';
 import { LoadingSpinner } from '../../LoadingSpinner';
 import { Button } from '../../ui/Button';
