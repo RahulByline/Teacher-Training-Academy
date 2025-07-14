@@ -3,6 +3,7 @@ import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-d
 import { AuthProvider } from './context/AuthContext';
 import { LanguageProvider } from './context/LanguageContext';
 import { ThemeProvider } from './context/ThemeContext';
+import { UsersDashboard } from './components/dashboards/admin/UsersDashboard';
 import { HomePage } from './pages/HomePage';
 import { LoginPage } from './pages/LoginPage';
 import { DashboardPage } from './components/DashboardPage';
@@ -97,6 +98,14 @@ function App() {
                   element={
                     <ProtectedRoute>
                       <CourseCategoryRoutes />
+                    </ProtectedRoute>
+                  }
+                />
+                <Route
+                  path="/users"
+                  element={
+                    <ProtectedRoute>
+                      <UsersDashboard />
                     </ProtectedRoute>
                   }
                 />
