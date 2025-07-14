@@ -8,7 +8,6 @@ import {
   Home,
   TrendingUp,
   Users,
-  Users,
   Brain,
   FileText,
   Target,
