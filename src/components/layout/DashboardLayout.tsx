@@ -17,7 +17,8 @@ import {
   Home,
   BookOpen,
   Building,
-  BarChart3
+  BarChart3,
+  Users as UsersIcon // Add Users icon
 } from 'lucide-react';
 import { useState } from 'react';
 
@@ -44,6 +45,7 @@ export const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) =>
     { key: 'courses', icon: BookOpen, path: '/courses' },
     { key: 'schools', icon: Building, path: '/schools' },
     { key: 'analytics', icon: BarChart3, path: '/analytics' },
+    { key: 'users', icon: UsersIcon, path: '/admin/users', superAdminOnly: true }, // Add Users nav item
     { key: 'settings', icon: Settings, path: '/settings' }
   ];
 
@@ -81,7 +83,7 @@ export const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) =>
 
             {/* Desktop Navigation */}
             <nav className="hidden md:flex items-center space-x-8">
-              {navItems.map((item) => (
+              {navItems.filter(item => !item.superAdminOnly || user?.role === 'admin').map((item) => (
                 <motion.button
                   key={item.key}
                   onClick={() => navigate(item.path)}
@@ -153,7 +155,7 @@ export const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) =>
         className="fixed top-16 left-0 z-40 w-64 h-full bg-white dark:bg-gray-800 shadow-lg md:hidden"
       >
         <nav className="p-4 space-y-2">
-          {navItems.map((item) => (
+          {navItems.filter(item => !item.superAdminOnly || user?.role === 'admin').map((item) => (
             <button
               key={item.key}
               onClick={() => {
