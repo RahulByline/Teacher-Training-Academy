@@ -93,7 +93,7 @@ export const CreateSchoolPage: React.FC = () => {
       });
 
       toast.success('School created successfully!');
-      navigate('/add-school');
+      navigate('/school');
     } catch (error) {
       toast.error('Failed to create school. Please try again.');
     } finally {
@@ -250,6 +250,19 @@ export const CreateSchoolPage: React.FC = () => {
           placeholder="https://example.com"
           icon={Globe}
         />
+      </div>
+      <div>
+        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+          Webserver Hostname
+        </label>
+        <Input
+          type="text"
+          value={formData.hostname}
+          onChange={(e) => handleInputChange('hostname', e.target.value)}
+          placeholder="school.domain.com"
+          icon={Globe}
+        />
+        <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">This is the subdomain or hostname for the school in teacher training academy</p>
       </div>
     </div>
   );
@@ -462,7 +475,7 @@ export const CreateSchoolPage: React.FC = () => {
         <div className="flex items-center gap-4">
           <Button
             variant="ghost"
-            onClick={() => navigate('/add-school')}
+            onClick={() => navigate('/school')}
           >
             <ArrowLeft className="w-4 h-4" />
             Back to Schools
@@ -519,7 +532,7 @@ export const CreateSchoolPage: React.FC = () => {
             <Button
               type="button"
               variant="ghost"
-              onClick={() => navigate('/add-school')}
+              onClick={() => navigate('/school')}
             >
               <X className="w-4 h-4" />
               Cancel

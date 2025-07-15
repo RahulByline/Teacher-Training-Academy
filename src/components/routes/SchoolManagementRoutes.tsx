@@ -27,7 +27,7 @@ export const SchoolManagementRoutes: React.FC = () => {
         <Route path="capabilities" element={<RestrictCapabilities />} />
         <Route path="import" element={<ImportSchools />} />
         <Route path="templates" element={<EmailTemplates />} />
-        <Route path="*" element={<Navigate to="/add-school" replace />} />
+        <Route path="*" element={<Navigate to="/school" replace />} />
       </Routes>
     </DashboardLayout>
   );

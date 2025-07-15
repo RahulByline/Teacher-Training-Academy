@@ -14,7 +14,6 @@ import { SettingsPage } from './pages/SettingsPage';
 import { ProtectedRoute } from './components/ProtectedRoute';
 import { Toaster } from './components/ui/Toaster';
 import './i18n';
-import AddSchoolPage from './pages/AddSchoolPage';
 import AddCategoryPage from './pages/AddCategoryPage';
 import { SchoolManagementRoutes } from './components/routes/SchoolManagementRoutes';
 import { CourseCategoryRoutes } from './components/routes/CourseCategoryRoutes';
@@ -69,14 +68,7 @@ function App() {
                     </ProtectedRoute>
                   }
                 />
-                <Route
-                  path="/add-school"
-                  element={
-                    <ProtectedRoute>
-                      <AddSchoolPage />
-                    </ProtectedRoute>
-                  }
-                />
+                
                 <Route
                   path="/add-category"
                   element={
@@ -86,7 +78,7 @@ function App() {
                   }
                 />
                 <Route
-                  path="/add-school/*"
+                  path="/school/*"
                   element={
                     <ProtectedRoute>
                       <SchoolManagementRoutes />

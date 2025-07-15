@@ -55,7 +55,7 @@ export const ManageSchools: React.FC = () => {
       title: 'Create School',
       description: 'Add new educational institutions to the system',
       icon: Plus,
-      route: '/add-school/create',
+      route: '/school/create',
       color: 'from-green-500 to-emerald-600',
       isActive: true
     },
@@ -64,7 +64,7 @@ export const ManageSchools: React.FC = () => {
       title: 'Edit School',
       description: 'Modify existing school information and settings',
       icon: Edit,
-      route: '/add-school/edit',
+      route: '/school/edit',
       color: 'from-blue-500 to-cyan-600',
       isActive: true
     },
@@ -73,7 +73,7 @@ export const ManageSchools: React.FC = () => {
       title: 'Advanced School Settings',
       description: 'Configure advanced parameters and integrations',
       icon: Settings,
-      route: '/add-school/advanced',
+      route: '/school/advanced',
       color: 'from-purple-500 to-violet-600',
       isActive: true
     },
@@ -82,7 +82,7 @@ export const ManageSchools: React.FC = () => {
       title: 'Manage Schools',
       description: 'View and organize all registered schools',
       icon: Building,
-      route: '/add-school/manage',
+      route: '/school/manage',
       color: 'from-orange-500 to-red-600',
       count: schools.length,
       isActive: true
@@ -92,7 +92,7 @@ export const ManageSchools: React.FC = () => {
       title: 'Manage Departments',
       description: 'Organize school departments and hierarchies',
       icon: Users,
-      route: '/add-school/departments',
+      route: '/school/departments',
       color: 'from-teal-500 to-cyan-600',
       isActive: true
     },
@@ -101,7 +101,7 @@ export const ManageSchools: React.FC = () => {
       title: 'Optional Profiles',
       description: 'Configure additional user profile fields',
       icon: UserCheck,
-      route: '/add-school/profiles',
+      route: '/school/profiles',
       color: 'from-indigo-500 to-purple-600',
       isActive: true
     },
@@ -110,7 +110,7 @@ export const ManageSchools: React.FC = () => {
       title: 'Restrict Capabilities',
       description: 'Manage user permissions and access controls',
       icon: Shield,
-      route: '/add-school/capabilities',
+      route: '/school/capabilities',
       color: 'from-red-500 to-pink-600',
       isActive: true
     },
@@ -119,7 +119,7 @@ export const ManageSchools: React.FC = () => {
       title: 'Import Schools',
       description: 'Bulk import schools from CSV or external sources',
       icon: Upload,
-      route: '/add-school/import',
+      route: '/school/import',
       color: 'from-yellow-500 to-orange-600',
       isActive: true
     },
@@ -128,7 +128,7 @@ export const ManageSchools: React.FC = () => {
       title: 'Email Templates',
       description: 'Customize email communications for schools',
       icon: Mail,
-      route: '/add-school/templates',
+      route: '/school/templates',
       color: 'from-pink-500 to-rose-600',
       isActive: true
     }
@@ -344,7 +344,7 @@ export const ManageSchools: React.FC = () => {
           <Button onClick={fetchSchools} variant="outline">
             <RefreshCw className="w-4 h-4" />
           </Button>
-          <Button onClick={() => navigate('/add-school/create')}>
+          <Button onClick={() => navigate('/school/create')}>
             <Plus className="w-4 h-4" />
             Add School
           </Button>
@@ -370,7 +370,7 @@ export const ManageSchools: React.FC = () => {
             }
           </p>
           {!searchTerm && (
-            <Button onClick={() => navigate('/add-school/create')}>
+            <Button onClick={() => navigate('/school/create')}>
               <Plus className="w-4 h-4" />
               Add First School
             </Button>
@@ -444,7 +444,7 @@ export const ManageSchools: React.FC = () => {
                   <Button
                     size="sm"
                     variant="outline"
-                    onClick={() => navigate(`/add-school/edit/${school.id}`)}
+                    onClick={() => navigate(`/school/edit/${school.id}`)}
                     className="flex-1"
                   >
                     <Edit className="w-3 h-3" />
@@ -453,7 +453,7 @@ export const ManageSchools: React.FC = () => {
                   <Button
                     size="sm"
                     variant="outline"
-                    onClick={() => navigate(`/add-school/view/${school.id}`)}
+                    onClick={() => navigate(`/school/view/${school.id}`)}
                   >
                     <Eye className="w-3 h-3" />
                   </Button>

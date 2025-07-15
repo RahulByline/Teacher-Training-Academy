@@ -10,7 +10,7 @@ export const ManageSchoolsPage: React.FC = () => {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-4">
-          <Button variant="ghost" onClick={() => navigate('/add-school')}>
+          <Button variant="ghost" onClick={() => navigate('/school')}>
             <ArrowLeft className="w-4 h-4" />
             Back to Schools
           </Button>
