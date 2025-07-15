@@ -84,33 +84,41 @@ export const schoolsService = {
    */
   async createSchool(schoolData: Partial<School>): Promise<School> {
     try {
-      const response = await api.post('', {
-        wsfunction: 'block_iomad_company_admin_create_companies',
-        companies: [{
-          name: schoolData.name,
-          shortname: schoolData.shortname,
-          country: schoolData.country,
-          city: schoolData.city,
-          address: schoolData.address,
-          region: schoolData.region,
-          postcode: schoolData.postcode,
-          phone1: schoolData.phone,
-          email: schoolData.email,
-          url: schoolData.website,
-          suspended: schoolData.status === 'inactive' ? 1 : 0,
-          ecommerce: schoolData.ecommerce || 0,
-          parentid: schoolData.parentId || 0,
-          customcss: schoolData.customCss || '',
-          theme: schoolData.theme || '',
-          hostname: schoolData.hostname || '',
-          maxusers: schoolData.maxUsers || 0,
-          maincolor: schoolData.mainColor || '',
-          headingcolor: schoolData.headingColor || '',
-          linkcolor: schoolData.linkColor || '',
-          custom1: schoolData.custom1 || '',
-          custom2: schoolData.custom2 || '',
-          custom3: schoolData.custom3 || ''
-        }]
+      const params = new URLSearchParams();
+      params.append('wsfunction', 'block_iomad_company_admin_create_companies');
+      
+      const companyData = {
+        name: schoolData.name,
+        shortname: schoolData.shortname,
+        country: schoolData.country,
+        city: schoolData.city,
+        address: schoolData.address,
+        region: schoolData.region,
+        postcode: schoolData.postcode,
+        suspended: schoolData.status === 'inactive' ? 1 : 0,
+        ecommerce: schoolData.ecommerce || 0,
+        parentid: schoolData.parentId || 0,
+        customcss: schoolData.customCss || '',
+        theme: schoolData.theme || '',
+        hostname: schoolData.hostname || '',
+        maxusers: schoolData.maxUsers || 0,
+        maincolor: schoolData.mainColor || '',
+        headingcolor: schoolData.headingColor || '',
+        linkcolor: schoolData.linkColor || '',
+        custom1: schoolData.custom1 || '',
+        custom2: schoolData.custom2 || '',
+        custom3: schoolData.custom3 || ''
+      };
+
+      Object.entries(companyData).forEach(([key, value]) => {
+        if (value !== undefined && value !== null) {
+          let keyName = key;
+          params.append(`companies[0][${keyName}]`, String(value));
+        }
+      });
+
+      const response = await api.post('', params, {
+        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
       });
 
       if (response.data && response.data.length > 0) {
@@ -135,34 +143,44 @@ export const schoolsService = {
    */
   async updateSchool(schoolId: number, schoolData: Partial<School>): Promise<School> {
     try {
-      const response = await api.post('', {
-        wsfunction: 'block_iomad_company_admin_update_companies',
-        companies: [{
-          id: schoolId,
-          name: schoolData.name,
-          shortname: schoolData.shortname,
-          country: schoolData.country,
-          city: schoolData.city,
-          address: schoolData.address,
-          region: schoolData.region,
-          postcode: schoolData.postcode,
-          phone1: schoolData.phone,
-          email: schoolData.email,
-          url: schoolData.website,
-          suspended: schoolData.status === 'inactive' ? 1 : 0,
-          ecommerce: schoolData.ecommerce || 0,
-          parentid: schoolData.parentId || 0,
-          customcss: schoolData.customCss || '',
-          theme: schoolData.theme || '',
-          hostname: schoolData.hostname || '',
-          maxusers: schoolData.maxUsers || 0,
-          maincolor: schoolData.mainColor || '',
-          headingcolor: schoolData.headingColor || '',
-          linkcolor: schoolData.linkColor || '',
-          custom1: schoolData.custom1 || '',
-          custom2: schoolData.custom2 || '',
-          custom3: schoolData.custom3 || ''
-        }]
+      const params = new URLSearchParams();
+      params.append('wsfunction', 'block_iomad_company_admin_update_companies');
+
+      const companyData: any = { id: schoolId, ...schoolData };
+      
+      const apiData = {
+        id: companyData.id,
+        name: companyData.name,
+        shortname: companyData.shortname,
+        country: companyData.country,
+        city: companyData.city,
+        address: companyData.address,
+        region: companyData.region,
+        postcode: companyData.postcode,
+        suspended: companyData.status === 'inactive' ? 1 : 0,
+        ecommerce: companyData.ecommerce,
+        parentid: companyData.parentId,
+        customcss: companyData.customCss,
+        theme: companyData.theme,
+        hostname: companyData.hostname,
+        maxusers: companyData.maxUsers,
+        maincolor: companyData.mainColor,
+        headingcolor: companyData.headingColor,
+        linkcolor: companyData.linkColor,
+        custom1: companyData.custom1,
+        custom2: companyData.custom2,
+        custom3: companyData.custom3
+      };
+
+      Object.entries(apiData).forEach(([key, value]) => {
+        if (value !== undefined && value !== null) {
+          let keyName = key;
+          params.append(`companies[0][${keyName}]`, String(value));
+        }
+      });
+      
+      const response = await api.post('', params, {
+        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
       });
 
       if (response.data && response.data.length > 0) {
@@ -187,12 +205,13 @@ export const schoolsService = {
    */
   async deleteSchool(schoolId: number): Promise<boolean> {
     try {
-      const response = await api.post('', {
-        wsfunction: 'block_iomad_company_admin_delete_companies',
-        companyids: [schoolId]
-      });
+      const params = new URLSearchParams();
+      params.append('wsfunction', 'block_iomad_company_admin_delete_companies');
+      params.append('companyids[0]', String(schoolId));
+      
+      const response = await api.post('', params);
 
-      return response.data && response.data.success;
+      return response.data && response.data[0] && response.data[0].success;
     } catch (error) {
       console.error('Error deleting school:', error);
       throw new Error('Failed to delete school');
@@ -223,15 +242,14 @@ export const schoolsService = {
    */
   async createDepartment(schoolId: number, departmentData: any): Promise<any> {
     try {
-      const response = await api.post('', {
-        wsfunction: 'block_iomad_company_admin_create_departments',
-        departments: [{
-          companyid: schoolId,
-          name: departmentData.name,
-          shortname: departmentData.shortname,
-          parent: departmentData.parent || 0
-        }]
-      });
+      const params = new URLSearchParams();
+      params.append('wsfunction', 'block_iomad_company_admin_create_departments');
+      params.append('departments[0][companyid]', String(schoolId));
+      params.append('departments[0][name]', departmentData.name);
+      params.append('departments[0][shortname]', departmentData.shortname);
+      params.append('departments[0][parent]', departmentData.parent || '0');
+
+      const response = await api.post('', params);
 
       return response.data && response.data.length > 0 ? response.data[0] : null;
     } catch (error) {
@@ -270,10 +288,9 @@ export const schoolsService = {
           companyid: schoolId,
         },
       });
-
-      return response.data || [];
+      return response.data?.courses || [];
     } catch (error) {
-      console.error('Error fetching school courses:', error);
+      console.error(`Error fetching courses for school ${schoolId}:`, error);
       return [];
     }
   },
@@ -283,13 +300,13 @@ export const schoolsService = {
    */
   async importSchools(csvData: string): Promise<any> {
     try {
-      // This would typically involve parsing CSV and creating multiple schools
-      // For now, return a mock response
-      return {
-        success: true,
-        imported: 0,
-        errors: []
-      };
+      const params = new URLSearchParams();
+      params.append('wsfunction', 'tool_iomad_import_import_companies');
+      params.append('importdata', csvData);
+      
+      const response = await api.post('', params);
+
+      return response.data;
     } catch (error) {
       console.error('Error importing schools:', error);
       throw new Error('Failed to import schools');
@@ -297,27 +314,18 @@ export const schoolsService = {
   },
 
   /**
-   * Get email templates for schools
+   * Get email templates for a school
    */
   async getEmailTemplates(schoolId?: number): Promise<any[]> {
     try {
-      // Mock implementation - IOMAD may have specific endpoints for email templates
-      return [
-        {
-          id: 1,
-          name: 'Welcome Email',
-          subject: 'Welcome to {schoolname}',
-          body: 'Welcome to our learning platform...',
-          type: 'welcome'
+      const response = await api.get('', {
+        params: {
+          wsfunction: 'block_iomad_company_admin_get_email_templates',
+          companyid: schoolId,
         },
-        {
-          id: 2,
-          name: 'Course Enrollment',
-          subject: 'You have been enrolled in {coursename}',
-          body: 'You have been successfully enrolled...',
-          type: 'enrollment'
-        }
-      ];
+      });
+
+      return response.data?.templates || [];
     } catch (error) {
       console.error('Error fetching email templates:', error);
       return [];
@@ -325,16 +333,19 @@ export const schoolsService = {
   },
 
   /**
-   * Update email template
+   * Update an email template
    */
   async updateEmailTemplate(templateId: number, templateData: any): Promise<any> {
     try {
-      // Mock implementation
-      return {
-        id: templateId,
-        ...templateData,
-        updated: true
-      };
+      const params = new URLSearchParams();
+      params.append('wsfunction', 'block_iomad_company_admin_update_email_templates');
+      params.append('templates[0][id]', String(templateId));
+      params.append('templates[0][subject]', templateData.subject);
+      params.append('templates[0][body]', templateData.body);
+
+      const response = await api.post('', params);
+
+      return response.data;
     } catch (error) {
       console.error('Error updating email template:', error);
       throw new Error('Failed to update email template');
