@@ -1,6 +1,4 @@
 import React, { useState, useEffect } from 'react';
-import { motion } from 'framer-motion';
-import { useTranslation } from 'react-i18next';
 import { DashboardLayout } from '../components/layout/DashboardLayout';
 import { CategoryList } from '../components/admin/CategoryList';
 import { CourseList } from '../components/admin/CourseList';
@@ -18,6 +16,7 @@ import {
   RefreshCw
 } from 'lucide-react';
 import { Button } from '../components/ui/Button';
+import { Course } from '../types';
 
 interface Category {
   id: number;
@@ -30,20 +29,7 @@ interface Category {
   path: string;
 }
 
-interface Course {
-  id: number;
-  fullname: string;
-  shortname: string;
-  summary: string;
-  categoryid: number;
-  visible: number;
-  startdate: number;
-  enddate: number;
-  format: string;
-}
-
 const AddCategoryPage: React.FC = () => {
-  const { t } = useTranslation();
   const [categories, setCategories] = useState<Category[]>([]);
   const [courses, setCourses] = useState<Course[]>([]);
   const [selectedCategory, setSelectedCategory] = useState<Category | null>(null);

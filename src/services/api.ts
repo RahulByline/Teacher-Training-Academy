@@ -542,30 +542,29 @@ export const apiService = {
 
   async createCourse(courseData: any): Promise<Course | null> {
     try {
-      const response = await api.post('', {
-        wsfunction: 'core_course_create_courses',
-        courses: [courseData]
+      const params = new URLSearchParams();
+      params.append('wstoken', API_TOKEN);
+      params.append('wsfunction', 'core_course_create_courses');
+      params.append('moodlewsrestformat', 'json');
+      params.append('courses[0][fullname]', courseData.fullname);
+      params.append('courses[0][shortname]', courseData.shortname);
+      params.append('courses[0][categoryid]', String(courseData.categoryid));
+      if (courseData.summary) params.append('courses[0][summary]', courseData.summary);
+      if (courseData.format) params.append('courses[0][format]', courseData.format);
+      if (courseData.startdate) params.append('courses[0][startdate]', String(courseData.startdate));
+      if (courseData.enddate) params.append('courses[0][enddate]', String(courseData.enddate));
+      if (courseData.visible !== undefined) params.append('courses[0][visible]', String(courseData.visible));
+
+      const response = await axios.post(API_BASE_URL, params, {
+        headers: { 'Content-Type': 'application/x-www-form-urlencoded' }
       });
 
-      if (response.data && response.data.length > 0) {
-        const newCourse = response.data[0];
-        return {
-          id: newCourse.id.toString(),
-          fullname: courseData.fullname,
-          shortname: courseData.shortname,
-          summary: courseData.summary,
-          categoryid: courseData.categoryid || courseData.category,
-          categoryname: courseData.categoryname,
-          format: courseData.format,
-          visible: courseData.visible,
-          type: 'Self-paced',
-          tags: []
-        };
+      if (response.data && Array.isArray(response.data) && response.data[0].id) {
+        return response.data[0];
       }
-      return null;
-    } catch (error) {
-      console.error('Error creating course:', error);
-      throw new Error('Failed to create course');
+      throw new Error('Failed to create course: Invalid response');
+    } catch (error: any) {
+      throw new Error(error.message || 'Failed to create course');
     }
   },
 

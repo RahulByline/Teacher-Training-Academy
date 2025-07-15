@@ -6,18 +6,7 @@ import { Input } from '../ui/Input';
 import { LoadingSpinner } from '../LoadingSpinner';
 import { toast } from '../ui/Toaster';
 import { apiService } from '../../services/api';
-
-interface Course {
-  id: number;
-  fullname: string;
-  shortname: string;
-  summary: string;
-  categoryid: number;
-  visible: number;
-  startdate: number;
-  enddate: number;
-  format: string;
-}
+import { Course } from '../../types';
 
 interface Category {
   id: number;
@@ -93,6 +82,9 @@ export const AddCourseModal: React.FC<AddCourseModalProps> = ({
         enddate: formData.enddate ? Math.floor(new Date(formData.enddate).getTime() / 1000) : 0,
         visible: 1
       };
+
+      console.log('Selected Category:', selectedCategory);
+      console.log('Course Data being sent:', courseData);
 
       const newCourse = await apiService.createCourse(courseData);
       
