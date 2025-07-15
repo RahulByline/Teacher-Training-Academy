@@ -30,7 +30,7 @@ const resources = {
       coursesSubtitle: 'Discover our comprehensive training programs',
       
       // Schools Section
-      partneredSchools: 'Partnered Schools',
+      partneredSchools: 'Our Schools',
       schoolsSubtitle: 'Excellence in education across the region',
       
       // Assessment Section

@@ -54,7 +54,7 @@ export const SchoolsSection: React.FC = () => {
             {t('partneredSchools')}
           </h2>
           <p className="text-xl text-gray-600 dark:text-gray-300 max-w-3xl mx-auto">
-            Excellence in education across the region - {schools.length} partnered institutions
+            Excellence in education across the region - {schools.length} institutions
           </p>
         </motion.div>
 

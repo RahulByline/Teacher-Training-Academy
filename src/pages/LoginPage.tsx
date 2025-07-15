@@ -119,7 +119,7 @@ export const LoginPage: React.FC = () => {
           
           <div className="mb-2">
             <img
-              src="/logo-BYbhmxQK-removebg-preview.png"
+              src="/Riyada.png"
               alt="Riyada Logo"
               className="h-8 w-8 mx-auto mb-2"
             />

@@ -31,7 +31,7 @@ export const Header: React.FC = () => {
             whileHover={{ scale: 1.05 }}
           >
             <img
-              src="/logo-BYbhmxQK-removebg-preview.png"
+              src="/Riyada.png"
               alt="Riyada Logo"
               className="h-10 w-10"
             />

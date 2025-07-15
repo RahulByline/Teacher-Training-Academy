@@ -70,7 +70,7 @@ export const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) =>
               
               <div className="flex items-center space-x-3">
                 <img
-                  src="/logo-BYbhmxQK-removebg-preview.png"
+                  src="/Riyada.png"
                   alt="Riyada Logo"
                   className="h-8 w-8"
                 />

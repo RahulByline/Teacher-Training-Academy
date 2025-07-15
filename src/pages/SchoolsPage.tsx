@@ -40,7 +40,7 @@ const SchoolsPage: React.FC = () => {
       <header className="mb-8 text-center">
       <h1 className="text-3xl md:text-4xl font-extrabold tracking-tight mb-2">Schools</h1>
         <p className="text-gray-600 text-lg">
-          Excellence in education across the region - {schools.length} partnered institutions
+          Excellence in education across the region - {schools.length} institutions
         </p>
       </header>
       {schools.length === 0 ? (

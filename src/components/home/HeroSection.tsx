@@ -9,19 +9,19 @@ const heroSlides = [
   {
     title: 'Transform Education Through Excellence',
     subtitle: 'Empowering teachers with world-class training programs',
-    image: 'https://images.pexels.com/photos/5212345/pexels-photo-5212345.jpeg?auto=compress&cs=tinysrgb&w=1200',
+    image: '/slide1.png',
     stats: { teachers: '10,000+', courses: '500+', completion: '95%' }
   },
   {
     title: 'Interactive Learning Experiences',
     subtitle: 'Engaging ILT, VILT, and self-paced learning modules',
-    image: 'https://images.pexels.com/photos/5212700/pexels-photo-5212700.jpeg?auto=compress&cs=tinysrgb&w=1200',
+    image: '/slide2.png',
     stats: { sessions: '2,000+', trainers: '200+', satisfaction: '98%' }
   },
   {
     title: 'Comprehensive Assessment System',
     subtitle: 'AI-powered learning pathways and competency mapping',
-    image: 'https://images.pexels.com/photos/5212317/pexels-photo-5212317.jpeg?auto=compress&cs=tinysrgb&w=1200',
+    image: '/slide3.png',
     stats: { assessments: '1,500+', pathways: '300+', accuracy: '92%' }
   }
 ];
@@ -58,7 +58,7 @@ export const HeroSection: React.FC = () => {
               alt={`Slide ${index + 1}`}
               className="w-full h-full object-cover"
             />
-            <div className="absolute inset-0 bg-gradient-to-r from-blue-900/80 to-purple-900/60"></div>
+            <div className="absolute inset-0 bg-gradient-to-r from-blue-900/80 to-blue-1000/60"></div>
           </motion.div>
         ))}
       </div>

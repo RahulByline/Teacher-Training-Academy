@@ -17,7 +17,19 @@ import './i18n';
 import AddCategoryPage from './pages/AddCategoryPage';
 import { SchoolManagementRoutes } from './components/routes/SchoolManagementRoutes';
 import { CourseCategoryRoutes } from './components/routes/CourseCategoryRoutes';
-
+import TrainerDashboardRoutes from './components/routes/TrainerDashboardRoutes';
+import { useAuth } from './context/AuthContext';
+ 
+function DashboardRouteWrapper() {
+  const { user, loading } = useAuth();
+  if (loading) return null; // or a spinner if you want
+  if (!user) return <Navigate to="/login/trainer" replace />;
+  if (user.role === 'trainer') {
+    return <TrainerDashboardRoutes />;
+  }
+  return <DashboardPage />;
+}
+ 
 function App() {
   return (
     <ThemeProvider>
@@ -29,10 +41,10 @@ function App() {
                 <Route path="/" element={<HomePage />} />
                 <Route path="/login/:role" element={<LoginPage />} />
                 <Route
-                  path="/dashboard"
+                  path="/dashboard/*"
                   element={
                     <ProtectedRoute>
-                      <DashboardPage />
+                      <DashboardRouteWrapper />
                     </ProtectedRoute>
                   }
                 />
@@ -68,7 +80,7 @@ function App() {
                     </ProtectedRoute>
                   }
                 />
-                
+               
                 <Route
                   path="/add-category"
                   element={
@@ -109,7 +121,9 @@ function App() {
         </AuthProvider>
       </LanguageProvider>
     </ThemeProvider>
+ 
+   
   );
 }
-
+ 
 export default App;
