@@ -1,11 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { 
-  Building, 
-  Users, 
-  Search, 
-  ArrowRight, 
-  Check, 
+import {
+  Building,
+  Users,
+  Search,
+  ArrowRight,
+  Check,
   X,
   UserPlus,
   School
@@ -16,7 +16,7 @@ import { LoadingSpinner } from '../LoadingSpinner';
 import { usersService } from '../../services/usersService';
 import { schoolsService } from '../../services/schoolsService';
 import { toast } from '../ui/Toaster';
-
+ 
 interface User {
   id: string;
   firstname: string;
@@ -26,7 +26,7 @@ interface User {
   currentSchool?: string;
   currentSchoolName?: string;
 }
-
+ 
 interface School {
   id: string;
   name: string;
@@ -35,7 +35,7 @@ interface School {
   country: string;
   city: string;
 }
-
+ 
 export const AssignUserToSchool: React.FC = () => {
   const [users, setUsers] = useState<User[]>([]);
   const [schools, setSchools] = useState<School[]>([]);
@@ -47,19 +47,19 @@ export const AssignUserToSchool: React.FC = () => {
   const [userSearchTerm, setUserSearchTerm] = useState('');
   const [schoolSearchTerm, setSchoolSearchTerm] = useState('');
   const [assigning, setAssigning] = useState(false);
-
+ 
   useEffect(() => {
     fetchData();
   }, []);
-
+ 
   useEffect(() => {
     filterUsers();
   }, [users, userSearchTerm]);
-
+ 
   useEffect(() => {
     filterSchools();
   }, [schools, schoolSearchTerm]);
-
+ 
   const fetchData = async () => {
     setLoading(true);
     try {
@@ -76,7 +76,7 @@ export const AssignUserToSchool: React.FC = () => {
       setLoading(false);
     }
   };
-
+ 
   const filterUsers = () => {
     let filtered = users;
     if (userSearchTerm) {
@@ -88,7 +88,7 @@ export const AssignUserToSchool: React.FC = () => {
     }
     setFilteredUsers(filtered);
   };
-
+ 
   const filterSchools = () => {
     let filtered = schools;
     if (schoolSearchTerm) {
@@ -101,7 +101,7 @@ export const AssignUserToSchool: React.FC = () => {
     }
     setFilteredSchools(filtered);
   };
-
+ 
   const toggleUserSelection = (userId: string) => {
     const newSelected = new Set(selectedUsers);
     if (newSelected.has(userId)) {
@@ -111,16 +111,24 @@ export const AssignUserToSchool: React.FC = () => {
     }
     setSelectedUsers(newSelected);
   };
-
+ 
   const assignUsersToSchool = async () => {
     if (selectedUsers.size === 0 || !selectedSchool) {
       toast.error('Please select users and a school');
       return;
     }
-
+ 
     setAssigning(true);
     try {
-      await usersService.assignUsersToSchool(Array.from(selectedUsers), selectedSchool.id);
+      // Build the correct array of user assignment objects
+      const userObjects = Array.from(selectedUsers).map(userId => ({
+        userid: parseInt(userId, 10),
+        companyid: parseInt(selectedSchool.id, 10),
+        departmentid: 0,
+        managertype: 0,
+        educator: 0,
+      }));
+      await usersService.assignUsersToSchool(userObjects);
       toast.success(`${selectedUsers.size} users assigned to ${selectedSchool.name}`);
       setSelectedUsers(new Set());
       setSelectedSchool(null);
@@ -132,7 +140,7 @@ export const AssignUserToSchool: React.FC = () => {
       setAssigning(false);
     }
   };
-
+ 
   if (loading) {
     return (
       <div className="flex justify-center items-center py-12">
@@ -141,7 +149,7 @@ export const AssignUserToSchool: React.FC = () => {
       </div>
     );
   }
-
+ 
   return (
     <div className="space-y-6">
       <div className="flex items-center gap-3 mb-6">
@@ -153,7 +161,7 @@ export const AssignUserToSchool: React.FC = () => {
           <p className="text-gray-600 dark:text-gray-300">Assign users to specific schools and institutions</p>
         </div>
       </div>
-
+ 
       {/* Assignment Summary */}
       {(selectedUsers.size > 0 || selectedSchool) && (
         <motion.div
@@ -169,7 +177,7 @@ export const AssignUserToSchool: React.FC = () => {
                   {selectedUsers.size} users selected
                 </span>
               </div>
-              
+             
               {selectedUsers.size > 0 && selectedSchool && (
                 <>
                   <ArrowRight className="w-5 h-5 text-teal-600" />
@@ -182,7 +190,7 @@ export const AssignUserToSchool: React.FC = () => {
                 </>
               )}
             </div>
-            
+           
             <Button
               onClick={assignUsersToSchool}
               disabled={selectedUsers.size === 0 || !selectedSchool || assigning}
@@ -203,7 +211,7 @@ export const AssignUserToSchool: React.FC = () => {
           </div>
         </motion.div>
       )}
-
+ 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Users Panel */}
         <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg overflow-hidden">
@@ -216,7 +224,7 @@ export const AssignUserToSchool: React.FC = () => {
               <Users className="w-6 h-6 text-blue-200" />
             </div>
           </div>
-          
+         
           <div className="p-4">
             <div className="relative mb-4">
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
@@ -228,7 +236,7 @@ export const AssignUserToSchool: React.FC = () => {
                 className="pl-10"
               />
             </div>
-            
+           
             <div className="space-y-2 max-h-96 overflow-y-auto">
               {filteredUsers.map((user) => (
                 <motion.div
@@ -264,7 +272,7 @@ export const AssignUserToSchool: React.FC = () => {
                         )}
                       </div>
                     </div>
-                    
+                   
                     <div className="flex items-center gap-2">
                       <span className="text-xs bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300 px-2 py-1 rounded-full capitalize">
                         {user.role}
@@ -277,7 +285,7 @@ export const AssignUserToSchool: React.FC = () => {
                 </motion.div>
               ))}
             </div>
-            
+           
             {filteredUsers.length === 0 && (
               <div className="text-center py-8">
                 <Users className="w-12 h-12 text-gray-400 mx-auto mb-4" />
@@ -286,7 +294,7 @@ export const AssignUserToSchool: React.FC = () => {
             )}
           </div>
         </div>
-
+ 
         {/* Schools Panel */}
         <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg overflow-hidden">
           <div className="bg-gradient-to-r from-green-500 to-teal-500 p-4 text-white">
@@ -298,7 +306,7 @@ export const AssignUserToSchool: React.FC = () => {
               <School className="w-6 h-6 text-green-200" />
             </div>
           </div>
-          
+         
           <div className="p-4">
             <div className="relative mb-4">
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
@@ -310,7 +318,7 @@ export const AssignUserToSchool: React.FC = () => {
                 className="pl-10"
               />
             </div>
-            
+           
             <div className="space-y-2 max-h-96 overflow-y-auto">
               {filteredSchools.map((school) => (
                 <motion.div
@@ -342,7 +350,7 @@ export const AssignUserToSchool: React.FC = () => {
                         </p>
                       </div>
                     </div>
-                    
+                   
                     <div className="flex items-center gap-2">
                       <span className="text-xs bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300 px-2 py-1 rounded-full">
                         {school.userCount} users
@@ -355,7 +363,7 @@ export const AssignUserToSchool: React.FC = () => {
                 </motion.div>
               ))}
             </div>
-            
+           
             {filteredSchools.length === 0 && (
               <div className="text-center py-8">
                 <Building className="w-12 h-12 text-gray-400 mx-auto mb-4" />

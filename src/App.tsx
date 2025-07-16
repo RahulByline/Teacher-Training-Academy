@@ -19,6 +19,7 @@ import { SchoolManagementRoutes } from './components/routes/SchoolManagementRout
 import { CourseCategoryRoutes } from './components/routes/CourseCategoryRoutes';
 import TrainerDashboardRoutes from './components/routes/TrainerDashboardRoutes';
 import { useAuth } from './context/AuthContext';
+import TeacherDashboardRoutes from './components/routes/TeacherDashboardRoutes';
  
 function DashboardRouteWrapper() {
   const { user, loading } = useAuth();
@@ -113,6 +114,15 @@ function App() {
                     </ProtectedRoute>
                   }
                 />
+                <Route
+                  path="/teacher-dashboard/*"
+                  element={
+                    <ProtectedRoute>
+                      <TeacherDashboardRoutes />
+                    </ProtectedRoute>
+                  }
+                />
+
                 <Route path="*" element={<Navigate to="/" replace />} />
               </Routes>
               <Toaster />

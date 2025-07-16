@@ -1,14 +1,14 @@
 import axios from 'axios';
 import { User } from '../types';
-
+ 
 const IOMAD_BASE_URL = import.meta.env.VITE_IOMAD_URL || 'https://iomad.bylinelms.com/webservice/rest/server.php';
 const IOMAD_TOKEN = import.meta.env.VITE_IOMAD_TOKEN || '4a2ba2d6742afc7d13ce4cf486ba7633';
-
+ 
 const api = axios.create({
   baseURL: IOMAD_BASE_URL,
   timeout: 10000,
 });
-
+ 
 // Add request interceptor to include token
 api.interceptors.request.use((config) => {
   config.params = {
@@ -18,7 +18,7 @@ api.interceptors.request.use((config) => {
   };
   return config;
 });
-
+ 
 export const usersService = {
   /**
    * Fetch all users from IOMAD
@@ -36,7 +36,7 @@ export const usersService = {
           ]
         },
       });
-
+ 
       if (response.data && response.data.users && Array.isArray(response.data.users)) {
         return response.data.users.map((user: any) => ({
           id: user.id.toString(),
@@ -58,59 +58,60 @@ export const usersService = {
       throw new Error('Failed to fetch users from IOMAD');
     }
   },
-
+ 
   /**
    * Create a new user
    */
-  async createUser(userData: any): Promise<User> {
+  async createUser(userData: any): Promise<any> {
     try {
-      const response = await api.post('', {
-        wsfunction: 'core_user_create_users',
-        users: [{
-          username: userData.username,
-          password: userData.password,
-          firstname: userData.firstname,
-          lastname: userData.lastname,
-          email: userData.email,
-          auth: userData.auth || 'manual',
-          suspended: userData.suspended ? 1 : 0,
-          country: userData.country || '',
-          city: userData.city || '',
-          timezone: userData.timezone || 'UTC',
-          lang: userData.lang || 'en',
-          description: userData.description || '',
-          phone1: userData.phone || '',
-          institution: userData.school || '',
-          department: userData.department || '',
-          emailstop: userData.emailstop ? 1 : 0
-        }]
-      });
-
-      if (response.data && Array.isArray(response.data) && response.data.length > 0) {
-        const newUser = response.data[0];
-        
-        // If school is specified, assign user to school
-        if (userData.school) {
-          await this.assignUsersToSchool([newUser.id], userData.school);
+      const params = new URLSearchParams();
+      params.append('wsfunction', 'core_user_create_users');
+      // Only include supported fields
+      const user = {
+        createpassword: userData.createpassword ?? 0,
+        username: userData.username,
+        auth: userData.auth || 'manual',
+        password: userData.password,
+        firstname: userData.firstname,
+        lastname: userData.lastname,
+        email: userData.email,
+        maildisplay: userData.maildisplay ?? 2,
+        city: userData.city || '',
+        country: userData.country || '',
+        timezone: userData.timezone || '99',
+        description: userData.description || '',
+        firstnamephonetic: userData.firstnamephonetic || '',
+        lastnamephonetic: userData.lastnamephonetic || '',
+        middlename: userData.middlename || '',
+        alternatename: userData.alternatename || '',
+        interests: userData.interests || '',
+        idnumber: userData.idnumber || '',
+        institution: userData.institution || '',
+        department: userData.department || '',
+        phone1: userData.phone1 || '',
+        phone2: userData.phone2 || '',
+        address: userData.address || '',
+        lang: userData.lang || 'en',
+        calendartype: userData.calendartype || '',
+        theme: userData.theme || '',
+        mailformat: userData.mailformat ?? 1,
+        // customfields and preferences can be added if needed
+      };
+      Object.entries(user).forEach(([key, value]) => {
+        if (value !== undefined && value !== null && value !== '') {
+          params.append(`users[0][${key}]`, String(value));
         }
-        
-        return {
-          id: newUser.id.toString(),
-          username: userData.username,
-          firstname: userData.firstname,
-          lastname: userData.lastname,
-          email: userData.email,
-          role: userData.role,
-          status: userData.suspended ? 'suspended' : 'active'
-        };
-      }
-      throw new Error('Invalid response from API');
+      });
+      const response = await api.post('', params, {
+        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+      });
+      return response.data;
     } catch (error) {
       console.error('Error creating user:', error);
       throw new Error('Failed to create user');
     }
   },
-
+ 
   /**
    * Update an existing user
    */
@@ -123,7 +124,7 @@ export const usersService = {
           ...userData
         }]
       });
-
+ 
       // Fetch the updated user
       const updatedUser = await this.getUserById(userId);
       return updatedUser;
@@ -132,7 +133,7 @@ export const usersService = {
       throw new Error('Failed to update user');
     }
   },
-
+ 
   /**
    * Get user by ID
    */
@@ -145,7 +146,7 @@ export const usersService = {
           values: [userId]
         },
       });
-
+ 
       if (response.data && Array.isArray(response.data) && response.data.length > 0) {
         const user = response.data[0];
         return {
@@ -168,7 +169,7 @@ export const usersService = {
       throw new Error('Failed to fetch user');
     }
   },
-
+ 
   /**
    * Delete a user
    */
@@ -178,14 +179,14 @@ export const usersService = {
         wsfunction: 'core_user_delete_users',
         userids: [userId]
       });
-
+ 
       return true;
     } catch (error) {
       console.error('Error deleting user:', error);
       throw new Error('Failed to delete user');
     }
   },
-
+ 
   /**
    * Suspend a user
    */
@@ -198,14 +199,14 @@ export const usersService = {
           suspended: 1
         }]
       });
-
+ 
       return true;
     } catch (error) {
       console.error('Error suspending user:', error);
       throw new Error('Failed to suspend user');
     }
   },
-
+ 
   /**
    * Activate a user
    */
@@ -218,14 +219,14 @@ export const usersService = {
           suspended: 0
         }]
       });
-
+ 
       return true;
     } catch (error) {
       console.error('Error activating user:', error);
       throw new Error('Failed to activate user');
     }
   },
-
+ 
   /**
    * Bulk user action (suspend, activate, delete)
    */
@@ -241,20 +242,20 @@ export const usersService = {
           id,
           suspended: action === 'suspend' ? 1 : 0
         }));
-        
+       
         await api.post('', {
           wsfunction: 'core_user_update_users',
           users
         });
       }
-
+ 
       return true;
     } catch (error) {
       console.error(`Error performing bulk ${action}:`, error);
       throw new Error(`Failed to ${action} users`);
     }
   },
-
+ 
   /**
    * Export users
    */
@@ -262,18 +263,18 @@ export const usersService = {
     try {
       // In a real implementation, this would call an API endpoint
       // For now, we'll simulate a download
-      
+     
       const format = options.format || 'csv';
       const fields = options.fields || ['username', 'firstname', 'lastname', 'email'];
       const filters = options.filters || {};
-      
+     
       // Create a mock CSV content
       let content = fields.join(',') + '\n';
-      
+     
       // Add some mock data rows
       content += 'johndoe,John,Doe,john.doe@example.com\n';
       content += 'janesmith,Jane,Smith,jane.smith@example.com\n';
-      
+     
       // Create a blob and download it
       const blob = new Blob([content], { type: 'text/csv' });
       const url = URL.createObjectURL(blob);
@@ -284,14 +285,14 @@ export const usersService = {
       a.click();
       document.body.removeChild(a);
       URL.revokeObjectURL(url);
-      
+     
       return true;
     } catch (error) {
       console.error('Error exporting users:', error);
       throw new Error('Failed to export users');
     }
   },
-
+ 
   /**
    * Upload users from CSV
    */
@@ -299,10 +300,10 @@ export const usersService = {
     try {
       // In a real implementation, this would upload the file to an API endpoint
       // For now, we'll simulate processing
-      
+     
       // Simulate processing delay
       await new Promise(resolve => setTimeout(resolve, 1500));
-      
+     
       // Return mock results
       return {
         success: 15,
@@ -320,7 +321,7 @@ export const usersService = {
       throw new Error('Failed to upload users');
     }
   },
-
+ 
   /**
    * Download user template
    */
@@ -328,10 +329,10 @@ export const usersService = {
     try {
       // Create a mock CSV template
       const fields = ['username', 'password', 'firstname', 'lastname', 'email', 'role', 'school', 'department', 'country', 'city'];
-      const content = fields.join(',') + '\n' + 
+      const content = fields.join(',') + '\n' +
                      'johndoe,Password123!,John,Doe,john.doe@example.com,student,School A,Science,US,New York\n' +
                      'janesmith,Password456!,Jane,Smith,jane.smith@example.com,teacher,School B,Math,UK,London';
-      
+     
       // Create a blob and download it
       const blob = new Blob([content], { type: 'text/csv' });
       const url = URL.createObjectURL(blob);
@@ -342,14 +343,14 @@ export const usersService = {
       a.click();
       document.body.removeChild(a);
       URL.revokeObjectURL(url);
-      
+     
       return true;
     } catch (error) {
       console.error('Error downloading template:', error);
       throw new Error('Failed to download template');
     }
   },
-
+ 
   /**
    * Download upload results
    */
@@ -357,11 +358,11 @@ export const usersService = {
     try {
       // Create a mock CSV with results
       let content = 'Status,Message,Line\n';
-      
+     
       results.details.forEach((detail: any) => {
         content += `${detail.type},${detail.message},${detail.line || ''}\n`;
       });
-      
+     
       // Create a blob and download it
       const blob = new Blob([content], { type: 'text/csv' });
       const url = URL.createObjectURL(blob);
@@ -372,14 +373,14 @@ export const usersService = {
       a.click();
       document.body.removeChild(a);
       URL.revokeObjectURL(url);
-      
+     
       return true;
     } catch (error) {
       console.error('Error downloading results:', error);
       throw new Error('Failed to download results');
     }
   },
-
+ 
   /**
    * Get departments
    */
@@ -398,7 +399,7 @@ export const usersService = {
       return [];
     }
   },
-
+ 
   /**
    * Get departments with users
    */
@@ -465,7 +466,7 @@ export const usersService = {
       return [];
     }
   },
-
+ 
   /**
    * Assign department manager
    */
@@ -479,7 +480,7 @@ export const usersService = {
       throw new Error('Failed to assign department manager');
     }
   },
-
+ 
   /**
    * Remove user from department
    */
@@ -493,21 +494,42 @@ export const usersService = {
       throw new Error('Failed to remove user from department');
     }
   },
-
+ 
   /**
-   * Assign users to school
+   * Assign users to school/company using Iomad API
    */
-  async assignUsersToSchool(userIds: string[], schoolId: string): Promise<boolean> {
+  async assignUsersToSchool(users: Array<{
+    userid: number;
+    companyid: number;
+    departmentid?: number;
+    managertype?: number;
+    educator?: number;
+  }>): Promise<boolean> {
     try {
-      // In a real implementation, this would call an API endpoint
-      // For now, we'll simulate success
-      return true;
+      const params = new URLSearchParams();
+      params.append('wsfunction', 'block_iomad_company_admin_assign_users');
+      // Build the users array in the required format
+      users.forEach((user, idx) => {
+        params.append(`users[${idx}][userid]`, String(user.userid));
+        params.append(`users[${idx}][companyid]`, String(user.companyid));
+        params.append(`users[${idx}][departmentid]`, String(user.departmentid ?? 0));
+        params.append(`users[${idx}][managertype]`, String(user.managertype ?? 0));
+        params.append(`users[${idx}][educator]`, String(user.educator ?? 0));
+      });
+      const response = await api.post('', params, {
+        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+      });
+      // If no exception, consider it success
+      if (response.data && !response.data.exception) {
+        return true;
+      }
+      throw new Error(response.data?.message || 'Failed to assign users to school');
     } catch (error) {
       console.error('Error assigning users to school:', error);
       throw new Error('Failed to assign users to school');
     }
   },
-
+ 
   /**
    * Get training events
    */
@@ -587,7 +609,7 @@ export const usersService = {
       return [];
     }
   },
-
+ 
   /**
    * Get pending training events
    */
@@ -600,7 +622,7 @@ export const usersService = {
       return [];
     }
   },
-
+ 
   /**
    * Approve training event
    */
@@ -614,7 +636,7 @@ export const usersService = {
       throw new Error('Failed to approve training event');
     }
   },
-
+ 
   /**
    * Reject training event
    */
@@ -628,7 +650,7 @@ export const usersService = {
       throw new Error('Failed to reject training event');
     }
   },
-
+ 
   /**
    * Get user roles
    */
@@ -642,7 +664,7 @@ export const usersService = {
       return [];
     }
   },
-
+ 
   /**
    * Helper method to determine user role from user data
    */
@@ -658,5 +680,15 @@ export const usersService = {
     } else {
       return 'student';
     }
+  },
+ 
+  /**
+   * Assign a role to a user in a company context (stub for now)
+   */
+  async assignRoleToUser({ userid, role, companyid }: { userid: number, role: string, companyid: number }): Promise<boolean> {
+    // TODO: Implement this using the correct Iomad/Moodle API for role assignment in company context
+    // This may require enrol_manual_enrol_users for courses, or a custom API for company roles
+    console.log('Assigning role', role, 'to user', userid, 'in company', companyid);
+    return true;
   }
 };

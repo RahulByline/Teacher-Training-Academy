@@ -11,7 +11,7 @@ export interface User {
   company?: string;
   department?: string;
 }
-
+ 
 export interface Course {
   id: string | number;
   fullname: string;
@@ -33,54 +33,59 @@ export interface Course {
   progress?: number;
   instructor?: string;
 }
-
+ 
 export interface Category {
   id: number;
   name: string;
   parent: number;
   // Add more fields as needed from Moodle API
 }
-
+ 
 export interface School {
   id: number;
   name: string;
   shortname?: string;
-  logo?: string;
-  description?: string;
-  status?: string;
-  country?: string;
-  city?: string;
+  code?: string;
   address?: string;
+  city?: string;
   region?: string;
   postcode?: string;
-  phone?: string;
-  email?: string;
-  website?: string;
-  userCount?: number;
-  courseCount?: number;
-  suspended?: boolean;
+  country?: string;
+  maildisplay?: number;
+  mailformat?: number;
+  maildigest?: number;
+  autosubscribe?: number;
+  trackforums?: number;
+  htmleditor?: number;
+  screenreader?: number;
+  timezone?: string;
+  lang?: string;
+  suspended?: number;
   ecommerce?: number;
   parentId?: number;
   customCss?: string;
+  validTo?: string;
+  suspendafter?: number;
+  companyterminated?: number;
   theme?: string;
   hostname?: string;
   maxUsers?: number;
-  validTo?: string;
   mainColor?: string;
   headingColor?: string;
   linkColor?: string;
   custom1?: string;
   custom2?: string;
   custom3?: string;
+  status?: string;
 }
-
+ 
 export interface ApiResponse<T> {
   data: T;
   error?: string;
 }
-
+ 
 export type UserRole = 'teacher' | 'trainer' | 'principal' | 'cluster_lead' | 'admin';
-
+ 
 export interface DashboardStats {
   totalCourses: number;
   completedCourses: number;
@@ -93,7 +98,7 @@ export interface DashboardStats {
   totalEnrollments?: number;
   certificatesIssued?: number;
 }
-
+ 
 export interface Session {
   id: string;
   title: string;
@@ -107,7 +112,7 @@ export interface Session {
   location?: string;
   description?: string;
 }
-
+ 
 export interface Achievement {
   id: string;
   title: string;
@@ -118,7 +123,7 @@ export interface Achievement {
   points?: number;
   level?: string;
 }
-
+ 
 export interface Assessment {
   id: string;
   title: string;
@@ -128,7 +133,7 @@ export interface Assessment {
   duration?: number;
   passingScore?: number;
 }
-
+ 
 export interface AssessmentQuestion {
   id: string;
   question: string;
@@ -137,7 +142,7 @@ export interface AssessmentQuestion {
   correctAnswer?: string | number;
   points?: number;
 }
-
+ 
 export interface LearningPath {
   id: string;
   title: string;
@@ -148,7 +153,7 @@ export interface LearningPath {
   prerequisites?: string[];
   outcomes?: string[];
 }
-
+ 
 export interface Notification {
   id: string;
   title: string;
@@ -158,7 +163,7 @@ export interface Notification {
   read: boolean;
   actionUrl?: string;
 }
-
+ 
 export interface Report {
   id: string;
   title: string;
@@ -167,7 +172,7 @@ export interface Report {
   generatedAt: number;
   format: 'pdf' | 'excel' | 'csv';
 }
-
+ 
 export interface Competency {
   id: string;
   name: string;

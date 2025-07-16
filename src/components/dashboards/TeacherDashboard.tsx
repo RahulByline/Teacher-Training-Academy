@@ -1,317 +1,212 @@
-import React, { useState, useEffect } from 'react';
-import { motion } from 'framer-motion';
+import React, { useState, useEffect, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useAuth } from '../../context/AuthContext';
 import { apiService } from '../../services/api';
-import { Course, Session, Achievement } from '../../types';
-import { 
-  BookOpen, 
-  TrendingUp, 
-  Award, 
-  Calendar, 
-  Clock,
-  Target,
-  Star,
-  ChevronRight,
-  Play
+import {
+  BookOpen, TrendingUp, Award, Calendar, Clock, Target, Star, Users, Trophy, ChevronRight, Play, BarChart3, MessageSquare, Folder, Settings, User, LogOut, Bell, ChevronDown
 } from 'lucide-react';
-import { LoadingSpinner } from '../LoadingSpinner';
-import { CourseCard } from '../CourseCard';
-
+import { motion } from 'framer-motion';
+import { Outlet, useNavigate, useLocation, NavLink, Routes, Route } from 'react-router-dom';
+import { Course } from '../../types';
+ 
+// --- Mock Data: Use until real API is available ---
+// Competency Map
+const mockCompetency = [
+  { label: 'Pedagogy', value: 82 },
+  { label: 'Assessment', value: 76 },
+  { label: 'Technology', value: 54 },
+  { label: 'Management', value: 88 },
+  { label: 'Content', value: 79 },
+];
+// Leaderboard
+const mockLeaderboard = [
+  { name: 'Mohammed Al-Saleh', points: 2560, rank: 1 },
+  { name: 'Fatima Al-Zahrani', points: 2340, rank: 2 },
+  { name: 'Khalid Al-Harbi', points: 2290, rank: 3 },
+  { name: 'You', points: 1240, rank: 28 },
+];
+// Achievements
+const mockAchievements = [
+  { label: 'Fast Learner', icon: Trophy },
+  { label: 'Consistent', icon: Star },
+  { label: 'Team Player', icon: Users },
+  { label: 'Excellence', icon: Award },
+  { label: 'Master', icon: BookOpen },
+  { label: 'Innovator', icon: TrendingUp },
+];
+// Events
+const mockEvents = [
+  { title: 'Assessment Submission', date: 'Tomorrow', desc: 'Submit your final assessment for "Inquiry-Based Learning"' },
+  { title: 'Live Workshop', date: 'May 15', desc: 'Virtual Lab Techniques with Dr. Ahmed Al-Farsi' },
+  { title: 'Peer Collaboration', date: 'May 18', desc: 'Group project submission: "Developing Inquiry-Based Lab Activities"' },
+  { title: 'Certification Exam', date: 'May 25', desc: 'Level 2 Science Pedagogy Specialist certification examination' },
+];
+// Mentors
+const mockMentors = [
+  { name: 'Sarah', status: 'Online' },
+  { name: 'Mohammed', status: 'Online' },
+  { name: 'Khalid', status: 'In 2h' },
+  { name: 'Fatima', status: 'Tomorrow' },
+];
+ 
+const sidebarItems = [
+  { label: 'My Dashboard', icon: BarChart3, route: 'dashboard' },
+  { label: 'My Learning', icon: BookOpen, route: 'my-learning' },
+  { label: 'Learning Paths', icon: TrendingUp, route: 'learning-paths' },
+  { label: 'Certifications', icon: Award, route: 'certifications' },
+  { label: 'Assessments', icon: Calendar, route: 'assessments' },
+  { label: 'Competency Map', icon: BarChart3, route: 'competency-map' },
+  { label: 'Achievements', icon: Trophy, route: 'achievements' },
+  { label: 'Community', icon: Users, route: 'community', sub: [
+    { label: 'Peer Network', route: 'community/peer-network' },
+    { label: 'Leaderboards', route: 'community/leaderboards' },
+    { label: 'Discussion Forums', route: 'community/discussion-forums' },
+    { label: 'Resource Library', route: 'community/resource-library' },
+  ]},
+  { label: 'Settings', icon: Settings, route: 'settings', sub: [
+    { label: 'Profile', route: 'settings/profile' },
+    { label: 'Notifications', route: 'settings/notifications' },
+  ]},
+];
+ 
 export const TeacherDashboard: React.FC = () => {
   const { t } = useTranslation();
   const { user } = useAuth();
   const [courses, setCourses] = useState<Course[]>([]);
   const [loading, setLoading] = useState(true);
-
-  // Mock data for demonstration
-  const upcomingSessions: Session[] = [
-    {
-      id: '1',
-      title: 'Advanced Teaching Methodologies',
-      date: '2024-01-15',
-      time: '10:00 AM',
-      type: 'VILT',
-      trainer: 'Dr. Sarah Ahmed',
-      status: 'upcoming'
-    },
-    {
-      id: '2',
-      title: 'Assessment Strategies Workshop',
-      date: '2024-01-18',
-      time: '2:00 PM',
-      type: 'ILT',
-      trainer: 'Prof. Mohammed Ali',
-      status: 'upcoming'
+  const navigate = useNavigate();
+  const location = useLocation();
+  const [openSub, setOpenSub] = useState<string | null>(null);
+ 
+  const handleSidebarClick = (item: any) => {
+    if (item.sub) {
+      setOpenSub(openSub === item.label ? null : item.label);
+    } else {
+      setOpenSub(null);
+      navigate(`/teacher-dashboard/${item.route}`);
     }
-  ];
-
-  const achievements: Achievement[] = [
-    {
-      id: '1',
-      title: 'Course Completion Master',
-      description: 'Completed 10 courses with excellence',
-      icon: '🏆',
-      earnedDate: '2024-01-10',
-      category: 'Learning'
-    },
-    {
-      id: '2',
-      title: 'Assessment Expert',
-      description: 'Scored 95%+ in 5 assessments',
-      icon: '⭐',
-      earnedDate: '2024-01-08',
-      category: 'Performance'
-    }
-  ];
-
-  const recommendations = [
-    {
-      id: '1',
-      title: 'Digital Teaching Tools',
-      reason: 'Based on your interest in technology integration',
-      match: 92
-    },
-    {
-      id: '2',
-      title: 'Classroom Management Strategies',
-      reason: 'Recommended for your teaching level',
-      match: 88
-    }
-  ];
-
+  };
+ 
   useEffect(() => {
-    const fetchData = async () => {
-      if (!user) return;
-      
-      try {
-        const userCourses = await apiService.getUserCourses(user.id);
-        setCourses(userCourses);
-      } catch (error) {
-        console.error('Error fetching data:', error);
-      } finally {
-        setLoading(false);
+    async function fetchCourses() {
+      if (user && user.id) {
+        setLoading(true);
+        try {
+          const userCourses = await apiService.getUserCourses(user.id);
+          setCourses(userCourses);
+        } catch (e) {
+          setCourses([]);
+        } finally {
+          setLoading(false);
+        }
       }
-    };
-
-    fetchData();
-  }, [user]);
-
-  const stats = [
-    {
-      title: 'Enrolled Courses',
-      value: courses.length,
-      icon: BookOpen,
-      color: 'bg-blue-500',
-      change: '+2 this month'
-    },
-    {
-      title: 'Completed',
-      value: courses.filter(c => c.progress === 100).length,
-      icon: Award,
-      color: 'bg-green-500',
-      change: '+3 this month'
-    },
-    {
-      title: 'In Progress',
-      value: courses.filter(c => c.progress && c.progress > 0 && c.progress < 100).length,
-      icon: TrendingUp,
-      color: 'bg-orange-500',
-      change: 'On track'
-    },
-    {
-      title: 'Upcoming Sessions',
-      value: upcomingSessions.length,
-      icon: Calendar,
-      color: 'bg-purple-500',
-      change: 'This week'
     }
+    fetchCourses();
+  }, [user && user.id]);
+ 
+  // --- Stats from real data ---
+  const completed = courses.filter((c: any) => c.progress === 100).length;
+  const inProgress = courses.filter((c: any) => c.progress && c.progress > 0 && c.progress < 100).length;
+  const total = courses.length;
+  const stats = [
+    { title: 'Total Courses', value: total, icon: BookOpen, color: 'bg-indigo-100 text-indigo-600' },
+    { title: 'Completed Courses', value: completed, icon: Award, color: 'bg-green-100 text-green-600' },
+    { title: 'In Progress', value: inProgress, icon: TrendingUp, color: 'bg-blue-100 text-blue-600' },
+    // Add more stats here if you have real data (e.g., certifications, hours)
   ];
-
+ 
+  // --- Learning Path from real data ---
+  const learningPath = courses.map((course) => ({
+    label: course.fullname,
+    progress: course.progress || 0,
+  }));
+ 
+  // --- Recommendations from real data ---
+  // Example: recommend courses not completed
+  const recommendations = courses.filter((c: any) => (c.progress || 0) < 100);
+ 
+  // --- Recent Activity from real data ---
+  // Example: recently completed courses
+  const recentActivity = courses
+    .filter((c) => c.progress === 100)
+    .map((c) => ({
+      type: 'Completed',
+      text: c.fullname,
+      date: c.enddate ? new Date(c.enddate * 1000).toLocaleDateString() : '',
+      points: 100, // Placeholder, replace with real points if available
+    }));
+ 
   if (loading) {
-    return (
-      <div className="flex justify-center items-center min-h-screen">
-        <LoadingSpinner size="lg" />
-      </div>
-    );
+    return <div className="flex justify-center items-center min-h-screen text-lg">{t('Loading...')}</div>;
   }
-
+ 
   return (
-    <div className="space-y-8">
-      {/* Welcome Section */}
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        className="bg-gradient-to-r from-blue-600 to-purple-600 rounded-2xl p-8 text-white"
-      >
-        <div className="flex items-center justify-between">
-          <div>
-            <h1 className="text-3xl font-bold mb-2">
-              {t('welcome')}, {user?.firstname}! 👋
-            </h1>
-            <p className="text-blue-100 text-lg mb-4">
-              Ready to continue your learning journey?
-            </p>
-            <div className="flex items-center gap-4">
-              <div className="flex items-center gap-2">
-                <Target className="w-5 h-5" />
-                <span>Learning Goal: 80% completion rate</span>
-              </div>
-              <div className="flex items-center gap-2">
-                <Star className="w-5 h-5" />
-                <span>Current Level: Advanced</span>
-              </div>
+    <div className="flex min-h-screen min-w-screen w-full h-full bg-[#f9fafb] font-sans">
+      {/* Sidebar */}
+      <aside className="hidden md:flex flex-col justify-between w-20 lg:w-64 bg-white text-gray-800 py-8 px-2 lg:px-6 rounded-tr-2xl rounded-br-2xl shadow-lg h-full border-r border-gray-200">
+        <nav className="flex flex-col gap-2">
+          {sidebarItems.map((item) => (
+            <div key={item.label}>
+              <button
+                className={`flex items-center gap-3 px-3 py-3 rounded-xl transition-colors focus:outline-none focus:ring-2 focus:ring-indigo-400 w-full text-left ${
+                  (location.pathname === `/teacher-dashboard/${item.route}` || (item.route === '' && location.pathname === '/teacher-dashboard'))
+                    ? 'bg-indigo-50 text-indigo-600 font-semibold shadow'
+                    : 'hover:bg-gray-100 hover:text-indigo-500 text-gray-800'
+                }`}
+                onClick={() => handleSidebarClick(item)}
+              >
+                <item.icon className={`w-6 h-6 ${
+                  (location.pathname === `/teacher-dashboard/${item.route}` || (item.route === '' && location.pathname === '/teacher-dashboard'))
+                    ? 'text-indigo-500' : 'text-gray-400 group-hover:text-indigo-500'}`} />
+                <span className="hidden lg:inline text-base font-medium">{item.label}</span>
+                {item.sub && (
+                  <ChevronDown className={`w-4 h-4 ml-auto transition-transform ${openSub === item.label ? 'rotate-180' : ''}`} />
+                )}
+              </button>
+              {item.sub && openSub === item.label && (
+                <div className="ml-8 flex flex-col gap-1 mt-1">
+                  {item.sub.map((subItem: any) => (
+                    <NavLink
+                      key={subItem.label}
+                      to={`/teacher-dashboard/${subItem.route}`}
+                      className={({ isActive }) =>
+                        `block px-3 py-2 rounded-lg text-sm transition-colors ${
+                          isActive ? 'bg-indigo-100 text-indigo-700 font-semibold' : 'hover:bg-gray-100 text-gray-700'
+                        }`
+                      }
+                    >
+                      {subItem.label}
+                    </NavLink>
+                  ))}
+                </div>
+              )}
             </div>
-          </div>
-          <div className="hidden md:block">
-            <div className="w-32 h-32 bg-white bg-opacity-20 rounded-full flex items-center justify-center">
-              <BookOpen className="w-16 h-16 text-white" />
-            </div>
-          </div>
+          ))}
+        </nav>
+        <div className="flex flex-col items-center gap-2 mt-8">
+          <img src={user?.profileimageurl || '/public/logo-BYbhmxQK-removebg-preview.png'} alt={user?.fullname || 'User'} className="w-12 h-12 rounded-full border-2 border-indigo-400 object-cover" />
+          <span className="hidden lg:block font-semibold">{user?.fullname || user?.firstname || user?.username || 'Teacher'}</span>
+          <button className="flex items-center gap-2 mt-2 px-3 py-2 bg-gray-700 hover:bg-gray-600 rounded-lg text-sm text-gray-200"><LogOut className="w-4 h-4" /> Logout</button>
         </div>
-      </motion.div>
-
-      {/* Stats Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-        {stats.map((stat, index) => (
-          <motion.div
-            key={index}
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: index * 0.1 }}
-            whileHover={{ y: -5 }}
-            className="bg-white rounded-xl shadow-lg p-6 border border-gray-100"
-          >
-            <div className="flex items-center justify-between mb-4">
-              <div className={`${stat.color} p-3 rounded-lg`}>
-                <stat.icon className="w-6 h-6 text-white" />
-              </div>
-              <span className="text-2xl font-bold text-gray-900">{stat.value}</span>
-            </div>
-            <h3 className="text-sm font-medium text-gray-600 mb-1">{stat.title}</h3>
-            <p className="text-xs text-green-600">{stat.change}</p>
-          </motion.div>
-        ))}
-      </div>
-
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-        {/* Learning Path */}
-        <div className="lg:col-span-2 space-y-6">
-          {/* Current Courses */}
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.2 }}
-            className="bg-white rounded-xl shadow-lg p-6"
-          >
-            <div className="flex items-center justify-between mb-6">
-              <h2 className="text-xl font-bold text-gray-900">{t('myLearning')}</h2>
-              <button className="text-blue-600 hover:text-blue-800 font-medium flex items-center gap-1">
-                View All <ChevronRight className="w-4 h-4" />
+      </aside>
+      {/* Main Content */}
+      <div className="flex-1 flex flex-col min-w-0 w-full h-full">
+        {/* Top Bar */}
+        <header className="flex items-center justify-between bg-white px-4 py-4 shadow rounded-bl-2xl w-full">
+          <div className="text-lg md:text-2xl font-bold text-gray-900">Welcome, {user?.fullname || user?.firstname || user?.username || ''}</div>
+          <div className="flex items-center gap-4">
+            <span className="text-gray-500 text-sm hidden md:inline">Q2 2025 (Apr-Jun)</span>
+            <button className="relative p-2 rounded-full hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-indigo-400"><Bell className="w-6 h-6 text-gray-500" /></button>
+            <div className="relative">
+              <button className="flex items-center gap-2 p-1 rounded-full hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-indigo-400">
+                <img src={user?.profileimageurl || '/public/logo-BYbhmxQK-removebg-preview.png'} alt={user?.fullname || 'User'} className="w-8 h-8 rounded-full object-cover" />
+                <ChevronDown className="w-4 h-4 text-gray-500" />
               </button>
             </div>
-            
-            {courses.length > 0 ? (
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                {courses.slice(0, 4).map((course) => (
-                  <CourseCard key={course.id} course={course} />
-                ))}
-              </div>
-            ) : (
-              <div className="text-center py-8">
-                <BookOpen className="w-16 h-16 text-gray-400 mx-auto mb-4" />
-                <p className="text-gray-600">No courses enrolled yet</p>
-              </div>
-            )}
-          </motion.div>
-
-          {/* Recommendations */}
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.3 }}
-            className="bg-white rounded-xl shadow-lg p-6"
-          >
-            <h2 className="text-xl font-bold text-gray-900 mb-6">{t('recommendations')}</h2>
-            <div className="space-y-4">
-              {recommendations.map((rec) => (
-                <div key={rec.id} className="flex items-center justify-between p-4 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors">
-                  <div className="flex-1">
-                    <h3 className="font-semibold text-gray-900 mb-1">{rec.title}</h3>
-                    <p className="text-sm text-gray-600 mb-2">{rec.reason}</p>
-                    <div className="flex items-center gap-2">
-                      <div className="w-16 bg-gray-200 rounded-full h-2">
-                        <div 
-                          className="bg-green-500 h-2 rounded-full" 
-                          style={{ width: `${rec.match}%` }}
-                        ></div>
-                      </div>
-                      <span className="text-xs text-gray-500">{rec.match}% match</span>
-                    </div>
-                  </div>
-                  <button className="ml-4 bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors">
-                    <Play className="w-4 h-4" />
-                  </button>
-                </div>
-              ))}
-            </div>
-          </motion.div>
-        </div>
-
-        {/* Sidebar */}
-        <div className="space-y-6">
-          {/* Upcoming Sessions */}
-          <motion.div
-            initial={{ opacity: 0, x: 20 }}
-            animate={{ opacity: 1, x: 0 }}
-            transition={{ delay: 0.4 }}
-            className="bg-white rounded-xl shadow-lg p-6"
-          >
-            <h2 className="text-lg font-bold text-gray-900 mb-4">{t('upcomingSessions')}</h2>
-            <div className="space-y-4">
-              {upcomingSessions.map((session) => (
-                <div key={session.id} className="border-l-4 border-blue-500 pl-4 py-2">
-                  <h3 className="font-semibold text-gray-900 text-sm mb-1">{session.title}</h3>
-                  <div className="flex items-center gap-2 text-xs text-gray-600 mb-1">
-                    <Calendar className="w-3 h-3" />
-                    <span>{session.date}</span>
-                  </div>
-                  <div className="flex items-center gap-2 text-xs text-gray-600">
-                    <Clock className="w-3 h-3" />
-                    <span>{session.time}</span>
-                    <span className={`px-2 py-1 rounded-full text-xs ${
-                      session.type === 'VILT' ? 'bg-green-100 text-green-800' : 'bg-blue-100 text-blue-800'
-                    }`}>
-                      {session.type}
-                    </span>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </motion.div>
-
-          {/* Achievements */}
-          <motion.div
-            initial={{ opacity: 0, x: 20 }}
-            animate={{ opacity: 1, x: 0 }}
-            transition={{ delay: 0.5 }}
-            className="bg-white rounded-xl shadow-lg p-6"
-          >
-            <h2 className="text-lg font-bold text-gray-900 mb-4">{t('achievements')}</h2>
-            <div className="space-y-4">
-              {achievements.map((achievement) => (
-                <div key={achievement.id} className="flex items-start gap-3 p-3 bg-yellow-50 rounded-lg">
-                  <div className="text-2xl">{achievement.icon}</div>
-                  <div className="flex-1">
-                    <h3 className="font-semibold text-gray-900 text-sm mb-1">{achievement.title}</h3>
-                    <p className="text-xs text-gray-600 mb-1">{achievement.description}</p>
-                    <span className="text-xs text-gray-500">{achievement.earnedDate}</span>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </motion.div>
-        </div>
+          </div>
+        </header>
+        {/* Routed Page Content */}
+        <Outlet />
       </div>
     </div>
   );
