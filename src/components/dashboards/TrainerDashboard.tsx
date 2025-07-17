@@ -8,6 +8,7 @@ import { useAuth } from '../../context/AuthContext';
 import { apiService } from '../../services/api';
 import { Course } from '../../types';
 import { Outlet, useNavigate, useLocation } from 'react-router-dom';
+import TrainerDashboardDetails from './TrainerDashboardDetails';
 
 // --- Interfaces ---
 interface Stat {
@@ -142,6 +143,7 @@ export const TrainerDashboard: React.FC = () => {
   const [error, setError] = useState<string | null>(null);
   const navigate = useNavigate();
   const location = useLocation();
+  const [profileDropdownOpen, setProfileDropdownOpen] = useState(false);
 
   useEffect(() => {
     if (user && user.id) {
@@ -269,6 +271,12 @@ export const TrainerDashboard: React.FC = () => {
     navigate(route);
   };
 
+  // Add a handler for logout (replace with your actual logout logic)
+  const handleLogout = () => {
+    // TODO: Replace with your logout logic
+    window.location.href = '/login';
+  };
+
   // --- Main Content ---
   const isDashboardRoot = location.pathname === '/dashboard' || location.pathname === '/dashboard/';
   return (
@@ -308,157 +316,121 @@ export const TrainerDashboard: React.FC = () => {
             <span className="text-gray-500 text-sm hidden md:inline">{today}</span>
             <button className="relative p-2 rounded-full hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-indigo-400"><Bell className="w-6 h-6 text-gray-500" /></button>
             <div className="relative">
-              <button className="flex items-center gap-2 p-1 rounded-full hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-indigo-400">
+              <button
+                className="flex items-center gap-2 p-1 rounded-full hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-indigo-400"
+                onClick={() => setProfileDropdownOpen((open) => !open)}
+              >
                 <img src={user.profileimageurl || '/public/logo-BYbhmxQK-removebg-preview.png'} alt={user.fullname || 'User'} className="w-8 h-8 rounded-full object-cover" />
                 <ChevronDown className="w-4 h-4 text-gray-500" />
               </button>
-              {/* Dropdown could go here */}
+              {/* Dropdown */}
+              {profileDropdownOpen && (
+                <div className="absolute right-0 mt-2 w-48 bg-white rounded-xl shadow-lg z-50 border border-gray-100">
+                  <button
+                    className="w-full text-left px-4 py-3 hover:bg-gray-50 text-gray-800 rounded-t-xl"
+                    onClick={() => { navigate('/dashboard/account-settings'); setProfileDropdownOpen(false); }}
+                  >
+                    Account Settings
+                  </button>
+                  <button
+                    className="w-full text-left px-4 py-3 hover:bg-gray-50 text-red-600 rounded-b-xl"
+                    onClick={handleLogout}
+                  >
+                    Logout
+                  </button>
+                </div>
+              )}
             </div>
           </div>
         </header>
         {isDashboardRoot ? (
-          // Overview Section
-          <section className="px-4 py-6">
-            <div className="mb-6">
-              <h2 className="text-xl font-bold text-gray-900 mb-2">{t('Overview')} <span className="text-gray-400 font-normal">(May 2025)</span></h2>
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-                {statsToShow.map((stat, i) => <StatCard key={stat.label} stat={stat} />)}
-              </div>
-            </div>
-            {/* Main Grid */}
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-              {/* Left Column */}
-              <div className="space-y-6 lg:col-span-2">
-                {/* This Week's Schedule */}
-                <div className="bg-white rounded-2xl shadow-md p-6">
-                  <h3 className="text-lg font-bold mb-4 text-gray-900">{t("This Week's Schedule")} <span className="text-gray-400 font-normal">(May 5–11)</span></h3>
-                  <ol className="relative border-l-2 border-indigo-200 ml-4">
-                    {mockSchedule.map((day, index) => (
-                      <li key={day.day} className="mb-6 ml-6">
-                        <span className="absolute -left-3 flex items-center justify-center w-6 h-6 bg-indigo-100 rounded-full ring-4 ring-white">
-                          <CalendarDays className="w-4 h-4 text-indigo-500" />
-                        </span>
-                        <span className="text-gray-800 font-medium">{day.day}</span>
-                        <span className="text-gray-500 text-sm ml-2">{day.date}</span>
-                        <div className="mt-2">
-                          {day.events.map((event, eIndex) => (
-                            <div key={eIndex} className={`${event.color} p-2 rounded-lg text-sm font-medium`}>
-                              {event.time} - {event.title}
-                            </div>
-                          ))}
-                        </div>
-                      </li>
-                    ))}
-                  </ol>
-                </div>
-                {/* Upcoming Sessions */}
-                <div className="bg-white rounded-2xl shadow-md p-6">
-                  <h3 className="text-lg font-bold mb-4 text-gray-900">{t('Upcoming Sessions')}</h3>
-                  <div className="overflow-x-auto">
-                    <table className="min-w-full text-sm">
-                      <thead>
-                        <tr className="text-gray-500 text-left">
-                          <th className="py-2 pr-4">{t('Date')}</th>
-                          <th className="py-2 pr-4">{t('Session')}</th>
-                          <th className="py-2 pr-4">{t('Time')}</th>
-                          <th className="py-2 pr-4">{t('Location')}</th>
-                          <th className="py-2">{t('Enrolled')}</th>
-                        </tr>
-                      </thead>
-                      <tbody>
-                        {upcomingSessionsToShow.map((s, i) => (
-                          <tr key={s.title} className="border-b last:border-0">
-                            <td className="py-2 pr-4 font-medium text-gray-800">{s.date}</td>
-                            <td className="py-2 pr-4">{s.title}</td>
-                            <td className="py-2 pr-4">{s.time}</td>
-                            <td className="py-2 pr-4">{s.location}</td>
-                            <td className="py-2">{s.enrolled}</td>
-                          </tr>
-                        ))}
-                      </tbody>
-                    </table>
-                  </div>
-                </div>
-                {/* Trainee Progress */}
-                <div className="bg-white rounded-2xl shadow-md p-6">
-                  <h3 className="text-lg font-bold mb-4 text-gray-900">{t('Trainee Progress')}</h3>
-                  <div className="space-y-3">
-                    {progressBarsToShow.map((bar) => <ProgressBar key={bar.label} {...bar} />)}
-                  </div>
-                </div>
-                {/* Feedback Section */}
-                <div className="bg-white rounded-2xl shadow-md p-6">
-                  <h3 className="text-lg font-bold mb-4 text-gray-900">{t('Feedback')}</h3>
-                  <ul className="divide-y divide-gray-100">
-                    {mockFeedback.map((fb, i) => (
-                      <li key={fb.name} className="py-3 flex flex-col md:flex-row md:items-center md:gap-4">
-                        <img src={fb.avatar} alt={fb.name} className="w-10 h-10 rounded-full object-cover" />
-                        <div>
-                          <span className="font-semibold text-gray-800">{fb.name}</span>
-                          <span className="flex items-center gap-1 text-yellow-500 font-medium ml-2"><Star className="w-4 h-4" />{fb.rating.toFixed(1)}</span>
-                          <span className="text-gray-500 text-sm ml-2">{fb.text}</span>
-                          <span className="text-gray-400 text-xs ml-auto">{fb.date}</span>
-                        </div>
-                      </li>
-                    ))}
-                  </ul>
-                  <div className="mt-4 text-sm text-gray-700">Overall Rating: <span className="font-bold">4.8</span> from 124 reviews</div>
-                </div>
-              </div>
-              {/* Right Column */}
-              <div className="space-y-6">
-                {/* Certification Roadmap */}
-                <div className="bg-white rounded-2xl shadow-md p-6">
-                  <h3 className="text-lg font-bold mb-4 text-gray-900">{t('Certification Roadmap')}</h3>
-                  <ol className="relative border-l-2 border-green-200 ml-4">
-                    {mockRoadmap.map((c, i) => (
-                      <li key={c.label} className="mb-6 ml-6 flex items-center gap-2">
-                        <span className={`absolute -left-3 flex items-center justify-center w-6 h-6 rounded-full ring-4 ring-white ${c.status === 'done' ? 'bg-green-500' : c.status === 'inprogress' ? 'bg-yellow-400' : 'bg-gray-300'}`}>{c.status === 'done' ? <CheckCircle className="w-4 h-4 text-white" /> : c.status === 'inprogress' ? <Clock className="w-4 h-4 text-white" /> : <Circle className="w-4 h-4 text-white" />}</span>
-                        <span className="font-medium text-gray-800">{c.label}</span>
-                        <span className="text-xs text-gray-500">{c.desc}</span>
-                        {c.status === 'inprogress' && <span className="ml-2 text-xs text-yellow-600">{c.percent}% done</span>}
-                        {c.status === 'planned' && <span className="ml-2 text-xs text-gray-400">Planned</span>}
-                        <span className="text-xs text-gray-500">{c.date}</span>
-                      </li>
-                    ))}
-                  </ol>
-                </div>
-                {/* Competency Scores */}
-                <div className="bg-white rounded-2xl shadow-md p-6">
-                  <h3 className="text-lg font-bold mb-4 text-gray-900">{t('Competency Scores')}</h3>
-                  <div className="space-y-3">
-                    {mockCompetencies.map((c, i) => (
-                      <div key={c.label} className="mb-2">
-                        <div className="flex justify-between mb-1">
-                          <span className="text-sm font-medium text-gray-700">{c.label}</span>
-                          <span className="text-sm font-medium text-gray-700">{c.value}%</span>
-                        </div>
-                        <div className="w-full bg-gray-200 rounded-full h-3">
-                          <div className={`h-3 rounded-full ${c.value >= 90 ? 'bg-green-500' : c.value >= 80 ? 'bg-yellow-400' : 'bg-red-400'}`} style={{ width: `${c.value}%` }}></div>
-                        </div>
+          // Redesigned Dashboard Section (matches provided screenshot)
+          <>
+            <section className="px-4 py-6">
+              <div className="mb-6">
+                <h2 className="text-2xl font-bold text-gray-900 mb-1">Trainer Dashboard</h2>
+                <div className="text-gray-500 mb-6">Welcome back, {user.firstname || user.fullname || user.username || 'Trainer'}! Here's an overview of your training activities</div>
+                {/* Stat Cards */}
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+                  {statsToShow.map((stat, i) => (
+                    <div key={stat.label} className="bg-white rounded-2xl shadow p-6 flex flex-col min-w-[180px]">
+                      <div className="flex items-center justify-between mb-2">
+                        <span className="text-gray-500 font-medium">{stat.label}</span>
+                        <span className={`p-2 rounded-full ${stat.color}`}>{React.createElement(stat.icon, { className: 'w-5 h-5' })}</span>
                       </div>
-                    ))}
-                  </div>
-                  {/* No real competency data available from courses; leave as a placeholder for future integration */}
-                  {/* {lowCompetency && (
-                    <div className="mt-4 bg-indigo-50 border-l-4 border-indigo-400 p-3 rounded-xl text-indigo-700 text-sm">
-                      {t('Suggest')} <b>Education Research Methods</b> {t('course')} (June 5) {t('for scores <70%')}
+                      <div className="text-2xl font-bold mb-1">{stat.value}</div>
+                      {stat.change && (
+                        <div className="flex items-center text-xs text-green-600">
+                          <ArrowUpRight className="w-4 h-4 mr-1" />{stat.change} <span className="ml-1 text-gray-400">vs last month</span>
+                        </div>
+                      )}
                     </div>
-                  )} */}
-                </div>
-                {/* Achievements */}
-                <div className="bg-white rounded-2xl shadow-md p-6">
-                  <h3 className="text-lg font-bold mb-4 text-gray-900">{t('Achievements')}</h3>
-                  <div className="grid grid-cols-2 gap-4">
-                    {mockAchievements.map((badge, i) => (
-                      <BadgeCard key={badge.label} {...badge} />
-                    ))}
-                  </div>
-                  <div className="mt-4 text-sm text-gray-700">Next: <b>Curriculum Design Specialist</b> (pending 2 courses)</div>
+                  ))}
                 </div>
               </div>
-            </div>
-          </section>
+              {/* Main Grid: Schedule & Upcoming Sessions */}
+              <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                {/* Schedule Card */}
+                <div className="lg:col-span-2">
+                  <div className="bg-white rounded-2xl shadow p-6 mb-6 h-full">
+                    <div className="flex items-center justify-between mb-4">
+                      <h3 className="font-bold text-lg">Your Schedule</h3>
+                      <div className="flex items-center gap-2">
+                        <button className="px-3 py-1 rounded bg-gray-100 text-gray-700 text-sm">Week</button>
+                        <button className="px-3 py-1 rounded text-gray-400 text-sm">Month</button>
+                        <button className="px-3 py-1 rounded text-gray-400 text-sm">List</button>
+                        <span className="ml-4 text-gray-500 text-sm">Today</span>
+                      </div>
+                    </div>
+                    {/* Week Calendar */}
+                    <div className="overflow-x-auto">
+                      <table className="min-w-full text-sm">
+                        <thead>
+                          <tr className="text-gray-500">
+                            {mockSchedule.map((day) => (
+                              <th key={day.day} className="py-2 px-2 font-medium text-center">{day.day}<br /><span className="font-normal">{day.date}</span></th>
+                            ))}
+                          </tr>
+                        </thead>
+                        <tbody>
+                          <tr>
+                            {mockSchedule.map((day) => (
+                              <td key={day.day} className="align-top px-2 py-2 min-w-[120px]">
+                                {day.events.map((event, idx) => (
+                                  <div key={idx} className={`mb-2 p-2 rounded-lg text-xs font-medium ${event.color}`}>{event.time}<br />{event.title}</div>
+                                ))}
+                              </td>
+                            ))}
+                          </tr>
+                        </tbody>
+                      </table>
+                    </div>
+                  </div>
+                </div>
+                {/* Upcoming Sessions Card */}
+                <div>
+                  <div className="bg-white rounded-2xl shadow p-6 mb-6">
+                    <h3 className="font-bold text-lg mb-4">Upcoming Sessions</h3>
+                    <ul>
+                      {upcomingSessionsToShow.map((s, i) => (
+                        <li key={s.title + i} className="mb-4 border-l-4 pl-3" style={{ borderColor: ['#3b82f6', '#ef4444', '#10b981', '#f59e42'][i % 4] }}>
+                          <div className="font-semibold text-gray-900">{s.title}</div>
+                          <div className="flex items-center text-xs text-gray-500 gap-2 mb-1">
+                            <CalendarDays className="w-4 h-4" /> {s.date} &bull; {s.time} &bull; {s.location}
+                          </div>
+                          <div className="text-xs text-gray-500 mb-1">{s.enrolled} trainees enrolled</div>
+                          <a href="#" className="text-indigo-600 text-xs font-medium hover:underline">View details</a>
+                        </li>
+                      ))}
+                    </ul>
+                    <div className="mt-2 text-indigo-700 text-sm font-medium cursor-pointer hover:underline">View full schedule &rarr;</div>
+                  </div>
+                </div>
+              </div>
+            </section>
+            {/* New: Dashboard Details Section */}
+            <TrainerDashboardDetails />
+          </>
         ) : (
           <Outlet />
         )}
