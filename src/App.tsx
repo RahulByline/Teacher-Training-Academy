@@ -20,6 +20,7 @@ import { CourseCategoryRoutes } from './components/routes/CourseCategoryRoutes';
 import TrainerDashboardRoutes from './components/routes/TrainerDashboardRoutes';
 import { useAuth } from './context/AuthContext';
 import TeacherDashboardRoutes from './components/routes/TeacherDashboardRoutes';
+import { SchoolAdminDashboard } from './components/pages/courses/SchoolAdminDashboard';
  
 function DashboardRouteWrapper() {
   const { user, loading } = useAuth();
@@ -119,6 +120,14 @@ function App() {
                   element={
                     <ProtectedRoute>
                       <TeacherDashboardRoutes />
+                    </ProtectedRoute>
+                  }
+                />
+                <Route
+                  path="/school-admin-dashboard"
+                  element={
+                    <ProtectedRoute>
+                      <SchoolAdminDashboard companyId={20} />
                     </ProtectedRoute>
                   }
                 />

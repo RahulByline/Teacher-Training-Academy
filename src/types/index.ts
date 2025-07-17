@@ -86,7 +86,7 @@ export interface ApiResponse<T> {
   error?: string;
 }
  
-export type UserRole = 'teacher' | 'trainer' | 'principal' | 'cluster_lead' | 'admin';
+export type UserRole = 'teacher' | 'trainer' | 'principal' | 'cluster_lead' | 'admin' | 'school_admin';
  
 export interface DashboardStats {
   totalCourses: number;
