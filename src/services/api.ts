@@ -584,6 +584,24 @@ export const apiService = {
       console.error('Error fetching competency plans:', error);
       return [];
     }
+  },
+
+  async getPlanCompetencies(planId: number): Promise<any[]> {
+    try {
+      const response = await api.get('', {
+        params: {
+          wsfunction: 'core_competency_list_plan_competencies',
+          planid: planId,
+        },
+      });
+      if (response.data && Array.isArray(response.data)) {
+        return response.data;
+      }
+      return [];
+    } catch (error) {
+      console.error('Error fetching plan competencies:', error);
+      return [];
+    }
   }
 };
 

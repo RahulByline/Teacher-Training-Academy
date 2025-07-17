@@ -77,6 +77,8 @@ export interface School {
   custom2?: string;
   custom3?: string;
   status?: string;
+  logo?: string; // Added for UI display
+  description?: string; // Added for UI display
 }
  
 export interface ApiResponse<T> {
