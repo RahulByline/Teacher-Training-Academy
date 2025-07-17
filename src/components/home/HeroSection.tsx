@@ -100,11 +100,13 @@ export const HeroSection: React.FC = () => {
               transition={{ duration: 0.6, delay: 0.4 }}
               className="flex flex-col sm:flex-row gap-4 mb-12"
             >
-              <Button size="lg" className="bg-gradient-to-r from-blue-600 to-purple-600">
+              <a
+                href="#course-browser"
+                className="inline-flex items-center justify-center px-6 py-3 bg-gradient-to-r from-blue-600 to-purple-600 text-white rounded-lg font-semibold shadow hover:shadow-lg transition-all duration-200 text-lg gap-2"
+              >
                 <Play className="w-5 h-5" />
                 {t('exploreBtn')}
-              </Button>
-              
+              </a>
               <Button variant="outline" size="lg" className="border-white text-white hover:bg-white hover:text-blue-600">
                 {t('getStarted')}
               </Button>
@@ -175,13 +177,6 @@ export const HeroSection: React.FC = () => {
         className={`absolute ${isRTL ? 'right-4' : 'left-4'} top-1/2 transform -translate-y-1/2 z-20 bg-white bg-opacity-20 hover:bg-opacity-30 text-white p-3 rounded-full transition-all duration-200`}
       >
         {isRTL ? <ChevronRight className="w-6 h-6" /> : <ChevronLeft className="w-6 h-6" />}
-      </button>
-      
-      <button
-        onClick={nextSlide}
-        className={`absolute ${isRTL ? 'left-4' : 'right-4'} top-1/2 transform -translate-y-1/2 z-20 bg-white bg-opacity-20 hover:bg-opacity-30 text-white p-3 rounded-full transition-all duration-200`}
-      >
-        {isRTL ? <ChevronLeft className="w-6 h-6" /> : <ChevronRight className="w-6 h-6" />}
       </button>
 
       {/* Slide Indicators */}

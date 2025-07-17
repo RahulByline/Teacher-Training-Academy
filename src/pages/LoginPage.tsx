@@ -6,11 +6,11 @@ import { useLanguage } from '../context/LanguageContext';
 import { useAuth } from '../context/AuthContext';
 import { apiService } from '../services/api';
 import { UserRole } from '../types';
-import { 
-  User, 
-  Lock, 
-  AlertCircle, 
-  CheckCircle, 
+import {
+  User,
+  Lock,
+  AlertCircle,
+  CheckCircle,
   ArrowLeft,
   Shield,
   GraduationCap,
@@ -21,6 +21,8 @@ import {
 import { LoadingSpinner } from '../components/LoadingSpinner';
 import { Button } from '../components/ui/Button';
 import { Input } from '../components/ui/Input';
+import LoginLayout from '../components/ui/LoginLayout';
+import { FaFacebookF, FaTwitter, FaInstagram, FaYoutube } from 'react-icons/fa';
 
 const roleIcons = {
   'super-admin': Shield,
@@ -44,7 +46,7 @@ export const LoginPage: React.FC = () => {
   const { t } = useTranslation();
   const { isRTL } = useLanguage();
   const { login } = useAuth();
-  
+
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
@@ -97,66 +99,40 @@ export const LoginPage: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-900 via-blue-900 to-purple-900 flex items-center justify-center p-4">
-      <motion.div
-        initial={{ scale: 0.9, opacity: 0, y: 20 }}
-        animate={{ scale: 1, opacity: 1, y: 0 }}
-        transition={{ type: "spring", duration: 0.5 }}
-        className="bg-white dark:bg-gray-800 rounded-2xl shadow-2xl w-full max-w-md overflow-hidden"
-      >
-        {/* Header */}
-        <div className={`bg-gradient-to-r ${roleColors[roleKey] || 'from-blue-600 to-purple-600'} p-6 text-center relative`}>
-          <button
-            onClick={handleBack}
-            className="absolute top-4 left-4 text-white hover:bg-white hover:bg-opacity-20 p-2 rounded-full transition-all duration-200"
-          >
-            <ArrowLeft className="w-5 h-5" />
-          </button>
-
-          <div className="text-4xl mb-3">
-            <RoleIcon className="w-12 h-12 text-white mx-auto" />
+    <LoginLayout
+      leftContent={
+        <div className="flex flex-col justify-center h-full">
+          <h1 className="text-5xl font-bold mb-4">Welcome<br />Back</h1>
+          <p className="mb-6 max-w-md text-lg opacity-90">It is a long established fact that a reader will be distracted by the readable content of a page when looking at its layout. The point of using</p>
+          <div className="flex space-x-4 mb-2">
+            <a href="#" aria-label="Facebook" className="hover:text-blue-400"><FaFacebookF size={24} /></a>
+            <a href="#" aria-label="Twitter" className="hover:text-blue-400"><FaTwitter size={24} /></a>
+            <a href="#" aria-label="Instagram" className="hover:text-pink-400"><FaInstagram size={24} /></a>
+            <a href="#" aria-label="YouTube" className="hover:text-red-500"><FaYoutube size={24} /></a>
           </div>
-          
-          <div className="mb-2">
-            <img
-              src="/Riyada.png"
-              alt="Riyada Logo"
-              className="h-8 w-8 mx-auto mb-2"
-            />
-            <div className="text-sm font-bold text-white">تدريب ريادة</div>
-            <div className="text-xs text-blue-100">RIYADA TRAININGS</div>
-          </div>
-          
-          <h2 className="text-xl font-semibold text-white mb-1">
-            {t('loginTitle')}
-          </h2>
-          
-          <p className="text-blue-100 text-sm capitalize">
-            {role?.replace('-', ' ')} Access
-          </p>
         </div>
-
-        {/* Form */}
-        <div className="p-6">
+      }
+      rightContent={
+        <div>
+          <h2 className="text-2xl font-semibold mb-6 text-white text-center">Sign in</h2>
           <form onSubmit={handleSubmit} className="space-y-4">
             <div>
-              <label htmlFor="username" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                {t('username')}
+              <label htmlFor="username" className="block text-sm font-medium text-white mb-2">
+                Email Address
               </label>
               <Input
                 type="text"
                 id="username"
                 value={username}
                 onChange={(e) => setUsername(e.target.value)}
-                placeholder="Enter your username"
+                placeholder="Enter your email"
                 icon={User}
                 required
               />
             </div>
-
             <div>
-              <label htmlFor="password" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                {t('password')}
+              <label htmlFor="password" className="block text-sm font-medium text-white mb-2">
+                Password
               </label>
               <Input
                 type="password"
@@ -168,58 +144,38 @@ export const LoginPage: React.FC = () => {
                 required
               />
             </div>
-
+            <div className="flex items-center mb-2">
+              <input id="remember" name="remember" type="checkbox" className="h-4 w-4 text-orange-600 focus:ring-orange-500 border-gray-300 rounded" />
+              <label htmlFor="remember" className="ml-2 block text-sm text-white">
+                Remember Me
+              </label>
+            </div>
             {error && (
-              <motion.div
-                initial={{ opacity: 0, y: -10 }}
-                animate={{ opacity: 1, y: 0 }}
-                className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 text-red-700 dark:text-red-400 px-4 py-3 rounded-lg flex items-center gap-2"
-              >
+              <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg flex items-center gap-2">
                 <AlertCircle className="w-5 h-5" />
                 <span className="text-sm">{error}</span>
               </motion.div>
             )}
-
             {success && (
-              <motion.div
-                initial={{ opacity: 0, y: -10 }}
-                animate={{ opacity: 1, y: 0 }}
-                className="bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 text-green-700 dark:text-green-400 px-4 py-3 rounded-lg flex items-center gap-2"
-              >
+              <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} className="bg-green-50 border border-green-200 text-green-700 px-4 py-3 rounded-lg flex items-center gap-2">
                 <CheckCircle className="w-5 h-5" />
                 <span className="text-sm">{success}</span>
               </motion.div>
             )}
-
-            <Button
-              type="submit"
-              disabled={loading}
-              className={`w-full bg-gradient-to-r ${roleColors[roleKey] || 'from-blue-600 to-purple-600'}`}
-            >
-              {loading ? (
-                <>
-                  <LoadingSpinner size="sm" />
-                  <span>Logging in...</span>
-                </>
-              ) : (
-                t('loginBtn')
-              )}
+            <Button type="submit" disabled={loading} className="w-full bg-orange-600 hover:bg-orange-700 text-white font-semibold">
+              {loading ? (<><LoadingSpinner size="sm" /><span>Logging in...</span></>) : 'Sign in now'}
             </Button>
           </form>
-
-          <div className="mt-6 text-center space-y-3">
-            <a href="#" className="text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300 font-medium text-sm block">
-              {t('lostPassword')}
-            </a>
-            <p className="text-sm text-gray-600 dark:text-gray-400">
-              {t('firstTime')}{' '}
-              <a href="#" className="text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300 font-medium">
-                {t('createAccount')}
-              </a>
-            </p>
-          </div>
+          <div className="mt-4 flex flex-col items-start">
+  <a href="#" className="text-sm text-white hover:underline mb-2">Lost your password?</a>
+  <p className="text-xs text-white mt-2">
+    By clicking on "Sign in now" you agree to 
+    <a href="#" className="underline ml-1">Terms of Service</a> | 
+    <a href="#" className="underline ml-1">Privacy Policy</a>
+  </p>
+</div>
         </div>
-      </motion.div>
-    </div>
+      }
+    />
   );
 };
