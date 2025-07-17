@@ -214,6 +214,67 @@ export const coursesService = {
   },
 
   /**
+   * Assign course(s) to a school
+   */
+  async assignCoursesToSchool(schoolId: number, courseIds: number[]): Promise<any> {
+    const params = new URLSearchParams();
+    params.append('wstoken', IOMAD_TOKEN);
+    params.append('wsfunction', 'block_iomad_company_admin_assign_courses');
+    params.append('moodlewsrestformat', 'json');
+    courseIds.forEach((id, idx) => {
+      params.append(`courses[${idx}][courseid]`, String(id));
+      params.append(`courses[${idx}][companyid]`, String(schoolId));
+      params.append(`courses[${idx}][departmentid]`, '0');
+      params.append(`courses[${idx}][owned]`, '0');
+      params.append(`courses[${idx}][licensed]`, '1');
+    });
+    const response = await axios.post(IOMAD_BASE_URL, params);
+    return response.data;
+  },
+
+  /**
+   * Create/set licenses for a course in a school
+   */
+  async createCourseLicense(schoolId: number, courseId: number, licenseCount: number): Promise<any> {
+    const params = new URLSearchParams();
+    params.append('wstoken', IOMAD_TOKEN);
+    params.append('wsfunction', 'block_iomad_company_admin_create_licenses');
+    params.append('moodlewsrestformat', 'json');
+    // Required fields
+    params.append('licenses[0][name]', `License for course ${courseId} in school ${schoolId}`);
+    params.append('licenses[0][allocation]', String(licenseCount));
+    params.append('licenses[0][validlength]', '0'); // 0 = unlimited days
+    params.append('licenses[0][startdate]', '0'); // 0 = no start date
+    params.append('licenses[0][expirydate]', '0'); // 0 = no expiry
+    params.append('licenses[0][used]', '0');
+    params.append('licenses[0][companyid]', String(schoolId));
+    params.append('licenses[0][parentid]', '0');
+    params.append('licenses[0][type]', '0'); // 0 = standard
+    params.append('licenses[0][program]', '0');
+    params.append('licenses[0][reference]', '');
+    params.append('licenses[0][instant]', '0');
+    params.append('licenses[0][clearonexpire]', '0');
+    params.append('licenses[0][cutoffdate]', '0');
+    params.append('licenses[0][courses][0][courseid]', String(courseId));
+    const response = await axios.post(IOMAD_BASE_URL, params);
+    return response.data;
+  },
+
+  /**
+   * Get license info for a course in a school
+   */
+  async getCourseLicenseInfo(schoolId: number, courseId: number): Promise<any> {
+    const params = new URLSearchParams();
+    params.append('wstoken', IOMAD_TOKEN);
+    params.append('wsfunction', 'block_iomad_company_admin_get_license_info');
+    params.append('moodlewsrestformat', 'json');
+    params.append('companyid', String(schoolId));
+    params.append('courseid', String(courseId));
+    const response = await axios.post(IOMAD_BASE_URL, params);
+    return response.data;
+  },
+
+  /**
    * Get learning paths (mock implementation)
    */
   async getLearningPaths(): Promise<any[]> {
@@ -301,5 +362,21 @@ export const coursesService = {
       console.error('Error creating teaching location:', error);
       throw new Error('Failed to create teaching location');
     }
+  },
+
+  // Get all courses assigned to a company (school)
+  async getCompanyCourses(companyId: number): Promise<any[]> {
+    const params = new URLSearchParams();
+    params.append('wstoken', IOMAD_TOKEN);
+    params.append('wsfunction', 'block_iomad_company_admin_get_company_courses');
+    params.append('moodlewsrestformat', 'json');
+    params.append('criteria[0][companyid]', String(companyId));
+    params.append('criteria[0][shared]', '0');
+    const response = await axios.post(IOMAD_BASE_URL, params);
+    // The response is an object with a 'companies' array, each with a 'courses' array
+    if (response.data && Array.isArray(response.data.companies) && response.data.companies.length > 0) {
+      return response.data.companies[0].courses || [];
+    }
+    return [];
   }
 };

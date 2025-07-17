@@ -69,7 +69,7 @@ export const LoginPage: React.FC = () => {
         const userRole = user.role;
         const allowedRoles = {
           'super-admin': ['admin'],
-          'school': ['principal', 'manager'],
+          'school': ['principal', 'manager', 'school_admin', 'companymanager', ],
           'trainer': ['trainer'],
           'trainee': ['teacher', 'student'],
           'cluster-lead': ['cluster_lead']
