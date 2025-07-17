@@ -1,5 +1,6 @@
 import axios from 'axios';
 import { User } from '../types';
+import { contextApi } from '../config/axiosConfig';
  
 const IOMAD_BASE_URL = import.meta.env.VITE_IOMAD_URL || 'https://iomad.bylinelms.com/webservice/rest/server.php';
 const IOMAD_TOKEN = import.meta.env.VITE_IOMAD_TOKEN || '4a2ba2d6742afc7d13ce4cf486ba7633';
@@ -679,6 +680,26 @@ export const usersService = {
       return 'teacher';
     } else {
       return 'student';
+    }
+  },
+ 
+  /**
+   * Assign a role to a user at system context using the custom web service
+   */
+  async assignRoleViaWebService({ userid, roleid }: { userid: number, roleid: number }): Promise<any> {
+    try {
+      const params = new URLSearchParams();
+      params.append('wstoken', import.meta.env.VITE_ROLE_ASSIGNER_TOKEN || '');
+      params.append('wsfunction', 'local_roleassigner_assign_role');
+      params.append('moodlewsrestformat', 'json');
+      params.append('userid', String(userid));
+      params.append('roleid', String(roleid));
+      params.append('contextid', '1');
+      const response = await contextApi.post('/webservice/rest/server.php', params);
+      return response.data;
+    } catch (error) {
+      console.error('Error assigning role via web service:', error);
+      throw new Error('Failed to assign role via web service');
     }
   },
  
