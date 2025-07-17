@@ -1,6 +1,5 @@
 import axios from 'axios';
 import { User } from '../types';
-import { contextApi } from '../config/axiosConfig';
  
 const IOMAD_BASE_URL = import.meta.env.VITE_IOMAD_URL || 'https://iomad.bylinelms.com/webservice/rest/server.php';
 const IOMAD_TOKEN = import.meta.env.VITE_IOMAD_TOKEN || '4a2ba2d6742afc7d13ce4cf486ba7633';
@@ -44,13 +43,11 @@ export const usersService = {
           username: user.username,
           firstname: user.firstname,
           lastname: user.lastname,
+          fullname: user.fullname || `${user.firstname} ${user.lastname}`,
           email: user.email,
           lastaccess: user.lastaccess,
-          suspended: user.suspended === '1',
-          role: this.determineUserRole(user),
-          department: user.department,
-          school: user.institution,
-          status: user.suspended === '1' ? 'suspended' : 'active'
+          role: this.determineUserRole(user) as User['role'],
+          department: user.department
         }));
       }
       return [];
@@ -155,13 +152,11 @@ export const usersService = {
           username: user.username,
           firstname: user.firstname,
           lastname: user.lastname,
+          fullname: user.fullname || `${user.firstname} ${user.lastname}`,
           email: user.email,
           lastaccess: user.lastaccess,
-          suspended: user.suspended === '1',
-          role: this.determineUserRole(user),
-          department: user.department,
-          school: user.institution,
-          status: user.suspended === '1' ? 'suspended' : 'active'
+          role: this.determineUserRole(user) as User['role'],
+          department: user.department
         };
       }
       throw new Error('User not found');
@@ -655,11 +650,27 @@ export const usersService = {
   /**
    * Get user roles
    */
-  async getUserRoles(): Promise<string[]> {
+  async getUserRoles(): Promise<{id: number, shortname: string, name: string}[]> {
     try {
-      // In a real implementation, this would call an API endpoint
-      // For now, we'll return mock data
-      return ['student', 'teacher', 'editingteacher', 'manager', 'coursecreator', 'admin'];
+      const response = await api.get('', {
+        params: {
+          wsfunction: 'local_intelliboard_get_roles_list',
+        },
+      });
+      if (response.data) {
+        let rolesArray: any[] = [];
+        if (typeof response.data === 'string') {
+          const parsed = JSON.parse(response.data);
+          rolesArray = Object.values(parsed);
+        } else if (typeof response.data === 'object' && response.data.data) {
+          const parsed = JSON.parse(response.data.data);
+          rolesArray = Object.values(parsed);
+        } else if (typeof response.data === 'object') {
+          rolesArray = Object.values(response.data);
+        }
+        return rolesArray as {id: number, shortname: string, name: string}[];
+      }
+      return [];
     } catch (error) {
       console.error('Error fetching user roles:', error);
       return [];
@@ -689,13 +700,13 @@ export const usersService = {
   async assignRoleViaWebService({ userid, roleid }: { userid: number, roleid: number }): Promise<any> {
     try {
       const params = new URLSearchParams();
-      params.append('wstoken', import.meta.env.VITE_ROLE_ASSIGNER_TOKEN || '');
+      params.append('wstoken', import.meta.env.VITE_ROLE_ASSIGNER_TOKEN || IOMAD_TOKEN || '');
       params.append('wsfunction', 'local_roleassigner_assign_role');
       params.append('moodlewsrestformat', 'json');
       params.append('userid', String(userid));
       params.append('roleid', String(roleid));
       params.append('contextid', '1');
-      const response = await contextApi.post('/webservice/rest/server.php', params);
+      const response = await axios.post(IOMAD_BASE_URL, params);
       return response.data;
     } catch (error) {
       console.error('Error assigning role via web service:', error);
