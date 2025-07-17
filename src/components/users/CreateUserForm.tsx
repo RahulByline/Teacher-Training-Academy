@@ -381,7 +381,7 @@ export const CreateUserForm: React.FC<CreateUserFormProps> = ({ onUserCreated })
         {/* Role & Settings */}
         <div className="bg-gray-50 dark:bg-gray-700 rounded-xl p-6">
           <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
-            Role (App Only)
+          Select Role
           </h3>
           <div>
             <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
