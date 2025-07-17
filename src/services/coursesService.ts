@@ -373,10 +373,44 @@ export const coursesService = {
     params.append('criteria[0][companyid]', String(companyId));
     params.append('criteria[0][shared]', '0');
     const response = await axios.post(IOMAD_BASE_URL, params);
-    // The response is an object with a 'companies' array, each with a 'courses' array
     if (response.data && Array.isArray(response.data.companies) && response.data.companies.length > 0) {
       return response.data.companies[0].courses || [];
     }
+    if (response.data && Array.isArray(response.data.courses)) {
+      return response.data.courses;
+    }
     return [];
+  },
+
+  // Enroll a user in a course
+  async enrollUserInCourse(courseId: string, userId: string, roleId: number = 5): Promise<boolean> {
+    try {
+      const params = new URLSearchParams();
+      params.append('wstoken', IOMAD_TOKEN);
+      params.append('wsfunction', 'enrol_manual_enrol_users');
+      params.append('moodlewsrestformat', 'json');
+      params.append('enrolments[0][courseid]', courseId.toString());
+      params.append('enrolments[0][userid]', userId.toString());
+      params.append('enrolments[0][roleid]', roleId.toString());
+      const response = await axios.post(IOMAD_BASE_URL, params, {
+        headers: { 'Content-Type': 'application/x-www-form-urlencoded' }
+      });
+      return response.data && !response.data.exception;
+    } catch (error) {
+      console.error('Error enrolling user in course:', error);
+      return false;
+    }
+  },
+
+  // Fetch license info for a course in a company
+  async getCourseLicenseInfo(companyId: number, courseId: number): Promise<any> {
+    const params = new URLSearchParams();
+    params.append('wstoken', IOMAD_TOKEN);
+    params.append('wsfunction', 'block_iomad_company_admin_get_license_info');
+    params.append('moodlewsrestformat', 'json');
+    params.append('companyid', String(companyId));
+    params.append('courseid', String(courseId));
+    const response = await axios.post(IOMAD_BASE_URL, params);
+    return response.data;
   }
 };
