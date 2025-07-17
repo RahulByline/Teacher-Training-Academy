@@ -46,11 +46,10 @@ export const usersService = {
           lastname: user.lastname,
           email: user.email,
           lastaccess: user.lastaccess,
-          suspended: user.suspended === '1',
           role: this.determineUserRole(user),
           department: user.department,
-          school: user.institution,
-          status: user.suspended === '1' ? 'suspended' : 'active'
+          company: user.institution,
+          fullname: user.fullname || `${user.firstname} ${user.lastname}`,
         }));
       }
       return [];
@@ -157,11 +156,10 @@ export const usersService = {
           lastname: user.lastname,
           email: user.email,
           lastaccess: user.lastaccess,
-          suspended: user.suspended === '1',
           role: this.determineUserRole(user),
           department: user.department,
-          school: user.institution,
-          status: user.suspended === '1' ? 'suspended' : 'active'
+          company: user.institution,
+          fullname: user.fullname || `${user.firstname} ${user.lastname}`,
         };
       }
       throw new Error('User not found');
@@ -669,17 +667,21 @@ export const usersService = {
   /**
    * Helper method to determine user role from user data
    */
-  determineUserRole(userData: any): string {
+  determineUserRole(userData: any): import('../types').UserRole | undefined {
     // In a real implementation, this would use role data from the API
     // For now, we'll use a simple heuristic
     if (userData.username?.includes('admin')) {
       return 'admin';
-    } else if (userData.username?.includes('manager')) {
-      return 'manager';
     } else if (userData.username?.includes('teacher')) {
       return 'teacher';
+    } else if (userData.username?.includes('trainer')) {
+      return 'trainer';
+    } else if (userData.username?.includes('principal')) {
+      return 'principal';
+    } else if (userData.username?.includes('cluster_lead')) {
+      return 'cluster_lead';
     } else {
-      return 'student';
+      return undefined;
     }
   },
  
@@ -711,5 +713,111 @@ export const usersService = {
     // This may require enrol_manual_enrol_users for courses, or a custom API for company roles
     console.log('Assigning role', role, 'to user', userid, 'in company', companyid);
     return true;
-  }
+  },
+ 
+  /**
+   * Fetch monthly calendar events for a trainer (user)
+   */
+  async getTrainerMonthlyCalendar({ userId, year, month }: { userId: string, year: number, month: number }) {
+    const params = new URLSearchParams();
+    params.append('wstoken', '4a2ba2d6742afc7d13ce4cf486ba7633');
+    params.append('wsfunction', 'core_calendar_get_calendar_monthly_view');
+    params.append('moodlewsrestformat', 'json');
+    params.append('year', String(year));
+    params.append('month', String(month));
+    params.append('courseid', '1');
+    params.append('includenavigation', '1');
+    // Optionally, add userId as a custom param if your Moodle setup supports it
+    // params.append('userid', userId);
+    try {
+      const response = await fetch('https://iomad.bylinelms.com/webservice/rest/server.php', {
+        method: 'POST',
+        body: params,
+      });
+      const data = await response.json();
+      // Flatten all events from all days in all weeks
+      const events: any[] = [];
+      if (data.weeks && Array.isArray(data.weeks)) {
+        data.weeks.forEach((week: any) => {
+          if (week.days && Array.isArray(week.days)) {
+            week.days.forEach((day: any) => {
+              if (day.events && Array.isArray(day.events)) {
+                day.events.forEach((event: any) => {
+                  events.push({
+                    id: event.id,
+                    name: event.name,
+                    description: event.description,
+                    location: event.location,
+                    timestart: event.timestart,
+                    timeduration: event.timeduration,
+                    eventtype: event.eventtype,
+                    timesort: event.timesort,
+                    visible: event.visible,
+                    formattedtime: event.formattedtime,
+                    formattedlocation: event.formattedlocation,
+                    course: event.course,
+                    category: event.category,
+                    icon: event.icon,
+                    url: event.url,
+                  });
+                });
+              }
+            });
+          }
+        });
+      }
+      return events;
+    } catch (error) {
+      console.error('Error fetching trainer monthly calendar:', error);
+      return [];
+    }
+  },
+ 
+  /**
+   * Fetch all activities and events for a trainer for the current week
+   */
+  async getTrainerWeekActivitiesAndEvents({ userId, year, month, weekStart, weekEnd }: { userId: string, year: number, month: number, weekStart: number, weekEnd: number }) {
+    // 1. Fetch all calendar events for the month
+    const calendarEvents = await this.getTrainerMonthlyCalendar({ userId, year, month });
+    // 2. Fetch all action activities for the week
+    const params = new URLSearchParams();
+    params.append('wstoken', '4a2ba2d6742afc7d13ce4cf486ba7633');
+    params.append('wsfunction', 'core_calendar_get_action_events_by_timesort');
+    params.append('moodlewsrestformat', 'json');
+    params.append('timesortfrom', String(weekStart));
+    params.append('timesortto', String(weekEnd));
+    params.append('limitnum', '100');
+    params.append('userid', userId);
+    let activities = [];
+    try {
+      const response = await fetch('https://iomad.bylinelms.com/webservice/rest/server.php', {
+        method: 'POST',
+        body: params,
+      });
+      const data = await response.json();
+      activities = (data.events || []).map((event: any) => ({
+        id: event.id,
+        name: event.name,
+        description: event.description,
+        location: event.location,
+        timestart: event.timestart,
+        timeduration: event.timeduration,
+        eventtype: event.eventtype,
+        timesort: event.timesort,
+        visible: event.visible,
+        formattedtime: event.formattedtime,
+        formattedlocation: event.formattedlocation,
+        type: 'activity',
+      }));
+    } catch (error) {
+      console.error('Error fetching trainer week activities:', error);
+    }
+    // 3. Filter calendar events for the week
+    const weekEvents = calendarEvents.filter((event: any) => event.timestart >= weekStart && event.timestart < weekEnd)
+      .map((event: any) => ({ ...event, type: 'event' }));
+    // 4. Merge and sort by timestart
+    const all = [...weekEvents, ...activities].sort((a, b) => a.timestart - b.timestart);
+    console.log('Merged week activities and events:', all);
+    return all;
+  },
 };

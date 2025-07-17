@@ -1,14 +1,18 @@
 import React, { useState, useMemo, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import {
-  LayoutDashboard, CalendarDays, TrendingUp, Users, Star, BarChart3, MessageSquare, Award, Settings, User, LogOut, Bell, ChevronDown, CheckCircle, Clock, XCircle, Circle, ArrowUpRight, BadgeCheck, Trophy, BookOpen, Folder
+  LayoutDashboard, CalendarDays, TrendingUp, Users, Star, BarChart3, MessageSquare, Award, Settings, User, LogOut, Bell, ChevronDown, CheckCircle, Clock, XCircle, Circle, ArrowUpRight, BadgeCheck, Trophy, BookOpen, Folder, MapPin
 } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { useAuth } from '../../context/AuthContext';
 import { apiService } from '../../services/api';
 import { Course } from '../../types';
 import { Outlet, useNavigate, useLocation } from 'react-router-dom';
-import TrainerDashboardDetails from './TrainerDashboardDetails';
+import { usersService } from '../../services/usersService';
+import { Calendar as BigCalendar, dateFnsLocalizer } from 'react-big-calendar';
+import { format, parse, startOfWeek, getDay, addDays, isSameDay } from 'date-fns';
+import { enUS } from 'date-fns/locale/en-US';
+import 'react-big-calendar/lib/css/react-big-calendar.css';
 
 // --- Interfaces ---
 interface Stat {
@@ -54,6 +58,19 @@ interface Badge {
   icon: React.ElementType;
   date?: string;
   pending?: boolean;
+  description?: string;
+}
+
+// Add type for event
+type ExtendedScheduleEventType = 'session' | 'activity' | 'assignment' | 'overdue' | 'quiz' | 'meeting' | 'deadline';
+interface ScheduleEvent {
+  dayKey: string;
+  time: string;
+  title: string;
+  color: string;
+  location: string;
+  enrolled: number;
+  type: ExtendedScheduleEventType;
   description?: string;
 }
 
@@ -133,6 +150,14 @@ const mockAchievements = [
   { label: 'Impact Maker', icon: Trophy },
 ];
 
+const localizer = dateFnsLocalizer({
+  format,
+  parse,
+  startOfWeek,
+  getDay,
+  locales: { 'en-US': enUS },
+});
+
 // --- Main Dashboard ---
 export const TrainerDashboard: React.FC = () => {
   // ALL HOOKS AT THE TOP
@@ -143,7 +168,13 @@ export const TrainerDashboard: React.FC = () => {
   const [error, setError] = useState<string | null>(null);
   const navigate = useNavigate();
   const location = useLocation();
-  const [profileDropdownOpen, setProfileDropdownOpen] = useState(false);
+  const [calendarEvents, setCalendarEvents] = useState<any[]>([]);
+  const [calendarLoading, setCalendarLoading] = useState(false);
+  const [weekItems, setWeekItems] = useState<any[]>([]);
+  const [weekLoading, setWeekLoading] = useState(false);
+  const [monthItems, setMonthItems] = useState<any[]>([]);
+  const [monthLoading, setMonthLoading] = useState(false);
+  const [calendarView, setCalendarView] = useState<'week' | 'month'>('week');
 
   useEffect(() => {
     if (user && user.id) {
@@ -155,6 +186,98 @@ export const TrainerDashboard: React.FC = () => {
         .finally(() => setLoading(false));
     }
   }, [user && user.id]);
+
+  useEffect(() => {
+    async function fetchCalendar() {
+      if (!user || !user.id) return;
+      setCalendarLoading(true);
+      const now = new Date();
+      const year = now.getFullYear();
+      const month = now.getMonth() + 1; // JS months are 0-based, API expects 1-based
+      try {
+        const events = await usersService.getTrainerMonthlyCalendar({ userId: user.id, year, month });
+        // Map to react-big-calendar event format
+        const mapped = events.map((event: any) => ({
+          id: event.id,
+          title: event.name,
+          start: new Date(event.timestart * 1000),
+          end: event.timeduration ? new Date((event.timestart + event.timeduration) * 1000) : new Date(event.timestart * 1000),
+          location: event.location,
+          description: event.description,
+        }));
+        setCalendarEvents(mapped);
+      } catch (e) {
+        setCalendarEvents([]);
+      } finally {
+        setCalendarLoading(false);
+      }
+    }
+    fetchCalendar();
+  }, [user]);
+
+  useEffect(() => {
+    async function fetchWeekItems() {
+      if (!user || !user.id) return;
+      setWeekLoading(true);
+      const now = new Date();
+      const year = now.getFullYear();
+      const month = now.getMonth() + 1;
+      const weekStartDate = startOfWeek(now, { weekStartsOn: 1 });
+      const weekStart = Math.floor(weekStartDate.getTime() / 1000);
+      const weekEnd = Math.floor(addDays(weekStartDate, 7).getTime() / 1000);
+      try {
+        const items = await usersService.getTrainerWeekActivitiesAndEvents({ userId: user.id, year, month, weekStart, weekEnd });
+        setWeekItems(items);
+      } catch (e) {
+        setWeekItems([]);
+      } finally {
+        setWeekLoading(false);
+      }
+    }
+    fetchWeekItems();
+  }, [user]);
+
+  useEffect(() => {
+    async function fetchMonthItems() {
+      if (!user || !user.id) return;
+      setMonthLoading(true);
+      const now = new Date();
+      const year = now.getFullYear();
+      const month = now.getMonth() + 1;
+      const monthStartDate = new Date(year, now.getMonth(), 1);
+      const monthEndDate = new Date(year, now.getMonth() + 1, 1);
+      const monthStart = Math.floor(monthStartDate.getTime() / 1000);
+      const monthEnd = Math.floor(monthEndDate.getTime() / 1000);
+      try {
+        const items = await usersService.getTrainerWeekActivitiesAndEvents({ userId: user.id, year, month, weekStart: monthStart, weekEnd: monthEnd });
+        setMonthItems(items);
+      } catch (e) {
+        setMonthItems([]);
+      } finally {
+        setMonthLoading(false);
+      }
+    }
+    fetchMonthItems();
+  }, [user]);
+
+  // Group items by day
+  const weekStartDate = startOfWeek(new Date(), { weekStartsOn: 1 });
+  const weekDays = Array.from({ length: 7 }, (_, i) => addDays(weekStartDate, i));
+  const itemsByDay: { [key: string]: any[] } = {};
+  weekItems.forEach(item => {
+    const dayKey = format(new Date(item.timestart * 1000), 'yyyy-MM-dd');
+    if (itemsByDay[dayKey]) itemsByDay[dayKey].push(item);
+  });
+
+  // Group items by day for the month
+  const monthStartDate = new Date(new Date().getFullYear(), new Date().getMonth(), 1);
+  const daysInMonth = new Date(monthStartDate.getFullYear(), monthStartDate.getMonth() + 1, 0).getDate();
+  const monthDays = Array.from({ length: daysInMonth }, (_, i) => addDays(monthStartDate, i));
+  const itemsByMonthDay: { [key: string]: any[] } = {};
+  monthItems.forEach(item => {
+    const dayKey = format(new Date(item.timestart * 1000), 'yyyy-MM-dd');
+    if (itemsByMonthDay[dayKey]) itemsByMonthDay[dayKey].push(item);
+  });
 
   // --- Derived Data from Real Courses ---
   const activeSessions = useMemo(() => courses.filter(c => typeof c.progress === 'number' && c.progress < 100).length, [courses]);
@@ -271,12 +394,6 @@ export const TrainerDashboard: React.FC = () => {
     navigate(route);
   };
 
-  // Add a handler for logout (replace with your actual logout logic)
-  const handleLogout = () => {
-    // TODO: Replace with your logout logic
-    window.location.href = '/login';
-  };
-
   // --- Main Content ---
   const isDashboardRoot = location.pathname === '/dashboard' || location.pathname === '/dashboard/';
   return (
@@ -302,7 +419,12 @@ export const TrainerDashboard: React.FC = () => {
           })}
         </nav>
         <div className="flex flex-col items-center gap-2 mt-8">
-          <img src={user.profileimageurl || '/public/logo-BYbhmxQK-removebg-preview.png'} alt={user.fullname || 'User'} className="w-12 h-12 rounded-full border-2 border-indigo-400 object-cover" />
+          <img
+            src={user.profileimageurl || '/public/logo-BYbhmxQK-removebg-preview.png'}
+            alt={user.fullname || 'User'}
+            className="w-12 h-12 rounded-full border-2 border-indigo-400 object-cover cursor-pointer"
+            onClick={() => navigate(`/dashboard/settings/${user.id}`)}
+          />
           <span className="hidden lg:block font-semibold">{user.fullname || user.firstname || user.username || 'Trainer'}</span>
           <button className="flex items-center gap-2 mt-2 px-3 py-2 bg-gray-700 hover:bg-gray-600 rounded-lg text-sm text-gray-200"><LogOut className="w-4 h-4" /> {t('Logout')}</button>
         </div>
@@ -316,121 +438,336 @@ export const TrainerDashboard: React.FC = () => {
             <span className="text-gray-500 text-sm hidden md:inline">{today}</span>
             <button className="relative p-2 rounded-full hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-indigo-400"><Bell className="w-6 h-6 text-gray-500" /></button>
             <div className="relative">
-              <button
-                className="flex items-center gap-2 p-1 rounded-full hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-indigo-400"
-                onClick={() => setProfileDropdownOpen((open) => !open)}
-              >
+              <button className="flex items-center gap-2 p-1 rounded-full hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-indigo-400">
                 <img src={user.profileimageurl || '/public/logo-BYbhmxQK-removebg-preview.png'} alt={user.fullname || 'User'} className="w-8 h-8 rounded-full object-cover" />
                 <ChevronDown className="w-4 h-4 text-gray-500" />
               </button>
-              {/* Dropdown */}
-              {profileDropdownOpen && (
-                <div className="absolute right-0 mt-2 w-48 bg-white rounded-xl shadow-lg z-50 border border-gray-100">
-                  <button
-                    className="w-full text-left px-4 py-3 hover:bg-gray-50 text-gray-800 rounded-t-xl"
-                    onClick={() => { navigate('/dashboard/account-settings'); setProfileDropdownOpen(false); }}
-                  >
-                    Account Settings
-                  </button>
-                  <button
-                    className="w-full text-left px-4 py-3 hover:bg-gray-50 text-red-600 rounded-b-xl"
-                    onClick={handleLogout}
-                  >
-                    Logout
-                  </button>
-                </div>
-              )}
+              {/* Dropdown could go here */}
             </div>
           </div>
         </header>
         {isDashboardRoot ? (
-          // Redesigned Dashboard Section (matches provided screenshot)
-          <>
-            <section className="px-4 py-6">
-              <div className="mb-6">
-                <h2 className="text-2xl font-bold text-gray-900 mb-1">Trainer Dashboard</h2>
-                <div className="text-gray-500 mb-6">Welcome back, {user.firstname || user.fullname || user.username || 'Trainer'}! Here's an overview of your training activities</div>
-                {/* Stat Cards */}
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
-                  {statsToShow.map((stat, i) => (
-                    <div key={stat.label} className="bg-white rounded-2xl shadow p-6 flex flex-col min-w-[180px]">
-                      <div className="flex items-center justify-between mb-2">
-                        <span className="text-gray-500 font-medium">{stat.label}</span>
-                        <span className={`p-2 rounded-full ${stat.color}`}>{React.createElement(stat.icon, { className: 'w-5 h-5' })}</span>
-                      </div>
-                      <div className="text-2xl font-bold mb-1">{stat.value}</div>
-                      {stat.change && (
-                        <div className="flex items-center text-xs text-green-600">
-                          <ArrowUpRight className="w-4 h-4 mr-1" />{stat.change} <span className="ml-1 text-gray-400">vs last month</span>
+          // Overview Section
+          <section className="px-4 py-6">
+            <div className="mb-6">
+              <h2 className="text-xl font-bold text-gray-900 mb-2">{t('Overview')} <span className="text-gray-400 font-normal">(May 2025)</span></h2>
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                {statsToShow.map((stat, i) => <StatCard key={stat.label} stat={stat} />)}
+              </div>
+            </div>
+            {/* Main Grid */}
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+              {/* Left Column */}
+              <div className="space-y-6 lg:col-span-2">
+                {/* This Week's Schedule */}
+                <div className="bg-white rounded-2xl shadow-md p-6">
+                  <h3 className="text-lg font-bold mb-4 text-gray-900">{t("Your Schedule")}</h3>
+                  {loading ? (
+                    <div className="text-center text-gray-500 py-8">Loading...</div>
+                  ) : error ? (
+                    <div className="text-center text-red-500 py-8">{error}</div>
+                  ) : (
+                    <div>
+                      <div className="flex justify-between mb-4">
+                        <div className="flex space-x-2">
+                          <button
+                            className={`px-3 py-1 rounded-md text-sm font-medium ${calendarView === 'week' ? 'bg-indigo-500 text-white' : 'bg-gray-200 text-gray-700'}`}
+                            onClick={() => setCalendarView('week')}
+                          >
+                            Week
+                          </button>
+                          <button
+                            className={`px-3 py-1 rounded-md text-sm font-medium ${calendarView === 'month' ? 'bg-indigo-500 text-white' : 'bg-gray-200 text-gray-700'}`}
+                            onClick={() => setCalendarView('month')}
+                          >
+                            Month
+                          </button>
                         </div>
+                        <div>
+                          <button className="px-3 py-1 rounded-md text-sm font-medium bg-gray-200 text-gray-700">
+                            Prev
+                          </button>
+                          <button className="px-3 py-1 rounded-md text-sm font-medium bg-gray-200 text-gray-700 ml-2">
+                            Next
+                          </button>
+                        </div>
+                      </div>
+                      {calendarView === 'week' ? (
+                        <div className="flex flex-row justify-between gap-4">
+                          {(() => {
+                            const weekStart = new Date();
+                            weekStart.setDate(weekStart.getDate() - ((weekStart.getDay() + 6) % 7)); // Monday
+                            const weekDays: Date[] = Array.from({ length: 6 }, (_, i) => {
+                              const d = new Date(weekStart);
+                              d.setDate(weekStart.getDate() + i);
+                              return d;
+                            });
+                            // Group weekItems by day
+                            const eventsByDay: { [key: string]: typeof weekItems } = {};
+                            weekDays.forEach(day => {
+                              const key = day.toLocaleDateString('en-CA');
+                              eventsByDay[key] = [];
+                            });
+                            weekItems.forEach((item: any) => {
+                              const key = new Date(item.timestart * 1000).toLocaleDateString('en-CA');
+                              if (eventsByDay[key]) eventsByDay[key].push(item);
+                            });
+                            // Pastel color palette for event types
+                            const typeColor: { [key: string]: string } = {
+                              session: 'bg-blue-50 text-blue-700 border border-blue-200',
+                              activity: 'bg-[#e6f9ed] text-green-700 border border-[#bbf7d0]',
+                              overdue: 'bg-yellow-50 text-yellow-700 border border-yellow-200',
+                              assignment: 'bg-purple-50 text-purple-700 border border-purple-200',
+                              quiz: 'bg-orange-50 text-orange-700 border border-orange-200',
+                              meeting: 'bg-teal-50 text-teal-700 border border-teal-200',
+                              deadline: 'bg-red-50 text-red-700 border border-red-200',
+                              default: 'bg-gray-50 text-gray-700 border border-gray-200',
+                            };
+                            const todayKey = new Date().toLocaleDateString('en-CA');
+                            return weekDays.map((day, idx) => {
+                              const key = day.toLocaleDateString('en-CA');
+                              const label = day.toLocaleDateString('en-US', { weekday: 'short' }).toUpperCase();
+                              const dateNum = day.getDate();
+                              const events = eventsByDay[key] || [];
+                              const isToday = key === todayKey;
+                              const hasEvents = events.length > 0;
+                              return (
+                                <div
+                                  key={key}
+                                  className={`flex-1 min-w-[140px] px-2 border-r last:border-r-0 border-gray-100 transition-all duration-150
+                                    ${isToday ? 'bg-blue-100/60 border-blue-400 shadow-md relative' : hasEvents ? 'bg-gray-50/60' : 'bg-white'}
+                                    rounded-xl pb-2`}
+                                  style={isToday ? { boxShadow: '0 0 0 2px #3b82f6, 0 2px 8px 0 rgba(59,130,246,0.08)' } : {}}
+                                >
+                                  <div className={`text-center font-semibold mb-2 tracking-wide ${isToday ? 'text-blue-700' : 'text-gray-600'}`}>{label}
+                                    {isToday && <span className="ml-2 inline-block px-2 py-0.5 rounded-full bg-blue-500 text-white text-xs align-middle">Today</span>}
+                                  </div>
+                                  <div className={`text-center text-xs mb-4 font-medium ${isToday ? 'text-blue-400' : 'text-gray-300'}`}>{dateNum}</div>
+                                  <div className="flex flex-col gap-3">
+                                    {events.length === 0 && (
+                                      <div className="h-14 flex items-center justify-center text-xs text-gray-200 border border-dashed rounded-xl bg-gray-50">No events</div>
+                                    )}
+                                    {events.map((event: any, eIndex: number) => {
+                                      let type = 'default';
+                                      if (event.eventtype === 'overdue') type = 'overdue';
+                                      else if (event.eventtype === 'assignment') type = 'assignment';
+                                      else if (event.eventtype === 'quiz') type = 'quiz';
+                                      else if (event.eventtype === 'meeting') type = 'meeting';
+                                      else if (event.eventtype === 'deadline') type = 'deadline';
+                                      else if (event.eventtype === 'activity') type = 'activity';
+                                      else if (event.eventtype === 'session') type = 'session';
+                                      return (
+                                        <div
+                                          key={eIndex}
+                                          className={`rounded-xl px-4 py-3 text-xs font-medium shadow border-2 ${typeColor[type] || typeColor.default} flex flex-col items-start transition-all duration-150 hover:shadow-lg hover:bg-white/90`}
+                                          style={{ minHeight: '60px', borderWidth: 2, borderStyle: 'solid' }}
+                                        >
+                                          <span className="font-semibold text-sm mb-1 text-gray-800">{event.name || event.title}</span>
+                                          <span className="text-xs text-gray-500 mb-1">
+                                            {new Date(event.timestart * 1000).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                                            {event.timeduration ? ' - ' + new Date((event.timestart + event.timeduration) * 1000).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : ''}
+                                          </span>
+                                          {event.location && <span className="text-[11px] text-gray-400 mt-1">{event.location}</span>}
+                                        </div>
+                                      );
+                                    })}
+                                  </div>
+                                </div>
+                              );
+                            });
+                          })()}
+                        </div>
+                      ) : (
+                        <BigCalendar
+                          localizer={localizer}
+                          events={calendarEvents}
+                          startAccessor="start"
+                          endAccessor="end"
+                          style={{ height: 500 }}
+                          views={['month']}
+                          view="month"
+                          onView={() => setCalendarView('month')}
+                          popup
+                          tooltipAccessor="description"
+                          components={{
+                            event: ({ event }) => (
+                              <span>
+                                <b>{event.title}</b>
+                                {event.location && <span className="block text-xs text-gray-500">{event.location}</span>}
+                              </span>
+                            ),
+                          }}
+                          dayPropGetter={(date) => {
+                            const today = new Date();
+                            const isToday = date.toDateString() === today.toDateString();
+                            // Check if this day has any events
+                            const hasEvents = calendarEvents.some(ev => {
+                              const evDate = new Date(ev.start);
+                              return evDate.getFullYear() === date.getFullYear() && evDate.getMonth() === date.getMonth() && evDate.getDate() === date.getDate();
+                            });
+                            if (isToday) {
+                              return {
+                                className: 'bg-blue-100/60 border-blue-400 shadow-md',
+                                style: {
+                                  border: '2px solid #3b82f6',
+                                  borderRadius: 8,
+                                  boxShadow: '0 0 0 2px #3b82f6, 0 2px 8px 0 rgba(59,130,246,0.08)'
+                                }
+                              };
+                            } else if (hasEvents) {
+                              return {
+                                className: 'bg-gray-50/60',
+                                style: { borderRadius: 8 }
+                              };
+                            }
+                            return { style: { background: 'white', borderRadius: 8 } };
+                          }}
+                          eventPropGetter={(event) => {
+                            let type = 'default';
+                            if (event.eventtype === 'overdue') type = 'overdue';
+                            else if (event.eventtype === 'assignment') type = 'assignment';
+                            else if (event.eventtype === 'quiz') type = 'quiz';
+                            else if (event.eventtype === 'meeting') type = 'meeting';
+                            else if (event.eventtype === 'deadline') type = 'deadline';
+                            else if (event.eventtype === 'activity') type = 'activity';
+                            else if (event.eventtype === 'session') type = 'session';
+                            const typeColor: { [key: string]: string } = {
+                              session: 'background: #dbeafe; color: #1e40af; border: 2px solid #bfdbfe;',
+                              activity: 'background: #e6f9ed; color: #15803d; border: 2px solid #bbf7d0;',
+                              overdue: 'background: #fef9c3; color: #a16207; border: 2px solid #fde68a;',
+                              assignment: 'background: #ede9fe; color: #6d28d9; border: 2px solid #ddd6fe;',
+                              quiz: 'background: #ffedd5; color: #c2410c; border: 2px solid #fdba74;',
+                              meeting: 'background: #ccfbf1; color: #134e4a; border: 2px solid #99f6e4;',
+                              deadline: 'background: #fee2e2; color: #991b1b; border: 2px solid #fecaca;',
+                              default: 'background: #f3f4f6; color: #374151; border: 2px solid #e5e7eb;',
+                            };
+                            return {
+                              style: {
+                                ...Object.fromEntries((typeColor[type] || typeColor['default']).split(';').filter(Boolean).map((s: string) => {
+                                  const [k, v] = s.split(':');
+                                  return [k.trim(), v.trim()];
+                                })),
+                                borderRadius: 8,
+                                fontWeight: 500,
+                                boxShadow: '0 2px 8px 0 rgba(59,130,246,0.08)',
+                                transition: 'box-shadow 0.15s',
+                                cursor: 'pointer',
+                              }
+                            };
+                          }}
+                        />
                       )}
                     </div>
-                  ))}
+                  )}
+                </div>
+                {/* Upcoming Sessions */}
+                <div className="bg-white rounded-2xl shadow-md p-6">
+                  <h3 className="text-lg font-bold mb-4 text-gray-900">{t('Upcoming Sessions')}</h3>
+                  <div className="overflow-x-auto">
+                    <table className="min-w-full text-sm">
+                      <thead>
+                        <tr className="text-gray-500 text-left">
+                          <th className="py-2 pr-4">{t('Date')}</th>
+                          <th className="py-2 pr-4">{t('Session')}</th>
+                          <th className="py-2 pr-4">{t('Time')}</th>
+                          <th className="py-2 pr-4">{t('Location')}</th>
+                          <th className="py-2">{t('Enrolled')}</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {upcomingSessionsToShow.map((s, i) => (
+                          <tr key={s.title} className="border-b last:border-0">
+                            <td className="py-2 pr-4 font-medium text-gray-800">{s.date}</td>
+                            <td className="py-2 pr-4">{s.title}</td>
+                            <td className="py-2 pr-4">{s.time}</td>
+                            <td className="py-2 pr-4">{s.location}</td>
+                            <td className="py-2">{s.enrolled}</td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+                {/* Trainee Progress */}
+                <div className="bg-white rounded-2xl shadow-md p-6">
+                  <h3 className="text-lg font-bold mb-4 text-gray-900">{t('Trainee Progress')}</h3>
+                  <div className="space-y-3">
+                    {progressBarsToShow.map((bar) => <ProgressBar key={bar.label} {...bar} />)}
+                  </div>
+                </div>
+                {/* Feedback Section */}
+                <div className="bg-white rounded-2xl shadow-md p-6">
+                  <h3 className="text-lg font-bold mb-4 text-gray-900">{t('Feedback')}</h3>
+                  <ul className="divide-y divide-gray-100">
+                    {mockFeedback.map((fb, i) => (
+                      <li key={fb.name} className="py-3 flex flex-col md:flex-row md:items-center md:gap-4">
+                        <img src={fb.avatar} alt={fb.name} className="w-10 h-10 rounded-full object-cover" />
+                        <div>
+                          <span className="font-semibold text-gray-800">{fb.name}</span>
+                          <span className="flex items-center gap-1 text-yellow-500 font-medium ml-2"><Star className="w-4 h-4" />{fb.rating.toFixed(1)}</span>
+                          <span className="text-gray-500 text-sm ml-2">{fb.text}</span>
+                          <span className="text-gray-400 text-xs ml-auto">{fb.date}</span>
+                        </div>
+                      </li>
+                    ))}
+                  </ul>
+                  <div className="mt-4 text-sm text-gray-700">Overall Rating: <span className="font-bold">4.8</span> from 124 reviews</div>
                 </div>
               </div>
-              {/* Main Grid: Schedule & Upcoming Sessions */}
-              <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                {/* Schedule Card */}
-                <div className="lg:col-span-2">
-                  <div className="bg-white rounded-2xl shadow p-6 mb-6 h-full">
-                    <div className="flex items-center justify-between mb-4">
-                      <h3 className="font-bold text-lg">Your Schedule</h3>
-                      <div className="flex items-center gap-2">
-                        <button className="px-3 py-1 rounded bg-gray-100 text-gray-700 text-sm">Week</button>
-                        <button className="px-3 py-1 rounded text-gray-400 text-sm">Month</button>
-                        <button className="px-3 py-1 rounded text-gray-400 text-sm">List</button>
-                        <span className="ml-4 text-gray-500 text-sm">Today</span>
+              {/* Right Column */}
+              <div className="space-y-6">
+                {/* Certification Roadmap */}
+                <div className="bg-white rounded-2xl shadow-md p-6">
+                  <h3 className="text-lg font-bold mb-4 text-gray-900">{t('Certification Roadmap')}</h3>
+                  <ol className="relative border-l-2 border-green-200 ml-4">
+                    {mockRoadmap.map((c, i) => (
+                      <li key={c.label} className="mb-6 ml-6 flex items-center gap-2">
+                        <span className={`absolute -left-3 flex items-center justify-center w-6 h-6 rounded-full ring-4 ring-white ${c.status === 'done' ? 'bg-green-500' : c.status === 'inprogress' ? 'bg-yellow-400' : 'bg-gray-300'}`}>{c.status === 'done' ? <CheckCircle className="w-4 h-4 text-white" /> : c.status === 'inprogress' ? <Clock className="w-4 h-4 text-white" /> : <Circle className="w-4 h-4 text-white" />}</span>
+                        <span className="font-medium text-gray-800">{c.label}</span>
+                        <span className="text-xs text-gray-500">{c.desc}</span>
+                        {c.status === 'inprogress' && <span className="ml-2 text-xs text-yellow-600">{c.percent}% done</span>}
+                        {c.status === 'planned' && <span className="ml-2 text-xs text-gray-400">Planned</span>}
+                        <span className="text-xs text-gray-500">{c.date}</span>
+                      </li>
+                    ))}
+                  </ol>
+                </div>
+                {/* Competency Scores */}
+                <div className="bg-white rounded-2xl shadow-md p-6">
+                  <h3 className="text-lg font-bold mb-4 text-gray-900">{t('Competency Scores')}</h3>
+                  <div className="space-y-3">
+                    {mockCompetencies.map((c, i) => (
+                      <div key={c.label} className="mb-2">
+                        <div className="flex justify-between mb-1">
+                          <span className="text-sm font-medium text-gray-700">{c.label}</span>
+                          <span className="text-sm font-medium text-gray-700">{c.value}%</span>
+                        </div>
+                        <div className="w-full bg-gray-200 rounded-full h-3">
+                          <div className={`h-3 rounded-full ${c.value >= 90 ? 'bg-green-500' : c.value >= 80 ? 'bg-yellow-400' : 'bg-red-400'}`} style={{ width: `${c.value}%` }}></div>
+                        </div>
                       </div>
-                    </div>
-                    {/* Week Calendar */}
-                    <div className="overflow-x-auto">
-                      <table className="min-w-full text-sm">
-                        <thead>
-                          <tr className="text-gray-500">
-                            {mockSchedule.map((day) => (
-                              <th key={day.day} className="py-2 px-2 font-medium text-center">{day.day}<br /><span className="font-normal">{day.date}</span></th>
-                            ))}
-                          </tr>
-                        </thead>
-                        <tbody>
-                          <tr>
-                            {mockSchedule.map((day) => (
-                              <td key={day.day} className="align-top px-2 py-2 min-w-[120px]">
-                                {day.events.map((event, idx) => (
-                                  <div key={idx} className={`mb-2 p-2 rounded-lg text-xs font-medium ${event.color}`}>{event.time}<br />{event.title}</div>
-                                ))}
-                              </td>
-                            ))}
-                          </tr>
-                        </tbody>
-                      </table>
-                    </div>
+                    ))}
                   </div>
+                  {/* No real competency data available from courses; leave as a placeholder for future integration */}
+                  {/* {lowCompetency && (
+                    <div className="mt-4 bg-indigo-50 border-l-4 border-indigo-400 p-3 rounded-xl text-indigo-700 text-sm">
+                      {t('Suggest')} <b>Education Research Methods</b> {t('course')} (June 5) {t('for scores <70%')}
+                    </div>
+                  )} */}
                 </div>
-                {/* Upcoming Sessions Card */}
-                <div>
-                  <div className="bg-white rounded-2xl shadow p-6 mb-6">
-                    <h3 className="font-bold text-lg mb-4">Upcoming Sessions</h3>
-                    <ul>
-                      {upcomingSessionsToShow.map((s, i) => (
-                        <li key={s.title + i} className="mb-4 border-l-4 pl-3" style={{ borderColor: ['#3b82f6', '#ef4444', '#10b981', '#f59e42'][i % 4] }}>
-                          <div className="font-semibold text-gray-900">{s.title}</div>
-                          <div className="flex items-center text-xs text-gray-500 gap-2 mb-1">
-                            <CalendarDays className="w-4 h-4" /> {s.date} &bull; {s.time} &bull; {s.location}
-                          </div>
-                          <div className="text-xs text-gray-500 mb-1">{s.enrolled} trainees enrolled</div>
-                          <a href="#" className="text-indigo-600 text-xs font-medium hover:underline">View details</a>
-                        </li>
-                      ))}
-                    </ul>
-                    <div className="mt-2 text-indigo-700 text-sm font-medium cursor-pointer hover:underline">View full schedule &rarr;</div>
+                {/* Achievements */}
+                <div className="bg-white rounded-2xl shadow-md p-6">
+                  <h3 className="text-lg font-bold mb-4 text-gray-900">{t('Achievements')}</h3>
+                  <div className="grid grid-cols-2 gap-4">
+                    {mockAchievements.map((badge, i) => (
+                      <BadgeCard key={badge.label} {...badge} />
+                    ))}
                   </div>
+                  <div className="mt-4 text-sm text-gray-700">Next: <b>Curriculum Design Specialist</b> (pending 2 courses)</div>
                 </div>
               </div>
-            </section>
-            {/* New: Dashboard Details Section */}
-            <TrainerDashboardDetails />
-          </>
+            </div>
+          </section>
         ) : (
           <Outlet />
         )}
