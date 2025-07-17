@@ -175,57 +175,33 @@ export const CategoryList: React.FC<CategoryListProps> = ({
             transition={{ duration: 0.6, delay: index * 0.1 }}
             whileHover={{ y: -8, scale: 1.02 }}
             onClick={() => onCategorySelect(category.id, category.name)}
-            className={`cursor-pointer bg-white dark:bg-gray-800 rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300 overflow-hidden group ${
-              selectedCategory === category.id ? 'ring-2 ring-blue-500' : ''
-            }`}
+            className={`cursor-pointer bg-white rounded-2xl shadow-lg hover:shadow-2xl transition-all duration-300 overflow-hidden group border border-gray-100 relative ${selectedCategory === category.id ? 'ring-2 ring-blue-500' : ''}`}
           >
-            {/* Category Header */}
-            <div className={`relative h-24 bg-gradient-to-br ${getCategoryColor(index)} overflow-hidden`}>
-              <div className="absolute inset-0 bg-black bg-opacity-10"></div>
-              <div className="absolute inset-0 flex items-center justify-center">
-                <div className="text-center text-white">
-                  <div className="text-3xl mb-1">
-                    {getCategoryIcon(category.name)}
-                  </div>
-                  <Grid className="w-6 h-6 mx-auto opacity-60" />
+            {/* Header with wave/curve */}
+            <div className="relative h-32 bg-gray-100 flex items-end justify-center overflow-hidden">
+              <div className={`absolute inset-0 bg-gradient-to-tr ${getCategoryColor(index)} opacity-80`} />
+              {/* Optional: category icon in a circle */}
+              <div className="relative z-10 mb-4 flex flex-col items-center">
+                <div className="w-16 h-16 rounded-full bg-white shadow flex items-center justify-center text-3xl border-4 border-white -mb-8">
+                  {getCategoryIcon(category.name)}
                 </div>
               </div>
-              
-              {/* Course Count Badge */}
-              <div className="absolute top-3 right-3">
-                <span className="px-2 py-1 bg-white bg-opacity-90 text-xs font-medium rounded-full text-gray-800">
-                  {category.coursecount} courses
-                </span>
-              </div>
+              {/* SVG wave */}
+              <svg className="absolute bottom-0 left-0 w-full" viewBox="0 0 400 30" fill="none" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="none">
+                <path d="M0 0C66.6667 30 133.333 30 200 0C266.667 30 333.333 30 400 0V30H0V0Z" fill="#fff"/>
+              </svg>
             </div>
-
-            {/* Category Content */}
-            <div className="p-6">
-              <h4 className="text-lg font-semibold text-gray-900 dark:text-white mb-3 line-clamp-2 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">
-                {category.name}
-              </h4>
-              
+            {/* Card Body */}
+            <div className="pt-12 pb-6 px-6 flex flex-col min-h-[180px]">
+              <h4 className="text-2xl font-bold text-gray-900 mb-2 line-clamp-2">{category.name}</h4>
               {category.description && (
-                <p className="text-gray-600 dark:text-gray-300 text-sm mb-4 line-clamp-3">
-                  {category.description.replace(/<[^>]*>/g, '').substring(0, 100)}
-                  {category.description.length > 100 ? '...' : ''}
-                </p>
+                <p className="text-gray-600 text-base mb-4 line-clamp-3">{category.description.replace(/<[^>]*>/g, '').substring(0, 100)}{category.description.length > 100 ? '...' : ''}</p>
               )}
-
-              {/* Category Meta */}
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-2 text-sm text-gray-500 dark:text-gray-400">
-                  <BookOpen className="w-4 h-4" />
-                  <span>{category.coursecount} courses</span>
+              <div className="flex items-center mt-auto pt-4 border-t border-gray-100">
+                <div className="flex items-center gap-2">
+                  <span className="inline-block w-8 h-8 rounded-full bg-blue-100 flex items-center justify-center text-blue-600 font-bold text-lg">{category.name.charAt(0)}</span>
+                  <span className="text-sm text-gray-700 font-medium">{category.coursecount} courses</span>
                 </div>
-                
-                <motion.div
-                  whileHover={{ x: 5 }}
-                  className="flex items-center text-blue-600 dark:text-blue-400 group-hover:text-blue-700 dark:group-hover:text-blue-300 transition-colors"
-                >
-                  <span className="text-sm font-medium mr-1">Explore</span>
-                  <ChevronRight className="w-4 h-4" />
-                </motion.div>
               </div>
             </div>
           </motion.div>

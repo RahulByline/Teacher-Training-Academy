@@ -83,6 +83,7 @@ export const AdminDashboard: React.FC = () => {
 
   const sidebarItems = [
     { id: 'dashboard', icon: Home, label: 'Dashboard', labelAr: 'لوحة التحكم' },
+    { id: 'community', icon: Users, label: 'Community', labelAr: 'المجتمع' },
     { id: 'enrollments', icon: BarChart3, label: 'Enrollments', labelAr: 'التسجيلات' },
     { id: 'schools', icon: Building, label: 'Schools Management', labelAr: 'إدارة المدارس' },
     { id: 'users', icon: Users, label: 'Users Management', labelAr: 'إدارة المستخدمين' },
@@ -302,6 +303,323 @@ export const AdminDashboard: React.FC = () => {
             <DashboardDeepAnalyticsSection />
             <MasterTrainerAndSuccessionSection />
           </>
+        );
+      case 'community':
+        return (
+          <div className="space-y-8">
+            {/* Top Community Section (already implemented) */}
+            <div className="flex flex-col lg:flex-row gap-6">
+              {/* Left Column */}
+              <div className="flex-1 min-w-[320px] flex flex-col gap-6">
+                {/* Master Trainers Circle */}
+                <div className="bg-blue-600 rounded-2xl p-6 text-white relative shadow-lg">
+                  <div className="flex items-center gap-2 mb-2">
+                    <span className="bg-white bg-opacity-20 rounded-full p-2"><svg width="28" height="28" fill="none" viewBox="0 0 24 24"><path d="M12 17.5l-6-3V7.5l6-3 6 3v7l-6 3z" stroke="#fff" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/></svg></span>
+                    <span className="bg-white bg-opacity-20 text-xs px-2 py-1 rounded-full font-semibold">Featured</span>
+                  </div>
+                  <div className="text-xl font-bold mb-1">Master Trainers Circle</div>
+                  <div className="mb-2">Exclusive space for certified and aspiring Master Trainers to collaborate and share expertise.</div>
+                  <div className="flex items-center gap-2 mb-4">
+                    <img src="https://randomuser.me/api/portraits/women/44.jpg" className="w-7 h-7 rounded-full border-2 border-white -ml-1" alt="" />
+                    <img src="https://randomuser.me/api/portraits/men/32.jpg" className="w-7 h-7 rounded-full border-2 border-white -ml-2" alt="" />
+                    <img src="https://randomuser.me/api/portraits/women/65.jpg" className="w-7 h-7 rounded-full border-2 border-white -ml-2" alt="" />
+                    <span className="ml-2 text-sm font-semibold">86 members</span>
+                  </div>
+                  <button className="bg-white text-blue-700 font-semibold rounded-lg px-4 py-2 w-full hover:bg-blue-50 transition">Join Space</button>
+                </div>
+                {/* Community Spaces */}
+                <div className="bg-white rounded-2xl shadow p-6">
+                  <div className="flex items-center justify-between mb-4">
+                    <div className="font-bold text-lg">Community Spaces</div>
+                    <a href="#" className="text-blue-600 text-sm font-medium hover:underline">View All</a>
+                  </div>
+                  <div className="space-y-3 mb-4">
+                    {[
+                      { icon: <span className="bg-purple-100 text-purple-600 p-2 rounded-lg"><svg width="20" height="20" fill="none" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="2" /></svg></span>, name: 'Pedagogical Innovations', members: 142, discussions: 38 },
+                      { icon: <span className="bg-blue-100 text-blue-600 p-2 rounded-lg"><svg width="20" height="20" fill="none" viewBox="0 0 24 24"><rect x="4" y="4" width="16" height="16" rx="4" stroke="currentColor" strokeWidth="2" /></svg></span>, name: 'EdTech Integration', members: 216, discussions: 52 },
+                      { icon: <span className="bg-yellow-100 text-yellow-600 p-2 rounded-lg"><svg width="20" height="20" fill="none" viewBox="0 0 24 24"><rect x="4" y="8" width="16" height="8" rx="4" stroke="currentColor" strokeWidth="2" /></svg></span>, name: 'Assessment Strategies', members: 98, discussions: 27 },
+                      { icon: <span className="bg-green-100 text-green-600 p-2 rounded-lg"><svg width="20" height="20" fill="none" viewBox="0 0 24 24"><rect x="4" y="4" width="16" height="16" rx="8" stroke="currentColor" strokeWidth="2" /></svg></span>, name: 'Student Engagement', members: 173, discussions: 41 },
+                    ].map((space, i) => (
+                      <div key={space.name} className="flex items-center gap-3 p-3 rounded-lg hover:bg-gray-50 transition">
+                        {space.icon}
+                        <div className="flex-1">
+                          <div className="font-semibold text-gray-900">{space.name}</div>
+                          <div className="text-xs text-gray-500">{space.members} members • {space.discussions} discussions</div>
+                        </div>
+                        <span className="bg-green-100 text-green-700 text-xs font-semibold px-3 py-1 rounded-full">Active</span>
+                      </div>
+                    ))}
+                  </div>
+                  <button className="w-full bg-blue-50 text-blue-700 font-semibold rounded-lg px-4 py-2 mt-2 hover:bg-blue-100 transition">Create New Space</button>
+                </div>
+              </div>
+              {/* Center Column */}
+              <div className="flex-[2] min-w-[340px] flex flex-col gap-6">
+                {/* Post Input */}
+                <div className="bg-white rounded-2xl shadow p-6 flex flex-col gap-2">
+                  <div className="flex items-center gap-3 mb-2">
+                    <img src="https://randomuser.me/api/portraits/women/44.jpg" className="w-9 h-9 rounded-full object-cover" alt="" />
+                    <input className="flex-1 border rounded-lg px-4 py-2 text-sm" placeholder="Share your thoughts, ideas or questions..." />
+                  </div>
+                  <div className="flex items-center gap-2 ml-12">
+                    <button className="text-gray-500 text-xs flex items-center gap-1"><svg width="16" height="16" fill="none" viewBox="0 0 24 24"><rect x="4" y="4" width="16" height="16" rx="4" stroke="currentColor" strokeWidth="2" /></svg> Media</button>
+                    <button className="text-gray-500 text-xs flex items-center gap-1"><svg width="16" height="16" fill="none" viewBox="0 0 24 24"><rect x="4" y="8" width="16" height="8" rx="4" stroke="currentColor" strokeWidth="2" /></svg> Document</button>
+                    <button className="text-gray-500 text-xs flex items-center gap-1"><svg width="16" height="16" fill="none" viewBox="0 0 24 24"><circle cx="12" cy="12" r="8" stroke="currentColor" strokeWidth="2" /></svg> Link</button>
+                    <button className="ml-auto bg-blue-600 text-white px-4 py-1.5 rounded-lg font-semibold text-sm">Post</button>
+                  </div>
+                </div>
+                {/* Sample Post */}
+                <div className="bg-white rounded-2xl shadow p-6">
+                  <div className="flex items-center gap-3 mb-2">
+                    <img src="https://randomuser.me/api/portraits/women/44.jpg" className="w-9 h-9 rounded-full object-cover" alt="" />
+                    <div>
+                      <div className="font-semibold text-gray-900 flex items-center gap-2">Sarah Al-Otaibi <span className="bg-blue-100 text-blue-700 text-xs font-semibold px-2 py-0.5 rounded-full">Master Trainer</span></div>
+                      <div className="text-xs text-gray-500">Posted in <span className="font-semibold text-blue-700">Pedagogical Innovations</span> • 2 hours ago</div>
+                    </div>
+                  </div>
+                  <div className="font-bold text-lg mb-1">Implementing Differentiated Instruction in Mixed-Ability Classrooms</div>
+                  <div className="text-gray-700 mb-3">I've been experimenting with a new approach to differentiated instruction that has shown promising results with my students. Would love to hear if anyone else has tried similar methods or has suggestions to improve this approach.</div>
+                  <div className="bg-gray-50 rounded-lg p-3 text-sm mb-3">
+                    <div className="font-semibold mb-1">My approach involves three key components:</div>
+                    <ul className="list-disc ml-5 text-gray-700">
+                      <li>Tiered assignments with common learning objectives but varying complexity</li>
+                      <li>Flexible grouping based on formative assessment data</li>
+                      <li>Student choice boards that allow for multiple paths to demonstrate mastery</li>
+                    </ul>
+                  </div>
+                  <div className="flex items-center gap-6 text-xs text-gray-500 mb-2">
+                    <span>24 Likes</span>
+                    <span>8 Comments</span>
+                    <button className="ml-auto text-gray-400 hover:text-blue-600">Save</button>
+                  </div>
+                  {/* Comments */}
+                  <div className="bg-gray-50 rounded-lg p-3 mb-2">
+                    <div className="flex items-center gap-2 mb-1">
+                      <img src="https://randomuser.me/api/portraits/men/45.jpg" className="w-7 h-7 rounded-full object-cover" alt="" />
+                      <div className="font-semibold text-gray-800 text-xs">Mohammed Al-Ghamdi <span className="text-gray-400 font-normal">1 hour ago</span></div>
+                    </div>
+                    <div className="text-gray-700 text-sm">This is brilliant, Sarah! I've been struggling with differentiation in my science classes. Could you share more details about how you track progress across the different tiers?</div>
+                    <div className="flex items-center gap-2 mt-2">
+                      <button className="text-xs text-blue-600 font-medium">Like</button>
+                      <button className="text-xs text-blue-600 font-medium">Reply</button>
+                    </div>
+                  </div>
+                  <input className="w-full border rounded-lg px-3 py-2 text-sm mt-2" placeholder="Add a comment..." />
+                </div>
+              </div>
+              {/* Right Column */}
+              <div className="w-full lg:w-80 flex flex-col gap-6">
+                {/* Community Insights */}
+                <div className="bg-white rounded-2xl shadow p-6 mb-2">
+                  <div className="grid grid-cols-2 gap-4 mb-4">
+                    <div className="bg-blue-50 rounded-lg p-3 flex flex-col items-center">
+                      <div className="text-2xl font-bold text-blue-700">1,248</div>
+                      <div className="text-xs text-gray-500">Active Members</div>
+                    </div>
+                    <div className="bg-green-50 rounded-lg p-3 flex flex-col items-center">
+                      <div className="text-2xl font-bold text-green-600">186</div>
+                      <div className="text-xs text-gray-500">Discussions This Month</div>
+                    </div>
+                    <div className="bg-purple-50 rounded-lg p-3 flex flex-col items-center">
+                      <div className="text-2xl font-bold text-purple-600">14</div>
+                      <div className="text-xs text-gray-500">Active Spaces</div>
+                    </div>
+                    <div className="bg-yellow-50 rounded-lg p-3 flex flex-col items-center">
+                      <div className="text-2xl font-bold text-yellow-600">92%</div>
+                      <div className="text-xs text-gray-500">Engagement Rate</div>
+                    </div>
+                  </div>
+                  <div className="mb-4">
+                    <div className="text-xs text-gray-500 mb-1">Top Engagement Times</div>
+                    <div className="flex items-end gap-1 h-16">
+                      {[
+                        { day: 'Mon', value: 6 },
+                        { day: 'Tue', value: 8 },
+                        { day: 'Wed', value: 5 },
+                        { day: 'Thu', value: 10 },
+                        { day: 'Fri', value: 4 },
+                        { day: 'Sat', value: 3 },
+                        { day: 'Sun', value: 4 },
+                      ].map((d, i) => (
+                        <div key={d.day} className="flex flex-col items-center justify-end flex-1">
+                          <div className="w-3 rounded bg-blue-400" style={{ height: `${d.value * 8}px` }}></div>
+                          <span className="text-xs text-gray-400 mt-1">{d.day}</span>
+                        </div>
+                      ))}
+                    </div>
+                    <div className="text-xs text-gray-400 mt-1">Peak activity: Thursdays 3-5 PM</div>
+                  </div>
+                </div>
+                {/* Top Contributors */}
+                <div className="bg-white rounded-2xl shadow p-6">
+                  <div className="font-bold text-md mb-4">Top Contributors</div>
+                  <div className="space-y-3">
+                    {[
+                      { name: 'Sarah Al-Otaibi', avatar: 'https://randomuser.me/api/portraits/women/44.jpg', points: 586 },
+                      { name: 'Mohammed Al-Ghamdi', avatar: 'https://randomuser.me/api/portraits/men/45.jpg', points: 542 },
+                      { name: 'Fatima Al-Zahrani', avatar: 'https://randomuser.me/api/portraits/women/65.jpg', points: 498 },
+                      { name: 'Khalid Al-Harbi', avatar: 'https://randomuser.me/api/portraits/men/46.jpg', points: 423 },
+                      { name: 'Noura Al-Qahtani', avatar: 'https://randomuser.me/api/portraits/women/66.jpg', points: 387 },
+                    ].map((c, i) => (
+                      <div key={c.name} className="flex items-center gap-2">
+                        <img src={c.avatar} alt={c.name} className="w-7 h-7 rounded-full object-cover" />
+                        <span className="flex-1 text-xs font-semibold text-gray-800">{c.name}</span>
+                        <div className="flex-1 h-2 bg-blue-100 rounded-full mr-2 ml-2">
+                          <div className="h-2 bg-blue-500 rounded-full" style={{ width: `${(c.points / 600) * 100}%` }}></div>
+                        </div>
+                        <span className="text-xs text-blue-700 font-bold">{c.points} pts</span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            </div>
+            {/* New: Lower Community Section */}
+            <div className="flex flex-col lg:flex-row gap-6">
+              {/* Upcoming Events */}
+              <div className="flex-1 min-w-[320px] bg-white rounded-2xl shadow p-6">
+                <div className="font-bold text-lg mb-4">Upcoming Events</div>
+                <div className="space-y-3 mb-4">
+                  {[
+                    { date: 'MAY 15', title: 'Webinar: Advanced Pedagogical Methods', time: '3:00 PM - 4:30 PM • Virtual', type: 'Webinar', typeColor: 'bg-blue-100 text-blue-700', registered: 248 },
+                    { date: 'MAY 22', title: 'Workshop: Collaborative Lesson Design', time: '1:00 PM - 4:00 PM • Riyadh Campus', type: 'Workshop', typeColor: 'bg-green-100 text-green-700', registered: 42 },
+                    { date: 'JUN 05', title: 'Panel: Future of Education in Saudi Arabia', time: '5:00 PM - 6:30 PM • Virtual', type: 'Panel', typeColor: 'bg-purple-100 text-purple-700', registered: 126 },
+                  ].map((event, i) => (
+                    <div key={event.title} className="flex items-center gap-4 bg-gray-50 rounded-xl p-3">
+                      <div className="flex flex-col items-center justify-center w-16">
+                        <div className="text-lg font-bold text-purple-600">{event.date.split(' ')[0]}</div>
+                        <div className="text-xs text-gray-400">{event.date.split(' ')[1]}</div>
+                      </div>
+                      <div className="flex-1">
+                        <div className="font-semibold text-gray-900 text-sm mb-1">{event.title}</div>
+                        <div className="text-xs text-gray-500 mb-1">{event.time}</div>
+                        <span className={`text-xs font-semibold px-2 py-0.5 rounded-full mr-2 ${event.typeColor}`}>{event.type}</span>
+                        <span className="text-xs text-gray-400">{event.registered} registered</span>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+                <button className="w-full flex items-center justify-center gap-2 text-gray-700 text-sm font-semibold py-2 rounded-lg border border-gray-200 hover:bg-gray-50 transition"><svg width="18" height="18" fill="none" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="16" rx="4" stroke="#64748b" strokeWidth="2" /><path d="M8 2v4M16 2v4" stroke="#64748b" strokeWidth="2" strokeLinecap="round"/></svg> View All Events</button>
+              </div>
+              {/* Discussions */}
+              <div className="flex-[2] min-w-[340px] flex flex-col gap-6">
+                {/* Discussion 1: Resource */}
+                <div className="bg-white rounded-2xl shadow p-6">
+                  <div className="flex items-center gap-3 mb-2">
+                    <img src="https://randomuser.me/api/portraits/women/65.jpg" className="w-9 h-9 rounded-full object-cover" alt="" />
+                    <div>
+                      <div className="font-semibold text-gray-900 flex items-center gap-2">Fatima Al-Zahrani <span className="bg-purple-100 text-purple-700 text-xs font-semibold px-2 py-0.5 rounded-full">Department Head</span></div>
+                      <div className="text-xs text-gray-500">Posted in <span className="font-semibold text-blue-700">EdTech Integration</span> • 5 hours ago</div>
+                    </div>
+                  </div>
+                  <div className="font-bold text-md mb-1">Collaborative Resource: AI Tools for Education</div>
+                  <div className="text-gray-700 mb-3">I'm creating a collaborative document of AI tools that can benefit our teaching practices. Please add any tools you've found useful and share your experiences!</div>
+                  <div className="bg-blue-50 rounded-lg p-3 text-sm mb-3 border border-blue-200">
+                    <div className="font-semibold text-blue-700 mb-1">AI Tools for Education - Collaborative Document</div>
+                    <div className="text-xs text-gray-700 mb-1">This document contains 15+ AI tools for content creation, assessment, and personalized learning. Click to view or contribute.</div>
+                    <div className="text-xs text-gray-400">12 contributors • Last updated: 35 minutes ago</div>
+                  </div>
+                  <div className="flex items-center gap-6 text-xs text-gray-500 mb-2">
+                    <span>37 Likes</span>
+                    <span>5 Comments</span>
+                    <button className="ml-auto text-gray-400 hover:text-blue-600">Save</button>
+                  </div>
+                </div>
+                {/* Discussion 2: Poll */}
+                <div className="bg-white rounded-2xl shadow p-6">
+                  <div className="flex items-center gap-3 mb-2">
+                    <img src="https://randomuser.me/api/portraits/men/46.jpg" className="w-9 h-9 rounded-full object-cover" alt="" />
+                    <div>
+                      <div className="font-semibold text-gray-900 flex items-center gap-2">Khalid Al-Harbi <span className="bg-green-100 text-green-700 text-xs font-semibold px-2 py-0.5 rounded-full">Teacher</span></div>
+                      <div className="text-xs text-gray-500">Posted in <span className="font-semibold text-blue-700">Assessment Strategies</span> • Yesterday</div>
+                    </div>
+                  </div>
+                  <div className="font-bold text-md mb-1">Poll: Most Effective Formative Assessment Methods</div>
+                  <div className="text-gray-700 mb-3">I'm curious about which formative assessment methods you find most effective in your classroom. Please vote and share your experiences!</div>
+                  <div className="space-y-2 mb-2">
+                    {[
+                      { label: 'Digital Exit Tickets', percent: 68 },
+                      { label: 'Think-Pair-Share', percent: 42 },
+                      { label: 'Student Self-Assessment', percent: 57 },
+                      { label: 'Peer Feedback', percent: 34 },
+                    ].map((opt, i) => (
+                      <div key={opt.label} className="mb-1">
+                        <div className="flex justify-between text-xs mb-0.5">
+                          <span>{opt.label}</span>
+                          <span className="font-semibold text-gray-700">{opt.percent}%</span>
+                        </div>
+                        <div className="w-full bg-gray-200 rounded-full h-3">
+                          <div className="h-3 rounded-full bg-blue-500" style={{ width: `${opt.percent}%` }}></div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                  <div className="text-xs text-gray-500 mb-2">Total votes: 143 • Poll ends in 2 days</div>
+                  <div className="flex items-center gap-6 text-xs text-gray-500 mb-2">
+                    <span>19 Likes</span>
+                    <span>12 Comments</span>
+                    <button className="ml-auto text-gray-400 hover:text-blue-600">Save</button>
+                  </div>
+                </div>
+                <button className="w-full bg-gray-50 text-blue-700 font-semibold rounded-lg px-4 py-2 mt-2 hover:bg-blue-50 transition">Load More Discussions</button>
+              </div>
+              {/* Resource Library & Collaborative Projects */}
+              <div className="w-full lg:w-80 flex flex-col gap-6">
+                {/* Resource Library */}
+                <div className="bg-white rounded-2xl shadow p-6 mb-2">
+                  <div className="flex items-center justify-between mb-4">
+                    <div className="font-bold text-md">Resource Library</div>
+                    <a href="#" className="text-blue-600 text-xs font-medium hover:underline">View All</a>
+                  </div>
+                  <div className="space-y-2 mb-3">
+                    {[
+                      { name: 'Differentiated Instruction Handbook', type: 'PDF', size: '3.2 MB', downloads: 648, color: 'bg-blue-100 text-blue-700' },
+                      { name: 'Assessment Tracker Template', type: 'Excel', size: '1.8 MB', downloads: 436, color: 'bg-green-100 text-green-700' },
+                      { name: 'EdTech Integration Workshop', type: 'PowerPoint', size: '5.4 MB', downloads: 293, color: 'bg-purple-100 text-purple-700' },
+                      { name: 'Classroom Management Guide', type: 'Document', size: '2.1 MB', downloads: 521, color: 'bg-yellow-100 text-yellow-700' },
+                    ].map((res, i) => (
+                      <div key={res.name} className="flex items-center gap-3 p-2 rounded-lg hover:bg-gray-50 transition">
+                        <span className={`w-8 h-8 flex items-center justify-center rounded-lg font-bold text-xs ${res.color}`}>{res.type}</span>
+                        <div className="flex-1">
+                          <div className="font-semibold text-gray-900 text-xs">{res.name}</div>
+                          <div className="text-xs text-gray-500">{res.type} • {res.size} • {res.downloads} downloads</div>
+                        </div>
+                        <button className="text-gray-400 hover:text-blue-600"><svg width="18" height="18" fill="none" viewBox="0 0 24 24"><path d="M12 5v14m7-7H5" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/></svg></button>
+                      </div>
+                    ))}
+                  </div>
+                  <button className="w-full flex items-center justify-center gap-2 text-gray-700 text-sm font-semibold py-2 rounded-lg border border-gray-200 hover:bg-gray-50 transition"><svg width="18" height="18" fill="none" viewBox="0 0 24 24"><path d="M12 5v14m7-7H5" stroke="#64748b" strokeWidth="2" strokeLinecap="round"/></svg> Share a Resource</button>
+                </div>
+                {/* Collaborative Projects */}
+                <div className="bg-white rounded-2xl shadow p-6">
+                  <div className="font-bold text-md mb-4">Collaborative Projects</div>
+                  <div className="space-y-3 mb-3">
+                    {[
+                      { name: 'Curriculum Design Team', desc: 'Collaborative project to redesign the science curriculum for grades 6-8 with an emphasis on project-based learning.', members: 4, color: 'bg-blue-50', active: true },
+                      { name: 'Digital Learning Resources', desc: 'Creating a repository of digital learning resources and lesson plans for language arts teachers across all grade levels.', members: 8, color: 'bg-purple-50', active: true },
+                    ].map((proj, i) => (
+                      <div key={proj.name} className={`rounded-lg p-3 ${proj.color} flex flex-col gap-1`}>
+                        <div className="flex items-center gap-2">
+                          <span className="font-semibold text-blue-700 text-xs">{proj.name}</span>
+                          <span className="ml-auto text-xs bg-blue-100 text-blue-700 px-2 py-0.5 rounded-full">Active</span>
+                        </div>
+                        <div className="text-xs text-gray-700 mb-1">{proj.desc}</div>
+                        <div className="flex items-center gap-2">
+                          <div className="flex -space-x-2">
+                            {Array.from({ length: proj.members }).map((_, idx) => (
+                              <img key={idx} src={`https://randomuser.me/api/portraits/lego/${idx + 1}.jpg`} className="w-6 h-6 rounded-full border-2 border-white" alt="" />
+                            ))}
+                          </div>
+                          <span className="text-xs text-gray-400 ml-2">+{proj.members}</span>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                  <button className="w-full bg-blue-600 text-white font-semibold rounded-lg px-4 py-2 mt-2 hover:bg-blue-700 transition flex items-center justify-center gap-2"><svg width="18" height="18" fill="none" viewBox="0 0 24 24"><path d="M12 5v14m7-7H5" stroke="#fff" strokeWidth="2" strokeLinecap="round"/></svg> Start New Project</button>
+                </div>
+              </div>
+            </div>
+          </div>
         );
       case 'enrollments':
         return <EnrollmentsSection />;
@@ -916,160 +1234,224 @@ export const AdminDashboard: React.FC = () => {
   };
 
   function EnrollmentsSection() {
-    const [activeTab, setActiveTab] = React.useState(0);
-    const [loading, setLoading] = useState(true);
-    const [error, setError] = useState('');
-    const [courses, setCourses] = useState<Course[]>([]);
-    const [enrollments, setEnrollments] = useState<any[]>([]);
-    const [stats, setStats] = useState({ totalEnrollments: 0, availableTrainers: 0, upcomingSessions: 0, pendingQueries: 0 });
-
-    useEffect(() => {
-      let isMounted = true;
-      async function fetchData() {
-        setLoading(true);
-        setError('');
-        try {
-          // Fetch all courses
-          const coursesData = await apiService.getAllCourses();
-          if (!isMounted) return;
-          setCourses(coursesData);
-          // Fetch enrollments for all courses (flattened)
-          let allEnrollments: any[] = [];
-          for (const course of coursesData) {
-            const courseEnrollments = await apiService.getCourseEnrollments(String(course.id));
-            // Attach course info to each enrollment
-            allEnrollments = allEnrollments.concat(courseEnrollments.map((e: any) => ({ ...e, course })));
-          }
-          if (!isMounted) return;
-          setEnrollments(allEnrollments);
-          // Calculate stats
-          setStats({
-            totalEnrollments: allEnrollments.length,
-            availableTrainers: 86, // TODO: fetch real trainers if available
-            upcomingSessions: 42, // TODO: fetch real sessions if available
-            pendingQueries: 24 // TODO: fetch real pending queries if available
-          });
-        } catch (err) {
-          setError('Failed to load enrollments');
-        } finally {
-          setLoading(false);
-        }
-      }
-      fetchData();
-      return () => { isMounted = false; };
-    }, []);
-
-    if (loading) return <div className="flex justify-center items-center min-h-[300px]"><span className="text-gray-500">Loading enrollments...</span></div>;
-    if (error) return <div className="text-red-600 p-4">{error}</div>;
-
-    // Stat cards
-    const enrollmentsStats = [
-      { label: 'Total Enrollments', value: stats.totalEnrollments, icon: BarChart3, change: '+12.4%', changeColor: 'text-green-600', desc: 'vs last quarter' },
-      { label: 'Available Trainers', value: stats.availableTrainers, icon: Users, change: '+8.3%', changeColor: 'text-green-600', desc: 'vs last quarter' },
-      { label: 'Upcoming Sessions', value: stats.upcomingSessions, icon: Calendar, change: '+5.2%', changeColor: 'text-green-600', desc: 'vs last quarter' },
-      { label: 'Pending Queries', value: stats.pendingQueries, icon: HelpCircle, change: '-14.8%', changeColor: 'text-red-600', desc: 'vs last quarter' },
+    // --- Mock Data for Demo Layout ---
+    const statCards = [
+      {
+        label: 'Total Enrollments',
+        value: '1,248',
+        icon: BarChart3,
+        color: 'bg-blue-100 text-blue-600',
+        change: '+12.4%',
+        changeColor: 'text-green-600',
+        desc: 'vs last quarter',
+      },
+      {
+        label: 'Available Trainers',
+        value: '86',
+        icon: Users,
+        color: 'bg-green-100 text-green-600',
+        change: '+8.3%',
+        changeColor: 'text-green-600',
+        desc: 'vs last quarter',
+      },
+      {
+        label: 'Upcoming Sessions',
+        value: '42',
+        icon: Calendar,
+        color: 'bg-purple-100 text-purple-600',
+        change: '+5.2%',
+        changeColor: 'text-green-600',
+        desc: 'vs last quarter',
+      },
+      {
+        label: 'Pending Queries',
+        value: '24',
+        icon: HelpCircle,
+        color: 'bg-yellow-100 text-yellow-600',
+        change: '-14.8%',
+        changeColor: 'text-red-600',
+        desc: 'vs last quarter',
+      },
     ];
-
-    // Table data: show first 5 enrollments
-    const tableData = enrollments.slice(0, 5);
-
+    const tabs = ['All Enrollments', 'Pending Approval', 'Confirmed', 'Completed', 'Cancelled'];
+    const [activeTab, setActiveTab] = React.useState(0);
+    const [search, setSearch] = React.useState('');
+    const [facility, setFacility] = React.useState('All Facilities');
+    const [program, setProgram] = React.useState('All Programs');
+    const [format, setFormat] = React.useState('All Formats');
+    // Table mock data
+    const tableData = [
+      {
+        teacher: { name: 'Sarah Al-Otaibi', id: 'T-2025-0142', avatar: 'https://randomuser.me/api/portraits/women/44.jpg' },
+        program: { name: 'Advanced Pedagogical Methods', format: 'ILT Format', hours: 45 },
+        facility: { name: 'Main Campus', room: 'TC-104' },
+        trainer: { name: 'Ahmad Al-Faisal', avatar: 'https://randomuser.me/api/portraits/men/32.jpg', role: 'Pedagogy Expert' },
+        start: { date: 'May 15, 2025', time: '09:00 - 15:00' },
+        status: { label: 'Confirmed', color: 'bg-green-100 text-green-700' },
+      },
+      {
+        teacher: { name: 'Mohammed Al-Ghamdi', id: 'T-2025-0156', avatar: 'https://randomuser.me/api/portraits/men/45.jpg' },
+        program: { name: 'Digital Learning Technologies', format: 'VILT Format', hours: 30 },
+        facility: { name: 'Virtual', room: 'Platform: Zoom' },
+        trainer: { name: 'Khalid Al-Harbi', avatar: 'https://randomuser.me/api/portraits/men/46.jpg', role: 'EdTech Specialist' },
+        start: { date: 'May 10, 2025', time: '13:00 - 16:00' },
+        status: { label: 'Pending', color: 'bg-yellow-100 text-yellow-700' },
+      },
+      {
+        teacher: { name: 'Fatima Al-Zahrani', id: 'T-2025-0178', avatar: 'https://randomuser.me/api/portraits/women/65.jpg' },
+        program: { name: 'Assessment Design Workshop', format: 'ILT Format', hours: 25 },
+        facility: { name: 'East Wing', room: 'Room: EW-201' },
+        trainer: { name: 'Noura Al-Qahtani', avatar: 'https://randomuser.me/api/portraits/women/66.jpg', role: 'Assessment Expert' },
+        start: { date: 'May 18, 2025', time: '10:00 - 15:00' },
+        status: { label: 'Confirmed', color: 'bg-green-100 text-green-700' },
+      },
+      {
+        teacher: { name: 'Abdul Rahman Al-Sulaiman', id: 'T-2025-0185', avatar: 'https://randomuser.me/api/portraits/men/47.jpg' },
+        program: { name: 'Classroom Management', format: 'Hybrid Format', hours: 35 },
+        facility: { name: 'West Wing', room: 'Room: WW-105' },
+        trainer: { name: 'Omar Al-Farsi', avatar: 'https://randomuser.me/api/portraits/men/48.jpg', role: 'Behavioral Expert' },
+        start: { date: 'May 22, 2025', time: '09:00 - 14:00' },
+        status: { label: 'Waitlisted', color: 'bg-blue-100 text-blue-700' },
+      },
+      {
+        teacher: { name: 'Aisha Al-Dosari', id: 'T-2025-0192', avatar: 'https://randomuser.me/api/portraits/women/67.jpg' },
+        program: { name: 'Curriculum Development', format: 'VILT Format', hours: 40 },
+        facility: { name: 'Virtual', room: 'Platform: MS Teams' },
+        trainer: { name: 'Saad Al-Malki', avatar: 'https://randomuser.me/api/portraits/men/49.jpg', role: 'Curriculum Specialist' },
+        start: { date: 'May 25, 2025', time: '14:00 - 17:00' },
+        status: { label: 'Cancelled', color: 'bg-red-100 text-red-700' },
+      },
+    ];
     return (
       <div className="space-y-8">
-        <div>
-          <h1 className="text-2xl font-bold text-gray-900">Training Enrollments</h1>
-          <p className="text-gray-500 text-base mb-6">Manage all enrollment activities for Maarif Teacher Training Academy</p>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-6">
-            {enrollmentsStats.map((stat, idx) => (
-              <div key={stat.label} className="bg-white rounded-xl shadow p-6 border border-gray-100 flex flex-col gap-2">
-                <div className="flex items-center gap-3 mb-2">
-                  <span className="p-2 rounded-full bg-blue-50"><stat.icon className="w-6 h-6 text-blue-600" /></span>
-                  <span className="text-2xl font-bold text-gray-900">{stat.value}</span>
-                </div>
-                <div className="text-sm font-medium text-gray-600">{stat.label}</div>
-                <div className="flex items-center gap-1 mt-1">
-                  <span className={`${stat.changeColor} font-semibold`}>{stat.change}</span>
-                  <span className="text-gray-400 text-xs ml-1">{stat.desc}</span>
-                </div>
+        <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-4">
+          <div>
+            <h1 className="text-2xl font-bold text-gray-900">Training Enrollments</h1>
+            <p className="text-gray-500 text-base">Manage all enrollment activities for Maarif Teacher Training Academy</p>
+          </div>
+          <div className="flex items-center gap-2">
+            <select className="border rounded-lg px-3 py-2 text-sm">
+              <option>Q2 2025 (Apr-Jun)</option>
+            </select>
+            <button className="p-2 rounded-lg border hover:bg-gray-100 transition" title="Download">
+              <Download className="w-5 h-5 text-gray-500" />
+            </button>
+            <button className="p-2 rounded-lg border hover:bg-gray-100 transition" title="Filter">
+              <Filter className="w-5 h-5 text-gray-500" />
+            </button>
+          </div>
+        </div>
+        {/* Stat Cards */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-4">
+          {statCards.map((stat, idx) => (
+            <div key={stat.label} className="bg-white rounded-2xl shadow p-6 flex flex-col min-w-[180px]">
+              <div className="flex items-center justify-between mb-2">
+                <span className="text-gray-500 font-medium">{stat.label}</span>
+                <span className={`p-2 rounded-full ${stat.color}`}>{React.createElement(stat.icon, { className: 'w-5 h-5' })}</span>
               </div>
-            ))}
+              <div className="text-2xl font-bold mb-1">{stat.value}</div>
+              <div className="flex items-center text-xs gap-1">
+                <span className={stat.changeColor}>{stat.change}</span>
+                <span className="text-gray-400">vs last quarter</span>
+              </div>
+            </div>
+          ))}
+        </div>
+        {/* Tabs */}
+        <div className="flex flex-wrap items-center gap-6 border-b mb-4">
+          {tabs.map((tab, idx) => (
+            <button
+              key={tab}
+              onClick={() => setActiveTab(idx)}
+              className={`pb-3 px-2 text-sm font-medium border-b-2 ${activeTab === idx ? 'border-blue-600 text-blue-700' : 'border-transparent text-gray-500 hover:text-blue-700'}`}
+            >
+              {tab}
+            </button>
+          ))}
+        </div>
+        {/* Filters */}
+        <div className="flex flex-wrap items-center gap-4 mb-4">
+          <div className="relative">
+            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
+            <input
+              type="text"
+              placeholder="Search by name, ID, course..."
+              value={search}
+              onChange={e => setSearch(e.target.value)}
+              className="pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              style={{ minWidth: 280 }}
+            />
           </div>
-          <div className="flex flex-wrap items-center gap-4 mb-4">
-            {['All Enrollments', 'Pending Approval', 'Confirmed', 'Completed', 'Cancelled'].map((tab, idx) => (
-              <button key={tab} onClick={() => setActiveTab(idx)} className={`pb-2 px-2 text-sm font-medium border-b-2 ${activeTab === idx ? 'border-blue-600 text-blue-700' : 'border-transparent text-gray-500 hover:text-blue-700'}`}>{tab}</button>
-            ))}
-          </div>
-          <div className="flex flex-wrap items-center gap-4 mb-4">
-            <input type="text" placeholder="Search by name, ID, course..." className="border border-gray-300 rounded-lg px-4 py-2 text-sm w-80" />
-            <select className="border border-gray-300 rounded-lg px-3 py-2 text-sm">
-              <option>All Facilities</option>
-            </select>
-            <select className="border border-gray-300 rounded-lg px-3 py-2 text-sm">
-              <option>All Programs</option>
-            </select>
-            <select className="border border-gray-300 rounded-lg px-3 py-2 text-sm">
-              <option>All Formats</option>
-            </select>
-          </div>
-          <div className="bg-white rounded-xl shadow border border-gray-100 overflow-x-auto">
-            <table className="w-full text-sm">
-              <thead>
-                <tr className="border-b text-gray-500">
-                  <th className="py-3 px-4 text-left font-semibold"><input type="checkbox" /></th>
-                  <th className="py-3 px-4 text-left font-semibold">TEACHER</th>
-                  <th className="py-3 px-4 text-left font-semibold">PROGRAM</th>
-                  <th className="py-3 px-4 text-left font-semibold">FACILITY</th>
-                  <th className="py-3 px-4 text-left font-semibold">TRAINER</th>
-                  <th className="py-3 px-4 text-left font-semibold">START DATE</th>
-                  <th className="py-3 px-4 text-left font-semibold">STATUS</th>
-                  <th className="py-3 px-4 text-left font-semibold">ACTIONS</th>
+          <select className="border border-gray-300 rounded-lg px-3 py-2 text-sm" value={facility} onChange={e => setFacility(e.target.value)}>
+            <option>All Facilities</option>
+          </select>
+          <select className="border border-gray-300 rounded-lg px-3 py-2 text-sm" value={program} onChange={e => setProgram(e.target.value)}>
+            <option>All Programs</option>
+          </select>
+          <select className="border border-gray-300 rounded-lg px-3 py-2 text-sm" value={format} onChange={e => setFormat(e.target.value)}>
+            <option>All Formats</option>
+          </select>
+        </div>
+        {/* Table */}
+        <div className="bg-white rounded-xl shadow border border-gray-100 overflow-x-auto">
+          <table className="w-full text-sm">
+            <thead>
+              <tr className="border-b text-gray-500">
+                <th className="py-3 px-4 text-left font-semibold"><input type="checkbox" /></th>
+                <th className="py-3 px-4 text-left font-semibold">TEACHER</th>
+                <th className="py-3 px-4 text-left font-semibold">PROGRAM</th>
+                <th className="py-3 px-4 text-left font-semibold">FACILITY</th>
+                <th className="py-3 px-4 text-left font-semibold">TRAINER</th>
+                <th className="py-3 px-4 text-left font-semibold">START DATE</th>
+                <th className="py-3 px-4 text-left font-semibold">STATUS</th>
+                <th className="py-3 px-4 text-left font-semibold">ACTIONS</th>
+              </tr>
+            </thead>
+            <tbody>
+              {tableData.map((row, idx) => (
+                <tr key={row.teacher.id} className="border-b last:border-0 hover:bg-gray-50">
+                  <td className="py-3 px-4"><input type="checkbox" /></td>
+                  <td className="py-3 px-4 flex items-center gap-3">
+                    <img src={row.teacher.avatar} alt={row.teacher.name} className="w-8 h-8 rounded-full object-cover border" />
+                    <div>
+                      <div className="font-medium text-gray-900">{row.teacher.name}</div>
+                      <div className="text-xs text-gray-500">ID: {row.teacher.id}</div>
+                    </div>
+                  </td>
+                  <td className="py-3 px-4">
+                    <div className="font-medium text-gray-900">{row.program.name}</div>
+                    <div className="text-xs text-gray-500">{row.program.format} • {row.program.hours} Hours</div>
+                  </td>
+                  <td className="py-3 px-4">
+                    <div className="font-medium text-gray-900">{row.facility.name}</div>
+                    <div className="text-xs text-gray-500">{row.facility.room}</div>
+                  </td>
+                  <td className="py-3 px-4 flex items-center gap-2">
+                    <img src={row.trainer.avatar} alt={row.trainer.name} className="w-8 h-8 rounded-full object-cover border" />
+                    <div>
+                      <div className="font-medium text-gray-900 text-xs">{row.trainer.name}</div>
+                      <div className="text-xs text-gray-500">{row.trainer.role}</div>
+                    </div>
+                  </td>
+                  <td className="py-3 px-4">
+                    <div className="font-medium text-gray-900">{row.start.date}</div>
+                    <div className="text-xs text-gray-500">{row.start.time}</div>
+                  </td>
+                  <td className="py-3 px-4">
+                    <span className={`px-3 py-1 rounded-full text-xs font-semibold ${row.status.color}`}>{row.status.label}</span>
+                  </td>
+                  <td className="py-3 px-4">
+                    <a href="#" className="text-blue-600 hover:underline font-medium">View</a>
+                  </td>
                 </tr>
-              </thead>
-              <tbody>
-                {tableData.map((row, idx) => (
-                  <tr key={row.userid + '-' + idx} className="border-b last:border-0 hover:bg-gray-50">
-                    <td className="py-3 px-4"><input type="checkbox" /></td>
-                    <td className="py-3 px-4 flex items-center gap-3">
-                      <img src={row.profileimageurl || 'https://randomuser.me/api/portraits/lego/1.jpg'} alt={row.fullname} className="w-8 h-8 rounded-full object-cover border" />
-                      <div>
-                        <div className="font-medium text-gray-900">{row.fullname}</div>
-                        <div className="text-xs text-gray-500">ID: {row.userid}</div>
-                      </div>
-                    </td>
-                    <td className="py-3 px-4">
-                      <div className="font-medium text-gray-900">{row.course?.fullname || '-'}</div>
-                      <div className="text-xs text-gray-500">{row.course?.type || '-'}</div>
-                    </td>
-                    <td className="py-3 px-4">
-                      <div className="font-medium text-gray-900">{row.course?.facility || 'Virtual'}</div>
-                      <div className="text-xs text-gray-500">{row.course?.facilityDetail || ''}</div>
-                    </td>
-                    <td className="py-3 px-4 flex items-center gap-2">
-                      <span className="w-7 h-7 rounded-full bg-gray-200 flex items-center justify-center text-xs text-gray-500">T</span>
-                      <div>
-                        <div className="font-medium text-gray-900 text-xs">Trainer</div>
-                        <div className="text-xs text-gray-500">Role</div>
-                      </div>
-                    </td>
-                    <td className="py-3 px-4">
-                      <div className="font-medium text-gray-900">{row.course?.startdate ? new Date(row.course.startdate * 1000).toLocaleDateString() : '-'}</div>
-                      <div className="text-xs text-gray-500">{row.course?.startdate ? new Date(row.course.startdate * 1000).toLocaleTimeString() : ''}</div>
-                    </td>
-                    <td className="py-3 px-4">
-                      <span className={`px-3 py-1 rounded-full text-xs font-semibold bg-green-100 text-green-700`}>Confirmed</span>
-                    </td>
-                    <td className="py-3 px-4">
-                      <a href="#" className="text-blue-600 hover:underline font-medium">View</a>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-            <div className="flex items-center justify-between px-4 py-3 text-sm text-gray-500">
-              <span>Showing 1 to {tableData.length} of {enrollments.length} results</span>
-              <div className="flex gap-2">
-                <button className="px-3 py-1 rounded border border-gray-300 bg-white text-gray-700 hover:bg-gray-100">&lt; Previous</button>
-                <button className="px-3 py-1 rounded border border-gray-300 bg-white text-gray-700 hover:bg-gray-100">Next &gt;</button>
-              </div>
+              ))}
+            </tbody>
+          </table>
+          <div className="flex items-center justify-between px-4 py-3 text-sm text-gray-500">
+            <span>Showing 1 to 5 of 248 results</span>
+            <div className="flex gap-2">
+              <button className="px-3 py-1 rounded border border-gray-300 bg-white text-gray-700 hover:bg-gray-100">&lt; Previous</button>
+              <button className="px-3 py-1 rounded border border-gray-300 bg-white text-gray-700 hover:bg-gray-100">Next &gt;</button>
             </div>
           </div>
         </div>
@@ -1091,6 +1473,8 @@ export const AdminDashboard: React.FC = () => {
             <div className="mb-2">
               <div className="text-sm text-gray-400 uppercase mb-1">Dashboard</div>
               <SidebarItem icon={Home} label="Dashboard" active={activeSection === 'dashboard'} onClick={() => setActiveSection('dashboard')} />
+              <SidebarItem icon={Users} label="Community" active={activeSection === 'community'} onClick={() => setActiveSection('community')} />
+              <SidebarItem icon={BarChart3} label="Enrollments" active={activeSection === 'enrollments'} onClick={() => setActiveSection('enrollments')} />
             </div>
             <div className="mb-2">
               <div className="text-sm text-gray-400 uppercase mb-1">Teachers</div>

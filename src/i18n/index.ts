@@ -18,7 +18,7 @@ const resources = {
       // Hero Section
       heroTitle: 'Transform Education Through Excellence',
       heroSubtitle: 'Empowering teachers with world-class training programs',
-      exploreBtn: 'Explore Courses',
+      exploreBtn: 'Explore Categories',
       getStarted: 'Get Started',
       
       // About Section
