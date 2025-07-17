@@ -162,10 +162,10 @@ export const CreateUserForm: React.FC<CreateUserFormProps> = ({ onUserCreated })
             { userid: parseInt(userId, 10), companyid: parseInt(formData.school, 10), managertype: 1 }
           ]);
         } else if (formData.role && selectedRole) {
-          await usersService.assignUsersToSchool([
-            { userid: parseInt(userId, 10), companyid: parseInt(formData.school, 10), departmentid: 0, managertype: 0, educator: 0 }
-          ]);
-        }
+        await usersService.assignUsersToSchool([
+          { userid: parseInt(userId, 10), companyid: parseInt(formData.school, 10), departmentid: 0, managertype: 0, educator: 0 }
+        ]);
+      }
         // Assign role at system context (contextid = 1) for all roles
         if (formData.role && selectedRole) {
           await usersService.assignRoleViaWebService({
