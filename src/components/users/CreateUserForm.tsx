@@ -20,6 +20,7 @@ import { usersService } from '../../services/usersService';
 import { schoolsService } from '../../services/schoolsService';
 import { toast } from '../ui/Toaster';
 import countries, { Country } from '../../utils/countries';
+import { contextApi } from '../../config/axiosConfig';
  
 interface CreateUserFormProps {
   onUserCreated: () => void;
@@ -28,7 +29,7 @@ interface CreateUserFormProps {
 export const CreateUserForm: React.FC<CreateUserFormProps> = ({ onUserCreated }) => {
   const [loading, setLoading] = useState(false);
   const [schools, setSchools] = useState<any[]>([]);
-  const [roles, setRoles] = useState<string[]>([]);
+  const [roles, setRoles] = useState<{id: number, shortname: string, name: string}[]>([]);
   const [departments, setDepartments] = useState<any[]>([]);
   const [showPassword, setShowPassword] = useState(false);
   const [formData, setFormData] = useState({
@@ -50,7 +51,7 @@ export const CreateUserForm: React.FC<CreateUserFormProps> = ({ onUserCreated })
     mailformat: 1,
     auth: 'manual',
     createpassword: 0,
-    role: '', // Will be set from real roles
+    role: '', // This is a string (role id)
   });
   const [errors, setErrors] = useState<Record<string, string>>({});
  
@@ -72,8 +73,8 @@ export const CreateUserForm: React.FC<CreateUserFormProps> = ({ onUserCreated })
   const fetchRoles = async () => {
     try {
       const rolesData = await usersService.getUserRoles();
-      // Filter out dangerous roles
-      setRoles(rolesData.filter(r => !['admin', 'superadmin', 'siteadmin', 'manager'].includes(r.toLowerCase())));
+      // Filter out dangerous roles by shortname
+      setRoles(rolesData.filter(r => !['admin', 'superadmin', 'siteadmin', 'manager'].includes(r.shortname.toLowerCase())));
     } catch (error) {
       console.error('Error fetching roles:', error);
     }
@@ -154,12 +155,25 @@ export const CreateUserForm: React.FC<CreateUserFormProps> = ({ onUserCreated })
       const userId = userRes[0].id;
       // Assign to school if selected
       if (formData.school && userId) {
-        await usersService.assignUsersToSchool([
-          { userid: parseInt(userId, 10), companyid: parseInt(formData.school, 10), departmentid: 0, managertype: 0, educator: 0 }
-        ]);
+        const selectedRole = roles.find(r => r.id.toString() === formData.role);
+        if (selectedRole?.shortname === 'school_admin') {
+          // 1. Assign to company as manager
+          await usersService.assignUsersToSchool([
+            { userid: parseInt(userId, 10), companyid: parseInt(formData.school, 10), managertype: 1 }
+          ]);
+        } else if (formData.role && selectedRole) {
+          await usersService.assignUsersToSchool([
+            { userid: parseInt(userId, 10), companyid: parseInt(formData.school, 10), departmentid: 0, managertype: 0, educator: 0 }
+          ]);
+        }
+        // Assign role at system context (contextid = 1) for all roles
+        if (formData.role && selectedRole) {
+          await usersService.assignRoleViaWebService({
+            userid: userId,
+            roleid: parseInt(formData.role, 10)
+          });
+        }
       }
-      // Assign role in company context (if needed, pseudo-code, depends on your API)
-      // await usersService.assignRoleToUser({ userid: userId, role: formData.role, companyid: formData.school });
       toast.success('User created and assigned successfully!');
       onUserCreated();
       setFormData({
@@ -380,7 +394,7 @@ export const CreateUserForm: React.FC<CreateUserFormProps> = ({ onUserCreated })
             >
               <option value="">Select a role</option>
               {roles.map(role => (
-                <option key={role} value={role}>{role}</option>
+                <option key={role.id} value={role.id}>{role.name}</option>
               ))}
             </select>
           </div>

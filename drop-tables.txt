@@ -1,8 +1,0 @@
-DROP TABLE companies;
-DROP TABLE company_locations;
-DROP TABLE contacts;
-DROP TABLE departments;
-DROP TABLE emails;
-DROP TABLE phones;
-DROP TABLE activity_logs;
-DROP TABLE intent_scores;

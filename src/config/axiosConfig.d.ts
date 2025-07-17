@@ -1,2 +1,4 @@
 declare const api: any;
-export default api; 
+declare const contextApi: any;
+export default api;
+export { contextApi }; 
