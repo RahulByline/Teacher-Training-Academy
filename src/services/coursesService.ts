@@ -373,9 +373,11 @@ export const coursesService = {
     params.append('criteria[0][companyid]', String(companyId));
     params.append('criteria[0][shared]', '0');
     const response = await axios.post(IOMAD_BASE_URL, params);
-    // The response is an object with a 'companies' array, each with a 'courses' array
     if (response.data && Array.isArray(response.data.companies) && response.data.companies.length > 0) {
       return response.data.companies[0].courses || [];
+    }
+    if (response.data && Array.isArray(response.data.courses)) {
+      return response.data.courses;
     }
     return [];
   },
@@ -383,13 +385,15 @@ export const coursesService = {
   // Enroll a user in a course
   async enrollUserInCourse(courseId: string, userId: string, roleId: number = 5): Promise<boolean> {
     try {
-      const response = await api.post('', {
-        wsfunction: 'enrol_manual_enrol_users',
-        enrolments: [{
-          courseid: courseId,
-          userid: userId,
-          roleid: roleId
-        }]
+      const params = new URLSearchParams();
+      params.append('wstoken', IOMAD_TOKEN);
+      params.append('wsfunction', 'enrol_manual_enrol_users');
+      params.append('moodlewsrestformat', 'json');
+      params.append('enrolments[0][courseid]', courseId.toString());
+      params.append('enrolments[0][userid]', userId.toString());
+      params.append('enrolments[0][roleid]', roleId.toString());
+      const response = await axios.post(IOMAD_BASE_URL, params, {
+        headers: { 'Content-Type': 'application/x-www-form-urlencoded' }
       });
       return response.data && !response.data.exception;
     } catch (error) {

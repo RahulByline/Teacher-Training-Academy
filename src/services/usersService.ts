@@ -722,5 +722,32 @@ export const usersService = {
     // This may require enrol_manual_enrol_users for courses, or a custom API for company roles
     console.log('Assigning role', role, 'to user', userid, 'in company', companyid);
     return true;
+  },
+ 
+  /**
+   * Fetch all users for a specific company using the custom Moodle API
+   */
+  async getCompanyUsers(companyId: number): Promise<User[]> {
+    try {
+      const params = {
+        wsfunction: 'local_companyusers_get_company_users',
+        companyid: companyId,
+      };
+      const response = await api.get('', { params });
+      if (Array.isArray(response.data)) {
+        return response.data.map((user: any) => ({
+          id: user.id.toString(),
+          username: user.username,
+          firstname: user.firstname,
+          lastname: user.lastname,
+          fullname: user.fullname || `${user.firstname} ${user.lastname}`,
+          email: user.email,
+        }));
+      }
+      return [];
+    } catch (error) {
+      console.error('Error fetching company users:', error);
+      return [];
+    }
   }
 };
