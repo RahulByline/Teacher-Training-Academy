@@ -8,6 +8,7 @@ import { Building, Users, MapPin, ChevronRight, Globe, Mail, Phone } from 'lucid
 import { LoadingSpinner } from '../LoadingSpinner';
 import { School } from '../../types';
 import { getAllCompanies } from '../../services/apiService';
+import SchoolsCarousel from '../home/SchoolsCarousel';
 
 export const SchoolsSection: React.FC = () => {
   const { t } = useTranslation();
@@ -27,7 +28,6 @@ export const SchoolsSection: React.FC = () => {
       setError(null);
       try {
         const companies = await getAllCompanies();
-        // Map to your School interface if needed, or use as is
         setSchools(companies);
       } catch (error) {
         console.error('Error fetching schools:', error);
@@ -86,79 +86,7 @@ export const SchoolsSection: React.FC = () => {
             </p>
           </div>
         ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8">
-            {schools.map((school, index) => (
-              <motion.div
-                key={school.id}
-                initial={{ opacity: 0, y: 50 }}
-                animate={inView ? { opacity: 1, y: 0 } : {}}
-                transition={{ duration: 0.6, delay: index * 0.1 }}
-                whileHover={{ y: -10, scale: 1.02 }}
-                className="bg-white dark:bg-gray-800 rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300 overflow-hidden group cursor-pointer"
-              >
-                {/* School Logo/Header */}
-                <div className="relative h-32 bg-gradient-to-br from-blue-500 to-purple-600 overflow-hidden">
-                  <div className="absolute inset-0 bg-black bg-opacity-20"></div>
-                  <div className="absolute inset-0 flex items-center justify-center">
-                    {school.logo ? (
-                      <img
-                        src={school.logo}
-                        alt={school.name}
-                        className="h-20 w-auto mx-auto object-contain bg-white rounded-lg p-2"
-                        onError={(e) => (e.currentTarget.style.display = 'none')}
-                      />
-                    ) : (
-                      <div className="text-center text-white">
-                        <Building className="w-16 h-16 mx-auto opacity-80 mb-2" />
-                        <span className="text-xs">No Logo</span>
-                      </div>
-                    )}
-                  </div>
-                  
-                  {/* Status Badge */}
-                  <div className="absolute top-4 right-4">
-                    <span className={`px-3 py-1 text-xs font-medium rounded-full ${
-                      school.status === 'active'
-                        ? 'bg-green-100 text-green-800'
-                        : 'bg-red-100 text-red-800'
-                    }`}>
-                      {school.status || 'unknown'}
-                    </span>
-                  </div>
-                  
-                  {/* Country Badge */}
-                  {school.country && (
-                    <div className="absolute top-4 left-4">
-                      <span className="px-3 py-1 text-xs font-medium rounded-full bg-white bg-opacity-90 text-gray-800">
-                        {school.country}
-                      </span>
-                    </div>
-                  )}
-                </div>
-
-                {/* School Content */}
-                <div className="p-6">
-                  <h3 className="text-center font-bold text-lg text-gray-900 mb-2">
-                    {school.name}
-                  </h3>
-                  
-                  <p className="text-center text-sm text-blue-600 mb-3">
-                    {school.shortname}
-                  </p>
-                  
-                  {school.description && (
-                    <p className="text-center text-sm text-gray-600 mb-4">
-                      {school.description || 'No description'}
-                    </p>
-                  )}
-
-                  <button className="mt-2 block mx-auto text-sm text-blue-600 underline hover:text-blue-800 transition-colors">
-                    View Details
-                  </button>
-                </div>
-              </motion.div>
-            ))}
-          </div>
+          <SchoolsCarousel schools={schools} />
         )}
 
         {/* View All Button - Only show if there are schools */}
