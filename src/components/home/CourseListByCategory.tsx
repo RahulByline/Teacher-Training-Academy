@@ -48,7 +48,9 @@ export const CourseListByCategory: React.FC<CourseListByCategoryProps> = ({
           response = await axios.get('https://iomad.bylinelms.com/webservice/rest/server.php', {
             params: {
               wstoken: '4a2ba2d6742afc7d13ce4cf486ba7633',
-              wsfunction: 'core_course_get_courses',
+              wsfunction: 'core_course_get_courses_by_field',
+              field: '',
+              value: '',
               moodlewsrestformat: 'json',
             },
           });
@@ -65,7 +67,7 @@ export const CourseListByCategory: React.FC<CourseListByCategoryProps> = ({
           });
         }
 
-        // FIX: Use response.data.courses
+        // Use response.data.courses
         if (response.data && Array.isArray(response.data.courses)) {
           const mappedCourses = response.data.courses
             .filter((course: any) => course.visible !== 0)
@@ -74,7 +76,7 @@ export const CourseListByCategory: React.FC<CourseListByCategoryProps> = ({
               fullname: course.fullname,
               shortname: course.shortname,
               summary: course.summary || '',
-              courseimage: course.overviewfiles?.[0]?.fileurl || course.courseimage,
+              courseimage: course.courseimage || (course.overviewfiles && course.overviewfiles[0]?.fileurl),
               categoryname: course.categoryname || 'General',
               format: course.format || 'topics',
               startdate: course.startdate,

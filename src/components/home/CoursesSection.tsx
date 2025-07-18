@@ -38,22 +38,24 @@ export const CoursesSection: React.FC = () => {
         const response = await axios.get('https://iomad.bylinelms.com/webservice/rest/server.php', {
           params: {
             wstoken: '4a2ba2d6742afc7d13ce4cf486ba7633',
-            wsfunction: 'core_course_get_courses',
+            wsfunction: 'core_course_get_courses_by_field',
+            field: '',
+            value: '',
             moodlewsrestformat: 'json',
           },
         });
 
-        if (response.data && Array.isArray(response.data)) {
+        if (response.data && Array.isArray(response.data.courses)) {
           // Filter only visible courses and map to our Course interface
-          const mappedCourses = response.data
-            .filter((course: any) => course.visible !== 0) // Only visible courses
+          const mappedCourses = response.data.courses
+            .filter((course: any) => course.visible !== 0)
             .map((course: any) => ({
               id: course.id.toString(),
               fullname: course.fullname,
               shortname: course.shortname,
               summary: course.summary || '',
               categoryid: course.categoryid || course.category,
-              courseimage: course.overviewfiles?.[0]?.fileurl || course.courseimage,
+              courseimage: course.courseimage || (course.overviewfiles && course.overviewfiles[0]?.fileurl),
               categoryname: course.categoryname || 'General',
               format: course.format || 'topics',
               startdate: course.startdate,

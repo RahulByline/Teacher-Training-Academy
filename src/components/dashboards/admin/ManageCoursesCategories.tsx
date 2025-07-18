@@ -20,7 +20,8 @@ import {
   Target,
   Layers,
   ChevronRight,
-  Eye
+  Eye,
+  
 } from 'lucide-react';
 import { LoadingSpinner } from '../../LoadingSpinner';
 import { Button } from '../../ui/Button';
@@ -74,13 +75,24 @@ export const ManageCoursesCategories: React.FC = () => {
       isActive: true
     },
     {
+      id: 'content-management',
+      title: 'Manage Course Content',
+      description: 'Manage Course Content Add Activities, Quiz, Etc...',
+      subtitle: 'Enrollment Management',
+      icon: Users,
+      route: '/courses-categories/manage-content',
+      color: 'from-purple-500 to-violet-600',
+      count: stats.totalEnrollments,
+      isActive: true
+    },
+    {
       id: 'iomad-settings',
       title: 'Manage IOMAD Course Settings',
       description: 'Configure advanced course settings and parameters',
       subtitle: 'Course Configuration',
       icon: Settings,
       route: '/courses-categories/iomad-settings',
-      color: 'from-purple-500 to-violet-600',
+      color: 'from-orange-500 to-red-600',
       isActive: true
     },
     {
@@ -90,7 +102,7 @@ export const ManageCoursesCategories: React.FC = () => {
       subtitle: 'School Assignment',
       icon: Building,
       route: '/courses-categories/assign-to-school',
-      color: 'from-orange-500 to-red-600',
+      color: 'from-teal-500 to-cyan-600',
       isActive: true
     },
     {
@@ -100,7 +112,7 @@ export const ManageCoursesCategories: React.FC = () => {
       subtitle: 'Group Management',
       icon: UserPlus,
       route: '/courses-categories/school-groups',
-      color: 'from-teal-500 to-cyan-600',
+      color: 'from-indigo-500 to-purple-600',
       isActive: true
     },
     {
@@ -110,7 +122,7 @@ export const ManageCoursesCategories: React.FC = () => {
       subtitle: 'Group Assignment',
       icon: Layers,
       route: '/courses-categories/assign-course-groups',
-      color: 'from-indigo-500 to-purple-600',
+      color: 'from-pink-500 to-rose-600',
       isActive: true
     },
     {
@@ -120,7 +132,7 @@ export const ManageCoursesCategories: React.FC = () => {
       subtitle: 'Location Management',
       icon: MapPin,
       route: '/courses-categories/teaching-locations',
-      color: 'from-pink-500 to-rose-600',
+      color: 'from-yellow-500 to-orange-600',
       isActive: true
     },
     {
@@ -130,7 +142,7 @@ export const ManageCoursesCategories: React.FC = () => {
       subtitle: 'Path Management',
       icon: Route,
       route: '/courses-categories/learning-paths',
-      color: 'from-yellow-500 to-orange-600',
+      color: 'from-orange-500 to-red-600',
       count: stats.activeLearningPaths,
       isActive: true
     }

@@ -3,7 +3,7 @@ import { BookOpen, TrendingUp, Award, Clock } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import { apiService } from '../../services/api';
 
-const fallbackImage = '/public/images/default-course.jpg';
+const fallbackImage = '/images/default-course.jpg';
 
 const LearningPage: React.FC = () => {
   const { user } = useAuth();

@@ -2,15 +2,16 @@
 import axios from 'axios';
 import { Course, School } from '../types';
 
-const API_URL = import.meta.env.VITE_MOODLE_API_URL;
+const API_URL = import.meta.env.VITE_MOODLE_API_URL || 'https://iomad.bylinelms.com/webservice/rest/server.php';
 
 export async function getAllCourses(): Promise<Course[]> {
   try {
     const params = new URLSearchParams();
     params.append('wstoken', '4a2ba2d6742afc7d13ce4cf486ba7633'); // <-- Replace with your real token
-    params.append('wsfunction', 'core_course_get_courses');
+    params.append('wsfunction', 'core_course_get_courses_by_field');
+    params.append('field', '');
+    params.append('value', '');
     params.append('moodlewsrestformat', 'json');
-    // No options[ids] to fetch all courses
 
     const { data } = await axios.post(API_URL, params);
 
@@ -21,7 +22,6 @@ export async function getAllCourses(): Promise<Course[]> {
       );
     }
 
-    // FIX: Use data.courses
     if (!data || !Array.isArray(data.courses)) {
       throw new Error('Invalid response format from Moodle API');
     }
@@ -36,6 +36,7 @@ export async function getAllCourses(): Promise<Course[]> {
       categoryname: course.categoryname,
       startdate: course.startdate,
       enddate: course.enddate,
+      courseimage: course.courseimage || (course.overviewfiles && course.overviewfiles[0]?.fileurl),
       // add other fields as needed
     }));
   } catch (error: any) {
@@ -195,5 +196,74 @@ export async function createCategory(categoryData: {
     throw new Error('Failed to create category: Invalid response');
   } catch (error: any) {
     throw new Error(error.message || 'Failed to create category');
+  }
+}
+
+/**
+ * Create a module (resource/activity) in a course using core_course_create_modules
+ * @param moduleData - Object with courseid, modname, name, description, and other fields depending on type
+ */
+export async function createCourseModule(moduleData: any): Promise<any> {
+  const url = API_URL;
+  const params = new URLSearchParams();
+  params.append('wstoken', '4a2ba2d6742afc7d13ce4cf486ba7633');
+  params.append('wsfunction', 'core_course_create_modules');
+  params.append('moodlewsrestformat', 'json');
+
+  // Required fields
+  params.append('modules[0][course]', String(moduleData.courseid));
+  params.append('modules[0][modulename]', moduleData.modname);
+  params.append('modules[0][name]', moduleData.name);
+  if (moduleData.description) params.append('modules[0][description]', moduleData.description);
+
+  // File resource
+  if (moduleData.modname === 'resource' && moduleData.files && moduleData.files.length > 0) {
+    // Attach uploaded file(s) by itemid
+    params.append('modules[0][contents][0][type]', 'file');
+    params.append('modules[0][contents][0][filename]', moduleData.files[0].filename);
+    params.append('modules[0][contents][0][filepath]', moduleData.files[0].filepath);
+    params.append('modules[0][contents][0][fileitemid]', String(moduleData.files[0].itemid));
+  }
+
+  // Page resource
+  if (moduleData.modname === 'page' && moduleData.pagecontent) {
+    params.append('modules[0][page][content]', moduleData.pagecontent);
+  }
+
+  // URL resource
+  if (moduleData.modname === 'url' && moduleData.externalurl) {
+    params.append('modules[0][externalurl]', moduleData.externalurl);
+  }
+
+  try {
+    const response = await axios.post(url, params, {
+      headers: { 'Content-Type': 'application/x-www-form-urlencoded' }
+    });
+    return response.data;
+  } catch (error: any) {
+    throw new Error(error.message || 'Failed to create course module');
+  }
+}
+
+/**
+ * Get all course contents (sections and modules) for a course
+ */
+export async function getCourseContents(courseId: string): Promise<any[]> {
+  const url = API_URL;
+  const params = new URLSearchParams();
+  params.append('wstoken', '4a2ba2d6742afc7d13ce4cf486ba7633');
+  params.append('wsfunction', 'core_course_get_contents');
+  params.append('moodlewsrestformat', 'json');
+  params.append('courseid', courseId);
+  try {
+    const response = await axios.post(url, params, {
+      headers: { 'Content-Type': 'application/x-www-form-urlencoded' }
+    });
+    if (Array.isArray(response.data)) {
+      return response.data;
+    }
+    return [];
+  } catch (error: any) {
+    throw new Error(error.message || 'Failed to fetch course contents');
   }
 } 
