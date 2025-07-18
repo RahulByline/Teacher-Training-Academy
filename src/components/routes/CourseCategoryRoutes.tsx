@@ -9,6 +9,7 @@ import { SchoolGroupsPage } from '../pages/courses/SchoolGroupsPage';
 import { AssignCourseGroupsPage } from '../pages/courses/AssignCourseGroupsPage';
 import { TeachingLocationsPage } from '../pages/courses/TeachingLocationsPage';
 import { LearningPathsPage } from '../pages/courses/LearningPathsPage';
+import ManageCoursesContent from '../pages/courses/ManageCoursesContent';
 
 export const CourseCategoryRoutes: React.FC = () => {
   return (
@@ -22,6 +23,8 @@ export const CourseCategoryRoutes: React.FC = () => {
         <Route path="assign-course-groups" element={<AssignCourseGroupsPage />} />
         <Route path="teaching-locations" element={<TeachingLocationsPage />} />
         <Route path="learning-paths" element={<LearningPathsPage />} />
+        <Route path="manage-content" element={<ManageCoursesContent />} />
+        <Route path="manage-content/:courseId" element={<div>Course Content Management (to be implemented)</div>} />
         <Route path="*" element={<Navigate to="/courses-categories" replace />} />
       </Routes>
     </DashboardLayout>

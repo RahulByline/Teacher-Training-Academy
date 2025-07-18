@@ -27,12 +27,14 @@ export const coursesService = {
     try {
       const response = await api.get('', {
         params: {
-          wsfunction: 'core_course_get_courses',
+          wsfunction: 'core_course_get_courses_by_field',
+          field: '',
+          value: '',
         },
       });
 
-      if (response.data && Array.isArray(response.data)) {
-        return response.data
+      if (response.data && Array.isArray(response.data.courses)) {
+        return response.data.courses
           .filter((course: any) => course.visible !== 0)
           .map((course: any) => ({
             id: course.id.toString(),
@@ -40,7 +42,7 @@ export const coursesService = {
             shortname: course.shortname,
             summary: course.summary || '',
             categoryid: course.categoryid || course.category,
-            courseimage: course.overviewfiles?.[0]?.fileurl || course.courseimage,
+            courseimage: course.courseimage || course.overviewfiles?.[0]?.fileurl,
             categoryname: course.categoryname || 'General',
             format: course.format || 'topics',
             startdate: course.startdate,
