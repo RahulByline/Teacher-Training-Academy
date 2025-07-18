@@ -3,20 +3,20 @@ import { useAuth } from '../../context/AuthContext';
 import { apiService } from '../../services/api';
 import { Users, Search, Filter } from 'lucide-react';
 import { Course } from '../../types';
-
+ 
 const mockTrainees = [
   { id: '1', name: 'Alice Johnson', email: 'alice.johnson@company.com', avatar: '/public/avatar1.png', courses: 3, progress: 85, lastActive: '2 hours ago', status: 'active' },
   { id: '2', name: 'Bob Smith', email: 'bob.smith@company.com', avatar: '/public/avatar2.png', courses: 2, progress: 45, lastActive: '1 day ago', status: 'at-risk' },
   { id: '3', name: 'Carol Davis', email: 'carol.davis@company.com', avatar: '/public/avatar3.png', courses: 4, progress: 92, lastActive: '30 minutes ago', status: 'active' },
 ];
-
+ 
 export default function TraineesPage() {
   const { user } = useAuth();
   const [courses, setCourses] = useState<Course[]>([]);
   const [trainees, setTrainees] = useState<any[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-
+ 
   useEffect(() => {
     async function fetchTrainees() {
       if (user && user.id) {
@@ -42,9 +42,9 @@ export default function TraineesPage() {
     }
     fetchTrainees();
   }, [user && user.id]);
-
+ 
   const traineesToShow = trainees.length ? trainees : mockTrainees;
-
+ 
   return (
     <div className="flex flex-col w-full h-full min-h-screen min-w-screen bg-[#f9fafb] p-8">
       <h1 className="text-2xl font-bold mb-6">My Trainees</h1>
@@ -107,4 +107,5 @@ export default function TraineesPage() {
       </div>
     </div>
   );
-} 
+}
+ 

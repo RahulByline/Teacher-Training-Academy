@@ -13,7 +13,8 @@ import AchievementsPage from '../pages/AchievementsPage';
 import MaterialsPage from '../pages/MaterialsPage';
 import CommunityPage from '../pages/CommunityPage';
 import TrainerSettingsPage from '../pages/TrainerSettingsPage';
-
+import AccountSettingsPage from '../dashboards/AccountSettingsPage';
+ 
 const TrainerDashboardRoutes: React.FC = () => (
   <Routes>
     <Route path="" element={<TrainerDashboard />}> {/* Dashboard main overview */}
@@ -30,9 +31,10 @@ const TrainerDashboardRoutes: React.FC = () => (
       <Route path="materials" element={<MaterialsPage />} />
       <Route path="community" element={<CommunityPage />} />
       <Route path="settings" element={<TrainerSettingsPage />} />
+      <Route path="settings/:traineeId" element={<AccountSettingsPage />} />
       <Route path="*" element={<Navigate to="" replace />} />
     </Route>
   </Routes>
 );
-
-export default TrainerDashboardRoutes; 
+ 
+export default TrainerDashboardRoutes;
