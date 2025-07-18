@@ -32,6 +32,8 @@ const detectUserRole = (username: string, userData?: any): UserRole | undefined 
       'principal': 'principal',
       'companymanager': 'principal',
       'trainer': 'trainer',
+      'teachers': 'trainer', // recognize 'teachers' as 'trainer'
+      'editingteacher': 'teacher', // recognize 'editingteacher' as 'teacher'
       'teacher': 'teacher',
       'student': 'teacher', // treat student as teacher for dashboard access
       'cluster_lead': 'cluster_lead',
