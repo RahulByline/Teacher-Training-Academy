@@ -89,7 +89,7 @@ const ManageCourseContentPage: React.FC = () => {
         if (!uploaded || !uploaded.itemid) throw new Error('File upload failed');
         await contentBuilderService.addActivity(Number(courseId), selectedSection, 'resource', fileTitle, [
           { name: 'description', value: fileDesc },
-          { name: 'files', value: JSON.stringify([{ itemid: uploaded.itemid, filename: uploaded.filename, filepath: uploaded.filepath }]) },
+          { name: 'files', value: uploaded.itemid },
         ]);
       } else if (addType === 'page') {
         if (!pageTitle || !pageContent) throw new Error('Title and content are required');
@@ -109,7 +109,7 @@ const ManageCourseContentPage: React.FC = () => {
         const uploadedFiles = await Promise.all(folderFiles.map(f => schoolsService.uploadFile(f)));
         await contentBuilderService.addActivity(Number(courseId), selectedSection, 'folder', fileTitle, [
           { name: 'description', value: fileDesc },
-          { name: 'files', value: JSON.stringify(uploadedFiles.map(f => ({ itemid: f.itemid, filename: f.filename, filepath: f.filepath }))) },
+          { name: 'files', value: uploadedFiles[0]?.itemid }, // Use the first uploaded file's itemid (Moodle expects a draft area itemid)
         ]);
       } else if (addType === 'scorm') {
         if (!scormFile || !scormTitle) throw new Error('SCORM file and title are required');
@@ -117,7 +117,7 @@ const ManageCourseContentPage: React.FC = () => {
         if (!uploaded || !uploaded.itemid) throw new Error('SCORM upload failed');
         await contentBuilderService.addActivity(Number(courseId), selectedSection, 'scorm', scormTitle, [
           { name: 'description', value: scormDesc },
-          { name: 'files', value: JSON.stringify([{ itemid: uploaded.itemid, filename: uploaded.filename, filepath: uploaded.filepath }]) },
+          { name: 'files', value: uploaded.itemid },
         ]);
       } else if (addType === 'assignment') {
         if (!assignmentTitle) throw new Error('Assignment title is required');
