@@ -79,7 +79,11 @@ export const LoginPage: React.FC = () => {
           setSuccess(`${t('welcome')}, ${user.firstname}!`);
           login(user);
           setTimeout(() => {
-            navigate('/dashboard');
+            if (userRole === 'school_admin') {
+              navigate('/school-admin-dashboard');
+            } else {
+              navigate('/dashboard');
+            }
           }, 1000);
         } else {
           setError('Access denied. You do not have permission to access this role.');
