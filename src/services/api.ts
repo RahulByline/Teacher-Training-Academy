@@ -19,32 +19,34 @@ api.interceptors.request.use((config) => {
   return config;
 });
 
-// Enhanced role detection based on username patterns and user data
-const detectUserRole = (username: string, userData?: any): UserRole => {
-  const lowerUsername = username.toLowerCase();
-  
-  // Check for admin patterns
-  if (lowerUsername.includes('admin') || lowerUsername.includes('super') || lowerUsername.includes('system')) {
-    return 'admin';
+// Enhanced role detection based on actual Moodle/Iomad roles and username patterns
+const detectUserRole = (username: string, userData?: any): UserRole | undefined => {
+  console.log('DEBUG detectUserRole userData:', userData); // Debug log for role detection
+  // 1. Check for roles array from Moodle/Iomad
+  if (userData && Array.isArray(userData.roles)) {
+    // Priority order for mapping Moodle roles to app roles
+    const rolePriority: { [key: string]: UserRole } = {
+      'school_admin': 'school_admin',
+      'admin': 'admin',
+      'manager': 'principal',
+      'principal': 'principal',
+      'companymanager': 'principal',
+      'trainer': 'trainer',
+      'teacher': 'teacher',
+      'student': 'teacher', // treat student as teacher for dashboard access
+      'cluster_lead': 'cluster_lead',
+      'superadmin': 'admin',
+      'siteadmin': 'admin',
+    };
+    for (const role of userData.roles) {
+      if (role && typeof role.shortname === 'string') {
+        const mapped = rolePriority[role.shortname.toLowerCase()];
+        if (mapped) return mapped;
+      }
+    }
   }
-  
-  // Check for trainer patterns
-  if (lowerUsername.includes('trainer') || lowerUsername.includes('instructor') || lowerUsername.includes('facilitator')) {
-    return 'trainer';
-  }
-  
-  // Check for principal/manager patterns
-  if (lowerUsername.includes('principal') || lowerUsername.includes('head') || lowerUsername.includes('manager') || lowerUsername.includes('director')) {
-    return 'principal';
-  }
-  
-  // Check for cluster lead patterns
-  if (lowerUsername.includes('cluster') || lowerUsername.includes('lead') || lowerUsername.includes('coordinator')) {
-    return 'cluster_lead';
-  }
-  
-  // Default to teacher for educational contexts
-  return 'teacher';
+  // No fallback: if no known role found, return undefined
+  return undefined;
 };
 
 export const apiService = {
@@ -60,8 +62,31 @@ export const apiService = {
 
       if (response.data && response.data.length > 0) {
         const userData = response.data[0];
+        // Fetch actual roles using local_intelliboard_get_users_roles
+        let roles: any[] = [];
+        try {
+          const rolesResponse = await api.get('', {
+            params: {
+              wsfunction: 'local_intelliboard_get_users_roles',
+              'data[courseid]': 0,
+              'data[userid]': userData.id,
+              'data[checkparentcontexts]': 1,
+            },
+          });
+          // rolesResponse.data.data is a stringified JSON object (not array)
+          if (rolesResponse.data && typeof rolesResponse.data.data === 'string') {
+            const parsed = JSON.parse(rolesResponse.data.data);
+            if (parsed && typeof parsed === 'object') {
+              roles = Object.values(parsed);
+            }
+          }
+        } catch (e) {
+          // If roles fetch fails, fallback to empty array
+          roles = [];
+        }
+        // Attach roles to userData for detectUserRole
+        userData.roles = roles;
         const role = detectUserRole(username, userData);
-        
         return {
           id: userData.id.toString(),
           email: userData.email,
