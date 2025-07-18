@@ -749,5 +749,75 @@ export const usersService = {
       console.error('Error fetching company users:', error);
       return [];
     }
+  },
+  async getTrainerWeekActivitiesAndEvents({ userId, year, month, weekStart, weekEnd }: { userId: string, year: number, month: number, weekStart: number, weekEnd: number }) {
+    // 1. Fetch all calendar events for the month
+    const calendarEvents = await this.getTrainerMonthlyCalendar({ userId, year, month });
+    // 2. Fetch all action activities for the week
+    const params = new URLSearchParams();
+    params.append('wstoken', '4a2ba2d6742afc7d13ce4cf486ba7633');
+    params.append('wsfunction', 'core_calendar_get_action_events_by_timesort');
+    params.append('moodlewsrestformat', 'json');
+    params.append('timesortfrom', String(weekStart));
+    params.append('timesortto', String(weekEnd));
+    params.append('limitnum', '50'); // Fix: limit must be between 1 and 50
+    params.append('userid', userId);
+    let activities = [];
+    try {
+      const response = await fetch('https://iomad.bylinelms.com/webservice/rest/server.php', {
+        method: 'POST',
+        body: params,
+      });
+      const data = await response.json();
+      activities = (data.events || []).map((event: any) => ({
+        id: event.id,
+        name: event.name,
+        description: event.description,
+        location: event.location,
+        timestart: event.timestart,
+        timeduration: event.timeduration,
+        eventtype: event.eventtype,
+        timesort: event.timesort,
+        visible: event.visible,
+        formattedtime: event.formattedtime,
+        formattedlocation: event.formattedlocation,
+        type: 'activity',
+      }));
+    } catch (error) {
+      console.error('Error fetching trainer week activities:', error);
+    }
+    // 3. Filter calendar events for the week
+    const weekEvents = calendarEvents.filter((event: any) => event.timestart >= weekStart && event.timestart < weekEnd)
+      .map((event: any) => ({ ...event, type: 'event' }));
+    // 4. Merge and sort by timestart
+    const all = [...weekEvents, ...activities].sort((a, b) => a.timestart - b.timestart);
+    console.log('Merged week activities and events:', all);
+    return all;
+  },
+  async getTrainerMonthlyCalendar({ userId, year, month }: { userId: string, year: number, month: number }) {
+    // Calculate the start and end timestamps for the month
+    const monthStartDate = new Date(year, month - 1, 1);
+    const monthEndDate = new Date(year, month, 1);
+    const timestart = Math.floor(monthStartDate.getTime() / 1000);
+    const timeend = Math.floor(monthEndDate.getTime() / 1000);
+    const response = await api.get('', {
+      params: {
+        wsfunction: 'core_calendar_get_calendar_events',
+        'options[userevents]': 1,
+        'options[siteevents]': 1,
+        'options[timestart]': timestart,
+        'options[timeend]': timeend,
+        'options[ignorehidden]': 1,
+        // userid: userId, // Removed as not accepted
+      }
+    });
+    // The response may have events in response.data.events or response.data.data.events
+    let events = [];
+    if (response.data && Array.isArray(response.data.events)) {
+      events = response.data.events;
+    } else if (response.data && response.data.data && Array.isArray(response.data.data.events)) {
+      events = response.data.data.events;
+    }
+    return events;
   }
 };
