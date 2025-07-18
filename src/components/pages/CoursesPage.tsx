@@ -36,8 +36,9 @@ export default function CoursesPage() {
         enrolled: c.enrollmentCount || 0,
         rating: c.rating || 4.8,
         summary: c.summary || '',
+        courseimage: c.courseimage || '', // Add this line
       }))
-    : mockCourses;
+    : mockCourses.map((c) => ({ ...c, courseimage: '' })); // Add courseimage to mock
 
   return (
     <div className="flex flex-col w-full h-full min-h-screen min-w-screen bg-[#f9fafb] p-8">
@@ -51,13 +52,22 @@ export default function CoursesPage() {
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {coursesToShow.map((course) => (
               <div key={course.id} className="border border-gray-200 rounded-lg p-6 bg-white flex flex-col justify-between">
+                {/* Course Image */}
+                <div className="h-40 w-full flex items-center justify-center mb-4 bg-gray-100 rounded-xl overflow-hidden">
+                  <img
+                    src={course.courseimage || '/public/images/default-course.jpg'}
+                    alt={course.title}
+                    className="h-full w-auto max-w-full object-contain"
+                    onError={e => (e.currentTarget.src = '/public/images/default-course.jpg')}
+                  />
+                </div>
                 <div className="flex items-center justify-between mb-4">
                   <h4 className="font-semibold text-gray-900">{course.title}</h4>
                   <button className="p-1 text-gray-600 hover:text-blue-600">
                     <Eye className="w-4 h-4" />
                   </button>
                 </div>
-                <p className="text-sm text-gray-600 mb-4">{course.summary || 'No description available'}</p>
+                {/* Removed description/summary */}
                 <div className="space-y-2 text-sm">
                   <div className="flex justify-between">
                     <span className="text-gray-600">Enrolled:</span>

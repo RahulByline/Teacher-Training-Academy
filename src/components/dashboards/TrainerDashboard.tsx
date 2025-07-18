@@ -160,7 +160,7 @@ const localizer = dateFnsLocalizer({
 export const TrainerDashboard: React.FC = () => {
   // ALL HOOKS AT THE TOP
   const { t } = useTranslation();
-  const { user, loading: authLoading } = useAuth();
+  const { user, loading: authLoading, logout } = useAuth();
   const [courses, setCourses] = useState<Course[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -184,6 +184,7 @@ export const TrainerDashboard: React.FC = () => {
     const now = new Date();
     return { year: now.getFullYear(), month: now.getMonth() };
   });
+  const [totalTrainees, setTotalTrainees] = useState<number | null>(null);
 
   // Helper for week navigation
   const handlePrev = () => {
@@ -321,6 +322,23 @@ export const TrainerDashboard: React.FC = () => {
     fetchMonthItems();
   }, [user]);
 
+  useEffect(() => {
+    async function fetchTrainees() {
+      try {
+        const users = await usersService.getAllUsers();
+        console.log('All users:', users);
+        // Only 'teacher' is a valid UserRole; 'trainee' is not defined in types
+        const trainees = users.filter(u => u.role === 'teacher');
+        // If you add 'trainee' to UserRole, add: u.role === 'trainee'
+        console.log('Filtered trainees/teachers:', trainees);
+        setTotalTrainees(trainees.length);
+      } catch (e) {
+        setTotalTrainees(null);
+      }
+    }
+    fetchTrainees();
+  }, []);
+
   // Group items by day
   const weekStartDate = startOfWeek(new Date(), { weekStartsOn: 1 });
   const weekDays = Array.from({ length: 7 }, (_, i) => addDays(weekStartDate, i));
@@ -342,7 +360,6 @@ export const TrainerDashboard: React.FC = () => {
 
   // --- Derived Data from Real Courses ---
   const activeSessions = useMemo(() => courses.filter(c => typeof c.progress === 'number' && c.progress < 100).length, [courses]);
-  const totalTrainees = useMemo(() => courses.reduce((sum, c) => sum + (c.enrollmentCount || 0), 0) || 0, [courses]);
   const avgRating = useMemo(() => {
     const ratings = courses.map(c => c.rating).filter(Boolean) as number[];
     if (!ratings.length) return 0;
@@ -366,7 +383,7 @@ export const TrainerDashboard: React.FC = () => {
     },
     {
       label: 'Total Trainees',
-      value: totalTrainees || 124,
+      value: totalTrainees !== null ? totalTrainees : 124,
       icon: Users,
       color: 'bg-green-100 text-green-600',
       change: '',
@@ -455,6 +472,12 @@ export const TrainerDashboard: React.FC = () => {
     navigate(route);
   };
 
+  // Shared logout handler for both sidebar and navbar
+  const handleLogout = () => {
+    if (typeof logout === 'function') logout();
+    navigate('/#access');
+  };
+
   // --- Main Content ---
   const isDashboardRoot = location.pathname === '/dashboard' || location.pathname === '/dashboard/';
   return (
@@ -487,7 +510,7 @@ export const TrainerDashboard: React.FC = () => {
             onClick={() => navigate(`/dashboard/settings/${user.id}`)}
           />
           <span className="hidden lg:block font-semibold">{user.fullname || user.firstname || user.username || 'Trainer'}</span>
-          <button className="flex items-center gap-2 mt-2 px-3 py-2 bg-gray-700 hover:bg-gray-600 rounded-lg text-sm text-gray-200"><LogOut className="w-4 h-4" /> {t('Logout')}</button>
+          <button className="flex items-center gap-2 mt-2 px-3 py-2 bg-gray-700 hover:bg-gray-600 rounded-lg text-sm text-gray-200" onClick={handleLogout}><LogOut className="w-4 h-4" /> {t('Logout')}</button>
         </div>
       </aside>
       {/* Main Content */}
@@ -505,6 +528,7 @@ export const TrainerDashboard: React.FC = () => {
               </button>
               {/* Dropdown could go here */}
             </div>
+            <button className="flex items-center gap-2 ml-4 px-3 py-2 bg-gray-700 hover:bg-gray-600 rounded-lg text-sm text-gray-200" onClick={handleLogout}><LogOut className="w-4 h-4" /> {t('Logout')}</button>
           </div>
         </header>
         {isDashboardRoot ? (
@@ -630,11 +654,12 @@ export const TrainerDashboard: React.FC = () => {
                             allEvents.forEach(ev => {
                               if (eventsByDay[ev.dayKey]) eventsByDay[ev.dayKey].push(ev);
                             });
+                            // Update the typeColor mapping:
                             const typeColor = {
-                              session: 'bg-blue-100 text-blue-800',
+                              session: 'bg-purple-100 text-purple-800',
                               activity: 'bg-green-100 text-green-800',
                               overdue: 'bg-yellow-100 text-yellow-800',
-                              assignment: 'bg-purple-100 text-purple-800',
+                              assignment: 'bg-blue-100 text-blue-800',
                             };
                             return weekDays.map((day, idx) => {
                               const dayKey = day.toLocaleDateString('en-CA');
@@ -694,11 +719,12 @@ export const TrainerDashboard: React.FC = () => {
                             const daysInMonth = lastDay.getDate();
                             const startWeekDay = (firstDay.getDay() + 6) % 7; // 0=Mon
                             const totalCells = Math.ceil((startWeekDay + daysInMonth) / 7) * 7;
+                            // Update the typeColor mapping:
                             const typeColor = {
-                              session: 'bg-blue-100 text-blue-800',
+                              session: 'bg-purple-100 text-purple-800',
                               activity: 'bg-green-100 text-green-800',
                               overdue: 'bg-yellow-100 text-yellow-800',
-                              assignment: 'bg-purple-100 text-purple-800',
+                              assignment: 'bg-blue-100 text-blue-800',
                             };
                             // Map real courses to session events by day
                             const sessionEvents: ScheduleEvent[] = courses

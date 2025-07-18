@@ -641,6 +641,24 @@ export const apiService = {
       console.error('Error fetching plan competencies:', error);
       return [];
     }
+  },
+
+  async getCourseContents(courseId: string): Promise<any[]> {
+    try {
+      const response = await api.get('', {
+        params: {
+          wsfunction: 'core_course_get_contents',
+          courseid: courseId,
+        },
+      });
+      if (Array.isArray(response.data)) {
+        return response.data;
+      }
+      return [];
+    } catch (error) {
+      console.error('Error fetching course contents:', error);
+      return [];
+    }
   }
 };
 
