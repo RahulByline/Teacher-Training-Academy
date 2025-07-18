@@ -219,7 +219,7 @@ const MaterialsPage: React.FC = () => {
             </>
           )}
         </div>
-      </div>
+    </div>
   </div>
 );
 }

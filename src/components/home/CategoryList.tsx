@@ -1,14 +1,16 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { motion } from 'framer-motion';
 import { useInView } from 'react-intersection-observer';
 import axios from 'axios';
-import { BookOpen, ChevronRight, Folder, Grid } from 'lucide-react';
+import { BookOpen, ChevronRight, Folder, Grid, ChevronLeft } from 'lucide-react';
 import { LoadingSpinner } from '../LoadingSpinner';
+import Tilt from 'react-parallax-tilt';
 
 interface Category {
   id: string;
   name: string;
   description?: string;
+  imageurl?: string;
   idnumber?: string;
   coursecount?: number;
   parent?: string;
@@ -18,6 +20,13 @@ interface Category {
 interface CategoryListProps {
   onCategorySelect: (categoryId: string, categoryName: string) => void;
   selectedCategory: string | null;
+}
+
+// Helper to extract image from description HTML
+function extractImageFromDescription(desc?: string) {
+  if (!desc) return undefined;
+  const match = desc.match(/<img[^>]+src=["']([^"']+)["']/);
+  return match ? match[1] : undefined;
 }
 
 export const CategoryList: React.FC<CategoryListProps> = ({ 
@@ -31,6 +40,7 @@ export const CategoryList: React.FC<CategoryListProps> = ({
     triggerOnce: true,
     threshold: 0.1
   });
+  const scrollRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     const fetchCategories = async () => {
@@ -53,6 +63,7 @@ export const CategoryList: React.FC<CategoryListProps> = ({
               id: cat.id.toString(),
               name: cat.name,
               description: cat.description,
+              imageurl: cat.imageurl || extractImageFromDescription(cat.description),
               idnumber: cat.idnumber,
               coursecount: cat.coursecount || 0,
               parent: cat.parent?.toString(),
@@ -100,6 +111,20 @@ export const CategoryList: React.FC<CategoryListProps> = ({
       'from-pink-500 to-pink-600'
     ];
     return colors[index % colors.length];
+  };
+
+  // Get a themed image for each category (Unsplash demo images)
+  const getCategoryImage = (categoryName: string) => {
+    const name = categoryName.toLowerCase();
+    if (name.includes('teaching') || name.includes('education')) return 'https://images.unsplash.com/photo-1513258496099-48168024aec0?auto=format&fit=crop&w=400&q=80';
+    if (name.includes('technology') || name.includes('digital')) return 'https://images.unsplash.com/photo-1461749280684-dccba630e2f6?auto=format&fit=crop&w=400&q=80';
+    if (name.includes('leadership') || name.includes('management')) return 'https://images.unsplash.com/photo-1503676382389-4809596d5290?auto=format&fit=crop&w=400&q=80';
+    if (name.includes('assessment') || name.includes('evaluation')) return 'https://images.unsplash.com/photo-1465101046530-73398c7f28ca?auto=format&fit=crop&w=400&q=80';
+    if (name.includes('language') || name.includes('communication')) return 'https://images.unsplash.com/photo-1519125323398-675f0ddb6308?auto=format&fit=crop&w=400&q=80';
+    if (name.includes('science') || name.includes('stem')) return 'https://images.unsplash.com/photo-1465101178521-c1a9136a3b99?auto=format&fit=crop&w=400&q=80';
+    if (name.includes('arts') || name.includes('creative')) return 'https://images.unsplash.com/photo-1464983953574-0892a716854b?auto=format&fit=crop&w=400&q=80';
+    if (name.includes('health') || name.includes('wellness')) return 'https://images.unsplash.com/photo-1505751172876-fa1923c5c528?auto=format&fit=crop&w=400&q=80';
+    return 'https://images.unsplash.com/photo-1465101046530-73398c7f28ca?auto=format&fit=crop&w=400&q=80';
   };
 
   if (loading) {
@@ -166,46 +191,80 @@ export const CategoryList: React.FC<CategoryListProps> = ({
       </motion.div>
 
       {/* Categories Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-        {categories.map((category, index) => (
-          <motion.div
-            key={category.id}
-            initial={{ opacity: 0, y: 30 }}
-            animate={inView ? { opacity: 1, y: 0 } : {}}
-            transition={{ duration: 0.6, delay: index * 0.1 }}
-            whileHover={{ y: -8, scale: 1.02 }}
-            onClick={() => onCategorySelect(category.id, category.name)}
-            className={`cursor-pointer bg-white rounded-2xl shadow-lg hover:shadow-2xl transition-all duration-300 overflow-hidden group border border-gray-100 relative ${selectedCategory === category.id ? 'ring-2 ring-blue-500' : ''}`}
-          >
-            {/* Header with wave/curve */}
-            <div className="relative h-32 bg-gray-100 flex items-end justify-center overflow-hidden">
-              <div className={`absolute inset-0 bg-gradient-to-tr ${getCategoryColor(index)} opacity-80`} />
-              {/* Optional: category icon in a circle */}
-              <div className="relative z-10 mb-4 flex flex-col items-center">
-                <div className="w-16 h-16 rounded-full bg-white shadow flex items-center justify-center text-3xl border-4 border-white -mb-8">
-                  {getCategoryIcon(category.name)}
+      <div className="relative">
+        <button
+          className="absolute left-0 top-1/2 -translate-y-1/2 z-40 bg-white/80 hover:bg-white shadow rounded-full p-2 border border-gray-200 transition disabled:opacity-30"
+          onClick={() => {
+            if (scrollRef.current) scrollRef.current.scrollBy({ left: -360, behavior: 'smooth' });
+          }}
+          style={{ display: categories.length > 1 ? 'block' : 'none' }}
+        >
+          <ChevronLeft className="w-6 h-6 text-gray-700" />
+        </button>
+        <button
+          className="absolute right-0 top-1/2 -translate-y-1/2 z-40 bg-white/80 hover:bg-white shadow rounded-full p-2 border border-gray-200 transition disabled:opacity-30"
+          onClick={() => {
+            if (scrollRef.current) scrollRef.current.scrollBy({ left: 360, behavior: 'smooth' });
+          }}
+          style={{ display: categories.length > 1 ? 'block' : 'none' }}
+        >
+          <ChevronRight className="w-6 h-6 text-gray-700" />
+        </button>
+        <div
+          ref={scrollRef}
+          className="flex overflow-x-auto flex-nowrap gap-6 py-2 px-1 scroll-smooth scroll-snap-x items-stretch hide-scrollbar no-scrollbar"
+          style={{ scrollBehavior: 'smooth', scrollbarWidth: 'none', msOverflowStyle: 'none' }}
+        >
+          {categories.map((category, index) => (
+            <Tilt
+              key={category.id}
+              glareEnable={true}
+              glareMaxOpacity={0.15}
+              glareColor="#ffffff"
+              glarePosition="all"
+              tiltMaxAngleX={15}
+              tiltMaxAngleY={15}
+              transitionSpeed={250}
+              className="min-w-[306px] max-w-[306px] h-[378px] flex-shrink-0 scroll-snap-start group"
+            >
+              <motion.div
+                initial={{ opacity: 0, y: 30 }}
+                animate={inView ? { opacity: 1, y: 0 } : {}}
+                transition={{ duration: 0.6, delay: index * 0.1 }}
+                whileHover={{ y: -8, scale: 1.02 }}
+                onClick={() => onCategorySelect(category.id, category.name)}
+                className={`cursor-pointer bg-white rounded-2xl shadow-lg hover:shadow-2xl hover:-translate-y-1 transition-all duration-150 overflow-hidden border border-gray-100 relative ${selectedCategory === category.id ? 'ring-2 ring-blue-500' : ''} group-hover:scale-110 group-hover:z-50 flex flex-col h-full`}
+              >
+                {/* Header with wave/curve */}
+                <div className="relative w-full h-[207px] flex items-end justify-center overflow-hidden rounded-t-2xl group">
+                  {/* Category image background with hover zoom/brighten */}
+                  <img
+                    src={category.imageurl || getCategoryImage(category.name)}
+                    alt={category.name}
+                    className="absolute inset-0 w-full h-full object-cover object-center z-0 rounded-t-2xl transition-transform transition-filter duration-150 group-hover:scale-105 group-hover:brightness-110"
+                    loading="lazy"
+                  />
+                  {/* Hover overlay */}
+                  <div className="absolute inset-0 z-30 bg-black/20 opacity-0 group-hover:opacity-100 transition-opacity duration-150 rounded-t-2xl pointer-events-none" />
+                  {/* Bottom gradient overlay for text readability */}
+                  <div className="absolute bottom-0 left-0 w-full h-1/3 bg-gradient-to-t from-black/30 to-transparent z-20 pointer-events-none rounded-b-none rounded-t-2xl" />
+                  {/* Color overlay for theme */}
+                  <div className={`absolute inset-0 bg-gradient-to-tr ${getCategoryColor(index)} opacity-40 z-10 rounded-t-2xl`} />
                 </div>
-              </div>
-              {/* SVG wave */}
-              <svg className="absolute bottom-0 left-0 w-full" viewBox="0 0 400 30" fill="none" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="none">
-                <path d="M0 0C66.6667 30 133.333 30 200 0C266.667 30 333.333 30 400 0V30H0V0Z" fill="#fff"/>
-              </svg>
-            </div>
-            {/* Card Body */}
-            <div className="pt-12 pb-6 px-6 flex flex-col min-h-[180px]">
-              <h4 className="text-2xl font-bold text-gray-900 mb-2 line-clamp-2">{category.name}</h4>
-              {category.description && (
-                <p className="text-gray-600 text-base mb-4 line-clamp-3">{category.description.replace(/<[^>]*>/g, '').substring(0, 100)}{category.description.length > 100 ? '...' : ''}</p>
-              )}
-              <div className="flex items-center mt-auto pt-4 border-t border-gray-100">
-                <div className="flex items-center gap-2">
-                  <span className="inline-block w-8 h-8 rounded-full bg-blue-100 flex items-center justify-center text-blue-600 font-bold text-lg">{category.name.charAt(0)}</span>
-                  <span className="text-sm text-gray-700 font-medium">{category.coursecount} courses</span>
+                {/* Card Body */}
+                <div className="py-6 px-6 flex flex-col min-h-[120px] flex-1">
+                  <h4 className="text-xl font-bold text-gray-900 mb-2 line-clamp-2">{category.name}</h4>
+                  {category.description && (
+                    <p className="text-gray-600 text-base mb-4 line-clamp-3">{category.description.replace(/<[^>]*>/g, '').substring(0, 100)}{category.description.length > 100 ? '...' : ''}</p>
+                  )}
+                  <div className="flex items-center mt-auto pt-2">
+                    <span className="text-sm text-gray-700 font-medium">{category.coursecount} courses</span>
+                  </div>
                 </div>
-              </div>
-            </div>
-          </motion.div>
-        ))}
+              </motion.div>
+            </Tilt>
+          ))}
+        </div>
       </div>
 
       {/* All Categories Button */}
