@@ -20,7 +20,8 @@ const roleIcons = {
   trainer: '👩‍💼',
   principal: '🏫',
   cluster_lead: '🌐',
-  admin: '⚡'
+  admin: '⚡',
+  school_admin: '🏫', // Added for linter fix
 };
 
 const roleColors = {
@@ -28,7 +29,8 @@ const roleColors = {
   trainer: 'from-green-500 to-green-600',
   principal: 'from-purple-500 to-purple-600',
   cluster_lead: 'from-orange-500 to-orange-600',
-  admin: 'from-red-500 to-red-600'
+  admin: 'from-red-500 to-red-600',
+  school_admin: 'from-purple-500 to-purple-600', // Added for linter fix
 };
 
 export const LoginModal: React.FC<LoginModalProps> = ({ isOpen, onClose, selectedRole }) => {
@@ -56,7 +58,7 @@ export const LoginModal: React.FC<LoginModalProps> = ({ isOpen, onClose, selecte
         login(user);
         setTimeout(() => {
           onClose();
-          navigate('/dashboard');
+          navigate('/#access'); // Redirect to Home Access section
         }, 1000);
       } else {
         setError('Invalid username or password. Please try again.');
