@@ -54,6 +54,19 @@ const detectUserRole = (username: string, userData?: any): UserRole | undefined 
 export const apiService = {
   async authenticateUser(username: string, password: string): Promise<User | null> {
     try {
+      // 1. Authenticate using Moodle's login/token.php
+      const tokenResponse = await axios.post('https://iomad.bylinelms.com/login/token.php', null, {
+        params: {
+          username,
+          password,
+          service: 'moodle_mobile_app', // or your configured service name
+        },
+      });
+      if (!tokenResponse.data || !tokenResponse.data.token) {
+        // Authentication failed
+        return null;
+      }
+      // 2. Fetch user info by username (as before)
       const response = await api.get('', {
         params: {
           wsfunction: 'core_user_get_users_by_field',
@@ -61,10 +74,9 @@ export const apiService = {
           values: [username],
         },
       });
-
       if (response.data && response.data.length > 0) {
         const userData = response.data[0];
-        // Fetch actual roles using local_intelliboard_get_users_roles
+        // 3. Fetch actual roles using local_intelliboard_get_users_roles
         let roles: any[] = [];
         try {
           const rolesResponse = await api.get('', {
@@ -103,8 +115,8 @@ export const apiService = {
       }
       return null;
     } catch (error) {
-      console.error('Error authenticating user:', error);
-      throw new Error('Failed to authenticate user');
+      // If authentication fails or any error occurs, treat as failed login
+      return null;
     }
   },
 
