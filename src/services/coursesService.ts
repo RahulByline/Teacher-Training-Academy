@@ -263,12 +263,12 @@ export const coursesService = {
   /**
    * Get license info for a course in a school
    */
-  async getCourseLicenseInfo(schoolId: number, courseId: number): Promise<any> {
+  async getCourseLicenseInfo(companyId: number, courseId: number): Promise<any> {
     const params = new URLSearchParams();
     params.append('wstoken', IOMAD_TOKEN);
     params.append('wsfunction', 'block_iomad_company_admin_get_license_info');
     params.append('moodlewsrestformat', 'json');
-    params.append('companyid', String(schoolId));
+    params.append('companyid', String(companyId));
     params.append('courseid', String(courseId));
     const response = await axios.post(IOMAD_BASE_URL, params);
     return response.data;
@@ -400,17 +400,5 @@ export const coursesService = {
       console.error('Error enrolling user in course:', error);
       return false;
     }
-  },
-
-  // Fetch license info for a course in a company
-  async getCourseLicenseInfo(companyId: number, courseId: number): Promise<any> {
-    const params = new URLSearchParams();
-    params.append('wstoken', IOMAD_TOKEN);
-    params.append('wsfunction', 'block_iomad_company_admin_get_license_info');
-    params.append('moodlewsrestformat', 'json');
-    params.append('companyid', String(companyId));
-    params.append('courseid', String(courseId));
-    const response = await axios.post(IOMAD_BASE_URL, params);
-    return response.data;
   }
 };
