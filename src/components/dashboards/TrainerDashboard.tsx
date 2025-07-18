@@ -172,6 +172,70 @@ export const TrainerDashboard: React.FC = () => {
   const [weekLoading, setWeekLoading] = useState(false);
   const [monthItems, setMonthItems] = useState<any[]>([]);
   const [monthLoading, setMonthLoading] = useState(false);
+  const [scheduleView, setScheduleView] = useState<'week' | 'month'>('week');
+  // Add state for week and month navigation
+  const [currentWeekStart, setCurrentWeekStart] = useState(() => {
+    const now = new Date();
+    now.setDate(now.getDate() - ((now.getDay() + 6) % 7)); // Monday
+    now.setHours(0, 0, 0, 0);
+    return now;
+  });
+  const [currentMonth, setCurrentMonth] = useState(() => {
+    const now = new Date();
+    return { year: now.getFullYear(), month: now.getMonth() };
+  });
+
+  // Helper for week navigation
+  const handlePrev = () => {
+    if (scheduleView === 'week') {
+      setCurrentWeekStart(prev => {
+        const d = new Date(prev);
+        d.setDate(d.getDate() - 7);
+        return d;
+      });
+    } else {
+      setCurrentMonth(prev => {
+        let year = prev.year;
+        let month = prev.month - 1;
+        if (month < 0) {
+          month = 11;
+          year -= 1;
+        }
+        return { year, month };
+      });
+    }
+  };
+  const handleNext = () => {
+    if (scheduleView === 'week') {
+      setCurrentWeekStart(prev => {
+        const d = new Date(prev);
+        d.setDate(d.getDate() + 7);
+        return d;
+      });
+    } else {
+      setCurrentMonth(prev => {
+        let year = prev.year;
+        let month = prev.month + 1;
+        if (month > 11) {
+          month = 0;
+          year += 1;
+        }
+        return { year, month };
+      });
+    }
+  };
+  // Reset navigation when switching view
+  useEffect(() => {
+    if (scheduleView === 'week') {
+      const now = new Date();
+      now.setDate(now.getDate() - ((now.getDay() + 6) % 7));
+      now.setHours(0, 0, 0, 0);
+      setCurrentWeekStart(now);
+    } else {
+      const now = new Date();
+      setCurrentMonth({ year: now.getFullYear(), month: now.getMonth() });
+    }
+  }, [scheduleView]);
 
   useEffect(() => {
     if (user && user.id) {
@@ -458,108 +522,263 @@ export const TrainerDashboard: React.FC = () => {
               <div className="space-y-6 lg:col-span-2">
                 {/* This Week's Schedule */}
                 <div className="bg-white rounded-2xl shadow-md p-6">
-                  <h3 className="text-lg font-bold mb-4 text-gray-900">{t("Your Schedule")}</h3>
+                  <div className="flex items-center justify-between mb-4">
+                    <div>
+                      <h3 className="text-lg font-bold text-gray-900">{t("Your Schedule")}</h3>
+                      <div className="text-xs text-gray-500 mt-1">
+                        {scheduleView === 'month' ? (
+                          <>
+                            {new Date(currentMonth.year, currentMonth.month).toLocaleString('default', { month: 'long' })} {currentMonth.year}
+                          </>
+                        ) : (
+                          (() => {
+                            const weekStart = new Date(currentWeekStart);
+                            const weekEnd = new Date(currentWeekStart);
+                            weekEnd.setDate(weekEnd.getDate() + 5); // Monday–Saturday
+                            const startStr = weekStart.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+                            const endStr = weekEnd.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+                            return `${startStr} – ${endStr}, ${weekStart.getFullYear()}`;
+                          })()
+                        )}
+                      </div>
+                    </div>
+                    <div className="flex gap-2 items-center">
+                      <button
+                        className="px-2 py-1 rounded-lg text-sm font-medium border bg-white text-gray-700 border-gray-300 hover:bg-gray-100"
+                        onClick={handlePrev}
+                        aria-label="Previous"
+                      >
+                        &#8592; {t('Prev')}
+                      </button>
+                      <button
+                        className={`px-3 py-1 rounded-lg text-sm font-medium border ${scheduleView === 'week' ? 'bg-indigo-500 text-white border-indigo-500' : 'bg-white text-gray-700 border-gray-300'}`}
+                        onClick={() => setScheduleView('week')}
+                      >
+                        {t('Week')}
+                      </button>
+                      <button
+                        className={`px-3 py-1 rounded-lg text-sm font-medium border ${scheduleView === 'month' ? 'bg-indigo-500 text-white border-indigo-500' : 'bg-white text-gray-700 border-gray-300'}`}
+                        onClick={() => setScheduleView('month')}
+                      >
+                        {t('Month')}
+                      </button>
+                      <button
+                        className="px-2 py-1 rounded-lg text-sm font-medium border bg-white text-gray-700 border-gray-300 hover:bg-gray-100"
+                        onClick={handleNext}
+                        aria-label="Next"
+                      >
+                        {t('Next')} &#8594;
+                      </button>
+                    </div>
+                  </div>
                   {loading ? (
                     <div className="text-center text-gray-500 py-8">Loading...</div>
                   ) : error ? (
                     <div className="text-center text-red-500 py-8">{error}</div>
                   ) : (
-                    <ol className="relative border-l-2 border-indigo-100 ml-4">
-                      {(() => {
-                        // Build a week array (Monday-Sunday)
-                        const weekStart = new Date();
-                        weekStart.setDate(weekStart.getDate() - ((weekStart.getDay() + 6) % 7)); // Monday
-                        const weekDays = Array.from({ length: 7 }, (_, i) => {
-                          const d = new Date(weekStart);
-                          d.setDate(weekStart.getDate() + i);
-                          return d;
-                        });
-                        // Map real courses to session events by day
-                        const sessionEvents: ScheduleEvent[] = courses
-                          .filter(c => !!c.startdate && !!c.enddate)
-                          .map(c => {
-                            const start = new Date((c.startdate ?? 0) * 1000);
-                            const end = new Date((c.enddate ?? 0) * 1000);
-                            return {
-                              dayKey: start.toLocaleDateString('en-CA'),
-                              time: `${start.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })} - ${end.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}`,
-                              title: c.fullname,
-                              color: 'bg-blue-100 text-blue-800',
-                              location: c.format || 'TBD',
-                              enrolled: c.enrollmentCount || 0,
-                              type: 'session' as const,
+                    scheduleView === 'week' ? (
+                      <div className="overflow-x-auto">
+                        <div className="grid grid-cols-6 gap-4 min-w-[700px]">
+                          {(() => {
+                            // Build a week array (Monday-Saturday) based on currentWeekStart
+                            const weekDays = Array.from({ length: 6 }, (_, i) => {
+                              const d = new Date(currentWeekStart);
+                              d.setDate(currentWeekStart.getDate() + i);
+                              return d;
+                            });
+                            // Map real courses to session events by day
+                            const sessionEvents: ScheduleEvent[] = courses
+                              .filter(c => !!c.startdate && !!c.enddate)
+                              .map(c => {
+                                const start = new Date((c.startdate ?? 0) * 1000);
+                                const end = new Date((c.enddate ?? 0) * 1000);
+                                return {
+                                  dayKey: start.toLocaleDateString('en-CA'),
+                                  time: `${start.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })} - ${end.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}`,
+                                  title: c.fullname,
+                                  color: 'bg-blue-100 text-blue-800',
+                                  location: c.format || 'TBD',
+                                  enrolled: c.enrollmentCount || 0,
+                                  type: 'session' as const,
+                                };
+                              });
+                            // Fetch activities/assignments for the week (already in weekItems)
+                            const activityEvents: ScheduleEvent[] = weekItems.map(item => {
+                              const start = new Date(item.timestart * 1000);
+                              const end = item.timeduration ? new Date((item.timestart + item.timeduration) * 1000) : start;
+                              let type: ScheduleEvent['type'] = 'activity';
+                              if (item.eventtype === 'overdue') type = 'overdue';
+                              if (item.eventtype === 'assignment') type = 'assignment';
+                              return {
+                                dayKey: start.toLocaleDateString('en-CA'),
+                                time: `${start.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}${item.timeduration ? ' - ' + end.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : ''}`,
+                                title: item.name || item.title,
+                                color: '', // will be set by typeColor
+                                location: item.location || 'TBD',
+                                enrolled: 0,
+                                type,
+                              };
+                            });
+                            // Merge all events
+                            const allEvents: ScheduleEvent[] = [...sessionEvents, ...activityEvents];
+                            // Group by day
+                            const eventsByDay: { [key: string]: ScheduleEvent[] } = {};
+                            weekDays.forEach(day => {
+                              const key = day.toLocaleDateString('en-CA');
+                              eventsByDay[key] = [];
+                            });
+                            allEvents.forEach(ev => {
+                              if (eventsByDay[ev.dayKey]) eventsByDay[ev.dayKey].push(ev);
+                            });
+                            const typeColor = {
+                              session: 'bg-blue-100 text-blue-800',
+                              activity: 'bg-green-100 text-green-800',
+                              overdue: 'bg-yellow-100 text-yellow-800',
+                              assignment: 'bg-purple-100 text-purple-800',
                             };
-                          });
-                        // Fetch activities/assignments for the week (already in weekItems)
-                        const activityEvents: ScheduleEvent[] = weekItems.map(item => {
-                          const start = new Date(item.timestart * 1000);
-                          const end = item.timeduration ? new Date((item.timestart + item.timeduration) * 1000) : start;
-                          let type: ScheduleEvent['type'] = 'activity';
-                          if (item.eventtype === 'overdue') type = 'overdue';
-                          if (item.eventtype === 'assignment') type = 'assignment';
-                          return {
-                            dayKey: start.toLocaleDateString('en-CA'),
-                            time: `${start.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}${item.timeduration ? ' - ' + end.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : ''}`,
-                            title: item.name || item.title,
-                            color: '', // will be set by typeColor
-                            location: item.location || 'TBD',
-                            enrolled: 0,
-                            type,
-                          };
-                        });
-                        // Merge all events
-                        const allEvents: ScheduleEvent[] = [...sessionEvents, ...activityEvents];
-                        // Group by day
-                        const eventsByDay: { [key: string]: ScheduleEvent[] } = {};
-                        weekDays.forEach(day => {
-                          const key = day.toLocaleDateString('en-CA');
-                          eventsByDay[key] = [];
-                        });
-                        allEvents.forEach(ev => {
-                          if (eventsByDay[ev.dayKey]) eventsByDay[ev.dayKey].push(ev);
-                        });
-                        const typeColor = {
-                          session: 'bg-blue-100 text-blue-800',
-                          activity: 'bg-green-100 text-green-800',
-                          overdue: 'bg-yellow-100 text-yellow-800',
-                          assignment: 'bg-purple-100 text-purple-800',
-                        };
-                        return weekDays.map((day, idx) => {
-                          const dayKey = day.toLocaleDateString('en-CA');
-                          const label = day.toLocaleDateString('en-US', { weekday: 'short' }).toUpperCase();
-                          const dateNum = day.getDate();
-                          const events = eventsByDay[dayKey] || [];
-                          return (
-                            <li key={dayKey} className="mb-6 ml-6 relative">
-                              <span className="absolute -left-3 flex items-center justify-center w-6 h-6 bg-indigo-50 rounded-full ring-4 ring-white border border-indigo-100">
-                                <CalendarDays className="w-4 h-4 text-indigo-400" />
-                              </span>
-                              <span className="text-gray-800 font-medium">{label}</span>
-                              <span className="text-gray-500 text-sm ml-2">{dateNum}</span>
-                              <div className="mt-2">
-                                {events.length === 0 && (
-                                  <div className="h-8 text-xs text-gray-400">No events</div>
-                                )}
-                                {events.map((event, eIndex) => (
-                                  <div
-                                    key={eIndex}
-                                    className={`rounded-lg px-4 py-2 text-sm font-medium mb-2 flex items-center gap-4 shadow-sm ${typeColor[event.type as keyof typeof typeColor]}`}
-                                  >
-                                    <span>{event.time} - {event.title}</span>
-                                    {event.location && (
-                                      <span className="flex items-center gap-1 text-xs text-gray-600 ml-4"><MapPin className="w-4 h-4" />{event.location}</span>
-                                    )}
-                                    {typeof event.enrolled === 'number' && event.enrolled > 0 && (
-                                      <span className="flex items-center gap-1 text-xs text-gray-600 ml-4"><Users className="w-4 h-4" />{event.enrolled} enrolled</span>
-                                    )}
+                            return weekDays.map((day, idx) => {
+                              const dayKey = day.toLocaleDateString('en-CA');
+                              const label = day.toLocaleDateString('en-US', { weekday: 'short' }).toUpperCase();
+                              const dateNum = day.getDate();
+                              const events = eventsByDay[dayKey] || [];
+                              return (
+                                <div key={dayKey} className="flex flex-col items-center">
+                                  <div className="mb-2 flex flex-col items-center">
+                                    <span className="text-xs font-semibold text-gray-500">{label}</span>
+                                    <span className="text-lg font-bold text-gray-800">{dateNum}</span>
                                   </div>
-                                ))}
+                                  <div className="flex flex-col gap-2 w-full min-w-[120px]">
+                                    {events.length === 0 && (
+                                      <div className="h-16 flex items-center justify-center text-xs text-gray-400 bg-gray-50 rounded-lg">No events</div>
+                                    )}
+                                    {events.map((event, eIndex) => (
+                                      <div
+                                        key={eIndex}
+                                        className={`rounded-xl px-3 py-2 text-xs font-medium shadow-sm cursor-pointer ${typeColor[event.type as keyof typeof typeColor]} flex flex-col items-start`}
+                                      >
+                                        <span className="font-semibold">{event.time}</span>
+                                        <span>{event.title}</span>
+                                        {event.location && (
+                                          <span className="flex items-center gap-1 text-[10px] text-gray-600 mt-1"><MapPin className="w-3 h-3" />{event.location}</span>
+                                        )}
+                                        {typeof event.enrolled === 'number' && event.enrolled > 0 && (
+                                          <span className="flex items-center gap-1 text-[10px] text-gray-600 mt-1"><Users className="w-3 h-3" />{event.enrolled} enrolled</span>
+                                        )}
+                                      </div>
+                                    ))}
+                                  </div>
+                                </div>
+                              );
+                            });
+                          })()}
+                        </div>
+                      </div>
+                    ) : (
+                      // Month view
+                      <div className="overflow-x-auto">
+                        <div className="grid grid-cols-7 gap-2 min-w-[900px]">
+                          {/* Render weekday headers */}
+                          {[...Array(7)].map((_, i) => {
+                            const day = new Date(2023, 0, i + 2); // 0=Sun, 1=Mon, so 2=Mon
+                            return (
+                              <div key={i} className="text-xs font-semibold text-gray-500 text-center mb-2">
+                                {day.toLocaleDateString('en-US', { weekday: 'short' }).toUpperCase()}
                               </div>
-                            </li>
-                          );
-                        });
-                      })()}
-                    </ol>
+                            );
+                          })}
+                          {/* Render days of the month */}
+                          {(() => {
+                            const { year, month } = currentMonth;
+                            const firstDay = new Date(year, month, 1);
+                            const lastDay = new Date(year, month + 1, 0);
+                            const daysInMonth = lastDay.getDate();
+                            const startWeekDay = (firstDay.getDay() + 6) % 7; // 0=Mon
+                            const totalCells = Math.ceil((startWeekDay + daysInMonth) / 7) * 7;
+                            const typeColor = {
+                              session: 'bg-blue-100 text-blue-800',
+                              activity: 'bg-green-100 text-green-800',
+                              overdue: 'bg-yellow-100 text-yellow-800',
+                              assignment: 'bg-purple-100 text-purple-800',
+                            };
+                            // Map real courses to session events by day
+                            const sessionEvents: ScheduleEvent[] = courses
+                              .filter(c => !!c.startdate && !!c.enddate)
+                              .map(c => {
+                                const start = new Date((c.startdate ?? 0) * 1000);
+                                const end = new Date((c.enddate ?? 0) * 1000);
+                                return {
+                                  dayKey: start.toLocaleDateString('en-CA'),
+                                  time: `${start.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })} - ${end.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}`,
+                                  title: c.fullname,
+                                  color: 'bg-blue-100 text-blue-800',
+                                  location: c.format || 'TBD',
+                                  enrolled: c.enrollmentCount || 0,
+                                  type: 'session' as const,
+                                };
+                              });
+                            // Fetch activities/assignments for the month (already in monthItems)
+                            const activityEvents: ScheduleEvent[] = monthItems.map(item => {
+                              const start = new Date(item.timestart * 1000);
+                              const end = item.timeduration ? new Date((item.timestart + item.timeduration) * 1000) : start;
+                              let type: ScheduleEvent['type'] = 'activity';
+                              if (item.eventtype === 'overdue') type = 'overdue';
+                              if (item.eventtype === 'assignment') type = 'assignment';
+                              return {
+                                dayKey: start.toLocaleDateString('en-CA'),
+                                time: `${start.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}${item.timeduration ? ' - ' + end.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : ''}`,
+                                title: item.name || item.title,
+                                color: '', // will be set by typeColor
+                                location: item.location || 'TBD',
+                                enrolled: 0,
+                                type,
+                              };
+                            });
+                            // Merge all events
+                            const allEvents: ScheduleEvent[] = [...sessionEvents, ...activityEvents];
+                            // Group by day
+                            const eventsByDay: { [key: string]: ScheduleEvent[] } = {};
+                            for (let d = 1; d <= daysInMonth; d++) {
+                              const key = new Date(year, month, d).toLocaleDateString('en-CA');
+                              eventsByDay[key] = [];
+                            }
+                            allEvents.forEach(ev => {
+                              if (eventsByDay[ev.dayKey]) eventsByDay[ev.dayKey].push(ev);
+                            });
+                            return Array.from({ length: totalCells }, (_, idx) => {
+                              const dayNum = idx - startWeekDay + 1;
+                              const isCurrentMonth = dayNum > 0 && dayNum <= daysInMonth;
+                              const dayKey = isCurrentMonth ? new Date(year, month, dayNum).toLocaleDateString('en-CA') : '';
+                              const events = isCurrentMonth ? (eventsByDay[dayKey] || []) : [];
+                              return (
+                                <div key={idx} className={`flex flex-col items-center min-h-[90px] border rounded-lg p-1 ${isCurrentMonth ? 'bg-white' : 'bg-gray-50'}`}>
+                                  <div className={`mb-1 text-xs font-bold ${isCurrentMonth ? 'text-gray-800' : 'text-gray-300'}`}>{isCurrentMonth ? dayNum : ''}</div>
+                                  <div className="flex flex-col gap-1 w-full">
+                                    {isCurrentMonth && events.length === 0 && (
+                                      <div className="h-8 flex items-center justify-center text-[10px] text-gray-300 bg-gray-50 rounded">No events</div>
+                                    )}
+                                    {isCurrentMonth && events.map((event, eIndex) => (
+                                      <div
+                                        key={eIndex}
+                                        className={`rounded px-2 py-1 text-[10px] font-medium shadow-sm cursor-pointer mb-1 ${typeColor[event.type as keyof typeof typeColor]} flex flex-col items-start`}
+                                      >
+                                        <span className="font-semibold">{event.time}</span>
+                                        <span>{event.title}</span>
+                                        {event.location && (
+                                          <span className="flex items-center gap-1 text-[9px] text-gray-600 mt-1"><MapPin className="w-3 h-3" />{event.location}</span>
+                                        )}
+                                        {typeof event.enrolled === 'number' && event.enrolled > 0 && (
+                                          <span className="flex items-center gap-1 text-[9px] text-gray-600 mt-1"><Users className="w-3 h-3" />{event.enrolled} enrolled</span>
+                                        )}
+                                      </div>
+                                    ))}
+                                  </div>
+                                </div>
+                              );
+                            });
+                          })()}
+                        </div>
+                      </div>
+                    )
                   )}
                 </div>
                 {/* Upcoming Sessions */}
