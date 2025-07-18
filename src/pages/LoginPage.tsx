@@ -122,7 +122,7 @@ export const LoginPage: React.FC = () => {
           <form onSubmit={handleSubmit} className="space-y-4">
             <div>
               <label htmlFor="username" className="block text-sm font-medium text-white mb-2">
-                Email Address
+                Username
               </label>
               <Input
                 type="text"

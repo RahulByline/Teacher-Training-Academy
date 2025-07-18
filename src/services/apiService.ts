@@ -2,7 +2,7 @@
 import axios from 'axios';
 import { Course, School } from '../types';
 
-const API_URL = import.meta.env.VITE_MOODLE_API_URL;
+const API_URL = import.meta.env.VITE_MOODLE_API_URL || 'https://iomad.bylinelms.com/webservice/rest/server.php';
 
 export async function getAllCourses(): Promise<Course[]> {
   try {

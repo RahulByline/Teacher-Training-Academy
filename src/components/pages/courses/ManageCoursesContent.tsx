@@ -106,7 +106,14 @@ const ManageCoursesContent: React.FC = () => {
                               variant="primary"
                               size="md"
                               className="mt-2 flex items-center gap-2"
-                              onClick={() => navigate(`/courses-categories/manage-content/${course.id}`)}
+                              onClick={() => {
+                                console.log('Navigating to manage content for course:', course);
+                                if (course.id && course.id !== 'undefined' && course.id !== '') {
+                                  navigate(`/courses-categories/manage-content/${course.id}`);
+                                } else {
+                                  alert('Invalid course ID. Cannot navigate to manage content.');
+                                }
+                              }}
                             >
                               Manage Content <ChevronRight className="w-4 h-4" />
                             </Button>
