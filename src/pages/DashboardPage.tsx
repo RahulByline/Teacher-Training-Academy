@@ -2,11 +2,12 @@ import React, { useEffect, useState } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { DashboardLayout } from '../components/layout/DashboardLayout';
 import { AdminDashboard } from '../components/dashboards/AdminDashboard';
-import { TeacherDashboard } from '../components/dashboards/TeacherDashboard';
+
 import { TrainerDashboard } from '../components/dashboards/TrainerDashboard';
-import { SchoolAdminDashboard } from '../components/pages/courses/SchoolAdminDashboard';
+import SchoolAdminDashboardPage from '../components/pages/courses/SchoolAdminDashboardPage';
 import { schoolsService } from '../services/schoolsService';
 import { usersService } from '../services/usersService';
+import { Navigate } from 'react-router-dom';
 
 export const DashboardPage: React.FC = () => {
   const { user } = useAuth();
@@ -49,13 +50,12 @@ export const DashboardPage: React.FC = () => {
         return <AdminDashboard />;
       case 'school_admin':
         if (loading || !companyId) return <div>Loading school dashboard...</div>;
-        return <SchoolAdminDashboard companyId={companyId} />;
-      case 'teacher':
-        return <TeacherDashboard />;
+        return <SchoolAdminDashboardPage />;
       case 'trainer':
         return <TrainerDashboard />;
       default:
-        return <div>Invalid role</div>;
+        // For teachers, redirect to the new teacher dashboard
+        return <Navigate to="/teacher-dashboard" replace />;
     }
   };
 

@@ -1,10 +1,11 @@
 import React from 'react';
 import { useAuth } from '../context/AuthContext';
 import { DashboardLayout } from './DashboardLayout';
-import { TeacherDashboard } from './dashboards/TeacherDashboard';
+
 import { TrainerDashboard } from './dashboards/TrainerDashboard';
 import { AdminDashboard } from './dashboards/AdminDashboard';
 import { LoadingSpinner } from './LoadingSpinner';
+import { Navigate } from 'react-router-dom';
 
 export const DashboardPage: React.FC = () => {
   const { user, loading } = useAuth();
@@ -30,8 +31,6 @@ export const DashboardPage: React.FC = () => {
 
   const renderDashboard = () => {
     switch (user.role) {
-      case 'teacher':
-        return <TeacherDashboard />;
       case 'trainer':
         return <TrainerDashboard />;
       case 'principal':
@@ -39,7 +38,8 @@ export const DashboardPage: React.FC = () => {
       case 'admin':
         return <AdminDashboard />;
       default:
-        return <TeacherDashboard />;
+        // For teachers, redirect to the new teacher dashboard
+        return <Navigate to="/teacher-dashboard" replace />;
     }
   };
 

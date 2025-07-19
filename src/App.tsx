@@ -26,9 +26,18 @@ function DashboardRouteWrapper() {
   const { user, loading } = useAuth();
   if (loading) return null; // or a spinner if you want
   if (!user) return <Navigate to="/login/trainer" replace />;
+  
+  // Route teachers to the new TeacherDashboardRoutes
+  if (user.role === 'teacher') {
+    return <TeacherDashboardRoutes />;
+  }
+  
+  // Route trainers to their specific dashboard
   if (user.role === 'trainer') {
     return <TrainerDashboardRoutes />;
   }
+  
+  // For other roles, use the old DashboardPage system
   return <DashboardPage />;
 }
  
@@ -38,7 +47,7 @@ function App() {
       <LanguageProvider>
         <AuthProvider>
           <Router>
-            <div className="min-h-screen bg-gray-50 dark:bg-gray-900 transition-colors duration-300">
+            <div className="bg-gray-50 dark:bg-gray-900 transition-colors duration-300">
               <Routes>
                 <Route path="/" element={<HomePage />} />
                 <Route path="/login/:role" element={<LoginPage />} />
@@ -140,8 +149,6 @@ function App() {
         </AuthProvider>
       </LanguageProvider>
     </ThemeProvider>
- 
-   
   );
 }
  

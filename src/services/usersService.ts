@@ -47,7 +47,8 @@ export const usersService = {
           email: user.email,
           lastaccess: user.lastaccess,
           role: this.determineUserRole(user) as User['role'],
-          department: user.department
+          department: user.department,
+          profileimageurl: user.profileimageurl // <-- Add this line
         }));
       }
       return [];
@@ -156,7 +157,8 @@ export const usersService = {
           email: user.email,
           lastaccess: user.lastaccess,
           role: this.determineUserRole(user) as User['role'],
-          department: user.department
+          department: user.department,
+          profileimageurl: user.profileimageurl // <-- Add this line
         };
       }
       throw new Error('User not found');

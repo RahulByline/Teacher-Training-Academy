@@ -3,6 +3,7 @@ import { motion } from 'framer-motion';
 import { useTranslation } from 'react-i18next';
 import { useLanguage } from '../../context/LanguageContext';
 import { useTheme } from '../../context/ThemeContext';
+import { useAuth } from '../../context/AuthContext';
 import { LanguageToggle } from '../ui/LanguageToggle';
 import { ThemeToggle } from '../ui/ThemeToggle';
 import { Menu, X } from 'lucide-react';
@@ -11,6 +12,7 @@ export const Header: React.FC = () => {
   const { t } = useTranslation();
   const { isRTL } = useLanguage();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const { user } = useAuth();
 
   const navItems = [
     { key: 'home', href: '#home' },
@@ -63,7 +65,13 @@ export const Header: React.FC = () => {
           <div className="flex items-center space-x-4">
             <ThemeToggle />
             <LanguageToggle />
-            
+            {/* Profile Avatar */}
+            <img
+              src={user?.profileimageurl || '/public/logo-BYbhmxQK-removebg-preview.png'}
+              alt={user?.fullname || 'User'}
+              className="w-8 h-8 rounded-full object-cover border"
+              onError={e => { (e.currentTarget as HTMLImageElement).src = '/public/logo-BYbhmxQK-removebg-preview.png'; }}
+            />
             {/* Mobile Menu Button */}
             <button
               className="md:hidden p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800"
