@@ -10,6 +10,7 @@ export interface User {
   role?: UserRole;
   company?: string;
   department?: string;
+  phone?: string;
 }
  
 export interface Course {

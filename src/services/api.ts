@@ -643,22 +643,385 @@ export const apiService = {
     }
   },
 
-  async getCourseContents(courseId: string): Promise<any[]> {
+  // Get user achievements based on course completions and activities
+  async getUserAchievements(userId: string): Promise<any[]> {
     try {
-      const response = await api.get('', {
-        params: {
-          wsfunction: 'core_course_get_contents',
-          courseid: courseId,
-        },
+      const userCourses = await this.getUserCourses(userId);
+      const completedCourses = userCourses.filter((c: any) => c.progress === 100);
+      const inProgressCourses = userCourses.filter((c: any) => c.progress && c.progress > 0 && c.progress < 100);
+      
+      const achievements = [];
+      
+      // Achievement based on completed courses
+      if (completedCourses.length >= 1) {
+        achievements.push({
+          label: 'First Steps',
+          icon: '🎓',
+          unlocked: true,
+          description: 'Completed your first course'
+        });
+      }
+      
+      if (completedCourses.length >= 3) {
+        achievements.push({
+          label: 'Fast Learner',
+          icon: '📈',
+          unlocked: true,
+          description: 'Completed 3 courses'
+        });
+      }
+      
+      if (completedCourses.length >= 5) {
+        achievements.push({
+          label: 'Consistent',
+          icon: '👥',
+          unlocked: true,
+          description: 'Completed 5 courses'
+        });
+      }
+      
+      if (completedCourses.length >= 10) {
+        achievements.push({
+          label: 'Excellence',
+          icon: '⭐',
+          unlocked: true,
+          description: 'Completed 10 courses'
+        });
+      }
+      
+      if (completedCourses.length >= 15) {
+        achievements.push({
+          label: 'Master',
+          icon: '🏆',
+          unlocked: true,
+          description: 'Completed 15 courses'
+        });
+      }
+      
+      if (completedCourses.length >= 20) {
+        achievements.push({
+          label: 'Innovator',
+          icon: '💡',
+          unlocked: true,
+          description: 'Completed 20 courses'
+        });
+      }
+      
+      // Add locked achievements for motivation
+      const totalAchievements = 8;
+      const unlockedCount = achievements.length;
+      
+      if (unlockedCount < totalAchievements) {
+        achievements.push({
+          label: 'Mentor',
+          icon: '🤝',
+          unlocked: false,
+          description: 'Help 3 more colleagues to unlock'
+        });
+        
+        achievements.push({
+          label: 'Expert',
+          icon: '🎯',
+          unlocked: false,
+          description: 'Complete 25 courses'
+        });
+      }
+      
+      return achievements;
+    } catch (error) {
+      console.error('Error fetching user achievements:', error);
+      return [];
+    }
+  },
+
+  // Get user events and upcoming activities
+  async getUserEvents(userId: string): Promise<any[]> {
+    try {
+      const userCourses = await this.getUserCourses(userId);
+      const events: any[] = [];
+      
+      // Generate events based on course data
+      userCourses.forEach((course: any) => {
+        if (course.enddate) {
+          const endDate = new Date(course.enddate * 1000);
+          const now = new Date();
+          const daysUntilEnd = Math.ceil((endDate.getTime() - now.getTime()) / (1000 * 60 * 60 * 24));
+          
+          if (daysUntilEnd > 0 && daysUntilEnd <= 30) {
+            events.push({
+              title: `${course.fullname} - Final Assessment`,
+              date: daysUntilEnd === 1 ? 'Tomorrow' : `In ${daysUntilEnd} days`,
+              desc: `Submit your final assessment for "${course.fullname}"`,
+              type: 'assessment',
+              courseId: course.id
+            });
+          }
+        }
+        
+        if (course.startdate) {
+          const startDate = new Date(course.startdate * 1000);
+          const now = new Date();
+          const daysUntilStart = Math.ceil((startDate.getTime() - now.getTime()) / (1000 * 60 * 60 * 24));
+          
+          if (daysUntilStart > 0 && daysUntilStart <= 7) {
+            events.push({
+              title: `${course.fullname} - Course Starts`,
+              date: daysUntilStart === 1 ? 'Tomorrow' : `In ${daysUntilStart} days`,
+              desc: `Your course "${course.fullname}" begins soon`,
+              type: 'course_start',
+              courseId: course.id
+            });
+          }
+        }
+      });
+      
+      // Only real data: do not add any generic/mock events
+      
+      return events.sort((a, b) => {
+        // Sort by date priority
+        const aPriority = a.date === 'Tomorrow' ? 1 : a.date.startsWith('In') ? 2 : 3;
+        const bPriority = b.date === 'Tomorrow' ? 1 : b.date.startsWith('In') ? 2 : 3;
+        return aPriority - bPriority;
+      });
+    } catch (error) {
+      console.error('Error fetching user events:', error);
+      return [];
+    }
+  },
+
+  // Get available mentors (trainers and experienced teachers)
+  async getAvailableMentors(userId: string): Promise<any[]> {
+    try {
+      const allUsers = await this.getAllUsers();
+      
+      // Filter for potential mentors (trainers and experienced teachers)
+      const mentors = allUsers
+        .filter((user: any) => {
+          // Include trainers and teachers with more experience
+          return user.role === 'trainer' || 
+                 (user.role === 'teacher' && user.lastaccess && 
+                  Date.now() - user.lastaccess * 1000 < 30 * 24 * 60 * 60 * 1000); // Active in last 30 days
+        })
+        .slice(0, 6) // Limit to 6 mentors
+        .map((user: any) => {
+          const lastAccess = user.lastaccess ? new Date(user.lastaccess * 1000) : new Date();
+          const hoursSinceLastAccess = Math.floor((Date.now() - lastAccess.getTime()) / (1000 * 60 * 60));
+          
+          let status = 'Offline';
+          if (hoursSinceLastAccess < 1) {
+            status = 'Online';
+          } else if (hoursSinceLastAccess < 24) {
+            status = `In ${hoursSinceLastAccess}h`;
+          } else if (hoursSinceLastAccess < 48) {
+            status = 'Yesterday';
+          } else {
+            status = 'Tomorrow';
+          }
+          
+          return {
+            id: user.id,
+            name: user.fullname || `${user.firstname} ${user.lastname}`,
+            status,
+            role: user.role,
+            profileImage: user.profileimageurl,
+            department: user.department
+          };
+        });
+      
+      return mentors;
+    } catch (error) {
+      console.error('Error fetching mentors:', error);
+      return [];
+    }
+  },
+
+  // Get user competency data based on course progress and achievements
+  async getUserCompetency(userId: string): Promise<any[]> {
+    try {
+      const userCourses = await this.getUserCourses(userId);
+      const completedCourses = userCourses.filter((c: any) => c.progress === 100);
+      const inProgressCourses = userCourses.filter((c: any) => c.progress && c.progress > 0 && c.progress < 100);
+      
+      // Calculate competency scores based on course categories and progress
+      const competencyMap = {
+        'Pedagogy': 0,
+        'Assessment': 0,
+        'Technology': 0,
+        'Management': 0,
+        'Content': 0
+      };
+      
+      // Calculate scores based on completed courses
+      completedCourses.forEach((course: any) => {
+        const courseName = course.fullname.toLowerCase();
+        
+        if (courseName.includes('pedagogy') || courseName.includes('teaching') || courseName.includes('instruction')) {
+          competencyMap['Pedagogy'] += 20;
+        }
+        if (courseName.includes('assessment') || courseName.includes('evaluation') || courseName.includes('testing')) {
+          competencyMap['Assessment'] += 20;
+        }
+        if (courseName.includes('technology') || courseName.includes('digital') || courseName.includes('online')) {
+          competencyMap['Technology'] += 20;
+        }
+        if (courseName.includes('management') || courseName.includes('leadership') || courseName.includes('administration')) {
+          competencyMap['Management'] += 20;
+        }
+        if (courseName.includes('content') || courseName.includes('curriculum') || courseName.includes('subject')) {
+          competencyMap['Content'] += 20;
+        }
+      });
+      
+      // Add progress from in-progress courses
+      inProgressCourses.forEach((course: any) => {
+        const courseName = course.fullname.toLowerCase();
+        const progress = course.progress || 0;
+        
+        if (courseName.includes('pedagogy') || courseName.includes('teaching') || courseName.includes('instruction')) {
+          competencyMap['Pedagogy'] += (progress * 0.2);
+        }
+        if (courseName.includes('assessment') || courseName.includes('evaluation') || courseName.includes('testing')) {
+          competencyMap['Assessment'] += (progress * 0.2);
+        }
+        if (courseName.includes('technology') || courseName.includes('digital') || courseName.includes('online')) {
+          competencyMap['Technology'] += (progress * 0.2);
+        }
+        if (courseName.includes('management') || courseName.includes('leadership') || courseName.includes('administration')) {
+          competencyMap['Management'] += (progress * 0.2);
+        }
+        if (courseName.includes('content') || courseName.includes('curriculum') || courseName.includes('subject')) {
+          competencyMap['Content'] += (progress * 0.2);
+        }
+      });
+      
+      // Ensure minimum scores and cap at 100
+      const competencyData = Object.entries(competencyMap).map(([label, value]) => ({
+        label,
+        value: Math.min(100, Math.max(20, value)) // Minimum 20, maximum 100
+      }));
+      
+      return competencyData;
+    } catch (error) {
+      console.error('Error fetching user competency:', error);
+      return [];
+    }
+  },
+
+  // Get user learning path recommendations
+  async getUserLearningPath(userId: string): Promise<any[]> {
+    try {
+      const userCourses = await this.getUserCourses(userId);
+      const allCourses = await this.getAllCourses();
+      
+      // Find courses the user hasn't taken yet
+      const userCourseIds = userCourses.map((c: any) => c.id);
+      const availableCourses = allCourses.filter((course: any) => !userCourseIds.includes(course.id));
+      
+      // Recommend courses based on user's current progress
+      const recommendations = availableCourses
+        .slice(0, 5) // Limit to 5 recommendations
+        .map((course: any) => ({
+          id: course.id,
+          title: course.fullname,
+          description: course.summary || 'Enhance your teaching skills',
+          progress: 0,
+          type: course.type || 'Self-paced',
+          duration: course.duration || '4-6 weeks',
+          level: course.level || 'Intermediate'
+        }));
+      
+      return recommendations;
+    } catch (error) {
+      console.error('Error fetching learning path:', error);
+      return [];
+    }
+  },
+
+  // Get user recent activity
+  async getUserRecentActivity(userId: string): Promise<any[]> {
+    try {
+      const userCourses = await this.getUserCourses(userId);
+      const recentActivity: any[] = [];
+      
+      // Generate activity based on course completions
+      userCourses
+        .filter((course: any) => course.progress === 100)
+        .slice(0, 4) // Limit to 4 recent activities
+        .forEach((course: any) => {
+          const completionDate = course.enddate ? new Date(course.enddate * 1000) : new Date();
+          const daysAgo = Math.floor((Date.now() - completionDate.getTime()) / (1000 * 60 * 60 * 24));
+          
+          let timeAgo = '';
+          if (daysAgo === 0) {
+            timeAgo = 'Today';
+          } else if (daysAgo === 1) {
+            timeAgo = 'Yesterday';
+          } else if (daysAgo < 7) {
+            timeAgo = `${daysAgo} days ago`;
+          } else {
+            timeAgo = completionDate.toLocaleDateString();
+          }
+          
+          recentActivity.push({
+            type: 'Completed',
+            text: course.fullname,
+            date: timeAgo,
+            points: 100,
+            courseId: course.id
+          });
+        });
+      
+      return recentActivity;
+    } catch (error) {
+      console.error('Error fetching recent activity:', error);
+      return [];
+    }
+  },
+
+  // Get all course contents (sections and modules) for a course
+  async getCourseContents(courseId: string): Promise<any[]> {
+    const url = API_BASE_URL;
+    const params = new URLSearchParams();
+    params.append('wstoken', API_TOKEN);
+    params.append('wsfunction', 'core_course_get_contents');
+    params.append('moodlewsrestformat', 'json');
+    params.append('courseid', courseId);
+    try {
+      const response = await axios.post(url, params, {
+        headers: { 'Content-Type': 'application/x-www-form-urlencoded' }
       });
       if (Array.isArray(response.data)) {
         return response.data;
       }
       return [];
-    } catch (error) {
-      console.error('Error fetching course contents:', error);
-      return [];
+    } catch (error: any) {
+      throw new Error(error.message || 'Failed to fetch course contents');
     }
+  },
+
+  async getUserNotifications(userId: string): Promise<any[]> {
+    // TODO: Replace with real API call if available
+    // For now, return mock notifications
+    return [
+      {
+        type: 'success',
+        title: 'Welcome to the platform!',
+        desc: 'You have successfully joined the Teacher Training Academy.',
+        date: 'Just now',
+      },
+      {
+        type: 'error',
+        title: 'Assignment Submission Failed',
+        desc: 'There was an error submitting your assignment. Please try again.',
+        date: '2 hours ago',
+      },
+      {
+        type: 'info',
+        title: 'New Course Available',
+        desc: 'A new course on Digital Learning is now available for enrollment.',
+        date: 'Yesterday',
+      },
+    ];
   }
 };
 
