@@ -41,7 +41,7 @@ const roleCards = [
   {
     role: 'principal' as UserRole,
     icon: Building,
-    title: 'School Principal',
+    title: 'School Admin',
     titleAr: 'مدير مدرسة',
     description: 'Monitor school-wide progress and manage teacher development programs',
     descriptionAr: 'مراقبة التقدم على مستوى المدرسة وإدارة برامج تطوير المعلمين',
