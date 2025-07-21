@@ -137,7 +137,7 @@ export const AssignCourseToUsers: React.FC<AssignCourseToUsersProps> = ({ compan
                   <ul className="space-y-3 max-h-[500px] overflow-y-auto pr-2">
                       {getUnassignedUsers(activeCourse).map(user => (
                         <li key={user.id} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors">
-                          <div>
+    <div>
                             <p className="font-semibold text-gray-900">{user.firstname} {user.lastname}</p>
                             <p className="text-sm text-gray-500">{user.email}</p>
                           </div>
