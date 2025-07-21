@@ -33,7 +33,11 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     const storedUser = localStorage.getItem('iomad_user');
     if (storedUser) {
       try {
-        setUser(JSON.parse(storedUser));
+        const parsedUser = JSON.parse(storedUser);
+        if (parsedUser.companyid) {
+          parsedUser.company = parsedUser.companyid;
+        }
+        setUser(parsedUser);
       } catch (error) {
         console.error('Error parsing stored user:', error);
         localStorage.removeItem('iomad_user');
@@ -43,6 +47,9 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   }, []);
 
   const login = (userData: User) => {
+    if (userData.companyid) {
+      userData.company = userData.companyid;
+    }
     setUser(userData);
     localStorage.setItem('iomad_user', JSON.stringify(userData));
   };

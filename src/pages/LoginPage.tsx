@@ -82,7 +82,7 @@ export const LoginPage: React.FC = () => {
             if (userRole === 'school_admin') {
               navigate('/school-admin-dashboard');
             } else {
-              navigate('/dashboard');
+            navigate('/dashboard');
             }
           }, 1000);
         } else {

@@ -1,9 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Users, BookOpen, Home, Database, UserCog, MessageCircle, Award, BarChart2, CalendarCheck, CheckCircle, FileText, Users2, Plus, Bell, ChevronDown, UserPlus, Cog, Users as UsersIcon, Building2, Upload, Download, ThumbsUp, ArrowRightCircle, ArrowDownCircle, ArrowUpCircle, Clock, Eye, Edit, Trash2, X, Mail, Gavel, UserCheck, List, CheckSquare } from 'lucide-react';
+import { Users, BookOpen, Home, Database, UserCog, MessageCircle, Award, BarChart2, CalendarCheck, CheckCircle, FileText, Users2, Plus, Bell, ChevronDown, UserPlus, Cog, Users as UsersIcon, Building2, Upload, Download, ThumbsUp, ArrowRightCircle, ArrowDownCircle, ArrowUpCircle, Clock, Eye, Edit, Trash2, X, Mail, Gavel, UserCheck, List, CheckSquare, Loader2 } from 'lucide-react';
 import { Button } from '../../ui/Button';
 import { AssignCourseToUsers } from './AssignCourseToUsers';
 import { coursesService } from '../../../services/coursesService';
+import { apiService } from '../../../services/api';
 import { useAuth } from '../../../context/AuthContext';
 import { usersService } from '../../../services/usersService';
 import { schoolsService } from '../../../services/schoolsService';
@@ -31,36 +32,28 @@ const SectionPlaceholder = ({ title }: { title: string }) => (
 );
 
 // New Navbar component (inside main content, after sidebar)
-const MainNavbar = ({ adminName, setActiveSection }: { adminName: string, setActiveSection: (section: string) => void }) => {
+const MainNavbar = ({ adminName, schoolName, setActiveSection }: { adminName: string, schoolName: string, setActiveSection: (section: string) => void }) => {
   const { user, logout } = useAuth();
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const [accountModalOpen, setAccountModalOpen] = useState(false);
   const [adminDetails, setAdminDetails] = useState<any>(null);
   const [schoolLogo, setSchoolLogo] = useState<string | null>(null);
-  const [schoolName, setSchoolName] = useState<string>('');
 
   useEffect(() => {
-    // Fetch school logo and name
-    const fetchSchool = async () => {
+    // Fetch school logo
+    const fetchSchoolLogo = async () => {
       if (user?.company) {
         const school = await schoolsService.getSchoolById(Number(user.company));
-        if (school) {
-          setSchoolName(school.name);
-          if (school.logo) {
+        if (school && school.logo) {
             setSchoolLogo(school.logo);
-          } else {
-            setSchoolLogo(null);
-          }
         } else {
-          setSchoolName('');
-          setSchoolLogo(null);
+            setSchoolLogo(null);
         }
       } else {
-        setSchoolName('');
         setSchoolLogo(null);
       }
     };
-    fetchSchool();
+    fetchSchoolLogo();
   }, [user]);
 
   const handleAccountSettings = async () => {
@@ -197,76 +190,120 @@ const dashboardDataByQuarter: Record<QuarterKey, {
 };
 
 const DashboardTopCards = () => {
-  const [quarter, setQuarter] = useState<QuarterKey>('Q2 2025 (Apr-Jun)');
-  const data = dashboardDataByQuarter[quarter];
+  const { user } = useAuth();
+  const [stats, setStats] = useState({
+    totalTeachers: 0,
+    enrolledTeachers: 0,
+    courses: 0,
+    licenses: 0,
+  });
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    if (!user?.company) return;
+
+    const fetchDashboardData = async () => {
+      setLoading(true);
+      try {
+        const companyId = Number(user.company);
+        const companyCourses = await coursesService.getCompanyCourses(companyId);
+
+        // From all courses, get all enrollments and find unique teachers
+        const enrollmentPromises = companyCourses.map((course: any) => 
+          apiService.getCourseEnrollments(course.id)
+        );
+        const allEnrollments = (await Promise.all(enrollmentPromises)).flat();
+
+        const teachers = new Map<string, any>();
+        allEnrollments.forEach((enrollment: any) => {
+          if (enrollment.roles?.some((role: any) => role.shortname === 'editingteacher' || role.shortname === 'teacher')) {
+            teachers.set(enrollment.id, enrollment);
+          }
+        });
+
+        const totalTeachersCount = teachers.size;
+        
+        // Of those teachers, count how many are enrolled in at least one course
+        // (This is implicitly the same as the total teacher count with this new logic)
+        const enrolledTeachersCount = totalTeachersCount;
+
+        setStats({
+          totalTeachers: totalTeachersCount,
+          enrolledTeachers: enrolledTeachersCount,
+          courses: companyCourses.length,
+          licenses: 500, // Placeholder for licenses
+        });
+
+      } catch (error) {
+        console.error("Failed to fetch dashboard data", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchDashboardData();
+  }, [user]);
+
+  if (loading) {
+    return (
+        <div className="w-full bg-white rounded-2xl shadow p-6 flex justify-center items-center h-48 mb-6">
+            <Loader2 className="w-8 h-8 animate-spin text-blue-500" />
+            <span className="ml-4 text-gray-500">Loading dashboard metrics...</span>
+        </div>
+    );
+  }
+
   return (
     <div className="w-full bg-white rounded-2xl shadow p-6 flex flex-col gap-2 mb-6">
       <div className="flex flex-col md:flex-row md:items-center md:justify-between mb-4 gap-2">
         <div>
           <h1 className="text-2xl font-bold text-gray-900 mb-1">Management Dashboard</h1>
-          <p className="text-gray-500">Comprehensive analytics of Teacher Training Academy</p>
-        </div>
-        <div className="flex items-center gap-2 mt-2 md:mt-0">
-          <select
-            value={quarter}
-            onChange={e => setQuarter(e.target.value as QuarterKey)}
-            className="border rounded-lg px-3 py-2 text-sm text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-200"
-          >
-            {Object.keys(dashboardDataByQuarter).map(q => (
-              <option key={q} value={q}>{q}</option>
-            ))}
-          </select>
-          <button className="bg-gray-100 hover:bg-gray-200 rounded-lg p-2"><svg width="18" height="18" fill="none"><path d="M7 10v3a2 2 0 0 0 2 2v0a2 2 0 0 0 2-2v-3" stroke="#64748B" strokeWidth="1.5" strokeLinecap="round"/><path d="M4 7h10" stroke="#64748B" strokeWidth="1.5" strokeLinecap="round"/><rect x="3" y="3" width="12" height="12" rx="3" stroke="#64748B" strokeWidth="1.5"/></svg></button>
-          <button className="bg-gray-100 hover:bg-gray-200 rounded-lg p-2"><svg width="18" height="18" fill="none"><path d="M6 8l6 4-6 4V8z" stroke="#64748B" strokeWidth="1.5" strokeLinejoin="round"/></svg></button>
+          <p className="text-gray-500">Analytics for {user?.schoolName || 'your school'}</p>
         </div>
       </div>
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mt-2">
-        {/* Total Active Teachers */}
+        {/* Total Teachers */}
         <div className="bg-white rounded-xl border p-6 flex flex-col gap-2 items-start shadow-sm">
           <div className="flex items-center gap-2 mb-2">
-            <span className="text-gray-500 text-sm font-medium">Total Active Teachers</span>
+            <span className="text-gray-500 text-sm font-medium">Total Teachers</span>
             <span className="bg-blue-50 rounded-full p-2 ml-2"><Users className="w-5 h-5 text-blue-600" /></span>
           </div>
-          <div className="text-2xl font-bold text-gray-900">{data.teachers}</div>
+          <div className="text-2xl font-bold text-gray-900">{stats.totalTeachers}</div>
           <div className="mt-1 flex items-center gap-1">
-            <span className={`${data.teachersGrowthColor} text-sm font-semibold`}>↑ {data.teachersGrowth}</span>
-            <span className="text-gray-400 text-sm font-normal">vs last quarter</span>
+            <span className="text-gray-400 text-sm font-normal">Teachers in your school</span>
           </div>
         </div>
-        {/* Course Completion Rate */}
+        {/* Enrolled Teachers */}
         <div className="bg-white rounded-xl border p-6 flex flex-col gap-2 items-start shadow-sm">
           <div className="flex items-center gap-2 mb-2">
-            <span className="text-gray-500 text-sm font-medium">Total Enrolled Teachers</span>
+            <span className="text-gray-500 text-sm font-medium">Enrolled Teachers</span>
             <span className="bg-green-50 rounded-full p-2 ml-2"><CheckCircle className="w-5 h-5 text-green-600" /></span>
           </div>
-          <div className="text-2xl font-bold text-gray-900">{data.completion}</div>
-          <div className="mt-1 flex items-center gap-1">
-            <span className={`${data.completionGrowthColor} text-sm font-semibold`}>↑ {data.completionGrowth}</span>
-            <span className="text-gray-400 text-sm font-normal">vs last quarter</span>
+          <div className="text-2xl font-bold text-gray-900">{stats.enrolledTeachers}</div>
+           <div className="mt-1 flex items-center gap-1">
+            <span className="text-gray-400 text-sm font-normal">Teachers in at least one course</span>
           </div>
         </div>
-        {/* Certified Master Trainers */}
+        {/* Total Courses */}
         <div className="bg-white rounded-xl border p-6 flex flex-col gap-2 items-start shadow-sm">
           <div className="flex items-center gap-2 mb-2">
-            <span className="text-gray-500 text-sm font-medium">Total Number Of Trainers</span>
-            <span className="bg-purple-50 rounded-full p-2 ml-2"><Award className="w-5 h-5 text-purple-600" /></span>
+            <span className="text-gray-500 text-sm font-medium">Total Courses</span>
+            <span className="bg-purple-50 rounded-full p-2 ml-2"><BookOpen className="w-5 h-5 text-purple-600" /></span>
           </div>
-          <div className="text-2xl font-bold text-gray-900">{data.trainers}</div>
-          <div className="mt-1 flex items-center gap-1">
-            <span className={`${data.trainersGrowthColor} text-sm font-semibold`}>↑ {data.trainersGrowth}</span>
-            <span className="text-gray-400 text-sm font-normal">vs last quarter</span>
+          <div className="text-2xl font-bold text-gray-900">{stats.courses}</div>
+           <div className="mt-1 flex items-center gap-1">
+            <span className="text-gray-400 text-sm font-normal">Courses available to school</span>
           </div>
         </div>
-        {/* Training ROI */}
+        {/* Licenses Assigned */}
         <div className="bg-white rounded-xl border p-6 flex flex-col gap-2 items-start shadow-sm">
           <div className="flex items-center gap-2 mb-2">
-            <span className="text-gray-500 text-sm font-medium">Total Number of Courses</span>
-            <span className="bg-yellow-50 rounded-full p-2 ml-2"><Database className="w-5 h-5 text-yellow-600" /></span>
+            <span className="text-gray-500 text-sm font-medium">Licenses Assigned</span>
+            <span className="bg-yellow-50 rounded-full p-2 ml-2"><Award className="w-5 h-5 text-yellow-600" /></span>
           </div>
-          <div className="text-2xl font-bold text-gray-900">{data.roi}</div>
+          <div className="text-2xl font-bold text-gray-900">{stats.licenses}</div>
           <div className="mt-1 flex items-center gap-1">
-            <span className={`${data.roiGrowthColor} text-sm font-semibold`}>↑ {data.roiGrowth}</span>
-            <span className="text-gray-400 text-sm font-normal">vs last quarter</span>
+            <span className="text-gray-400 text-sm font-normal">Total licenses for school</span>
           </div>
         </div>
       </div>
@@ -1292,6 +1329,8 @@ const CoursesManagementSection = () => {
         usersService.getCompanyUsers(Number(user.company)),
         coursesService.getCompanyCourses(Number(user.company))
       ]).then(async ([users, courses]) => {
+        console.log('CoursesManagementSection fetched users:', users);
+        console.log('CoursesManagementSection fetched courses:', courses);
         setUsers(users);
         setCourses(courses);
         // Fetch enrollments for each course
@@ -1302,9 +1341,16 @@ const CoursesManagementSection = () => {
         }
         setEnrollments(enrollmentsObj);
         if (courses.length > 0) setActiveCourse(courses[0].id);
-      }).finally(() => setLoading(false));
+      }).finally(() => {
+        setLoading(false);
+        console.log('CoursesManagementSection loading:', false);
+      });
     }
   }, [activeTab, user]);
+
+  useEffect(() => {
+    console.log('CoursesManagementSection rendered. users:', users, 'courses:', courses, 'loading:', loading);
+  }, [users, courses, loading]);
 
   const handleAssign = async (courseId: string, userId: string) => {
     setAssigning(prev => ({ ...prev, [courseId + '-' + userId]: true }));
@@ -1554,15 +1600,30 @@ const sectionComponents: Record<string, React.ReactNode> = {
 
 const SchoolAdminDashboardPage: React.FC = () => {
   const [activeSection, setActiveSection] = useState('dashboard');
-  // For demo, admin name is hardcoded. Replace with real user context if available.
-  const adminName = 'School Admin';
+  const { user } = useAuth();
+  const [schoolName, setSchoolName] = useState('');
+
+  useEffect(() => {
+    const fetchSchoolName = async () => {
+        if (user?.company) {
+            const school = await schoolsService.getSchoolById(Number(user.company));
+            if (school) {
+                setSchoolName(school.name);
+            }
+        }
+    };
+    fetchSchoolName();
+  }, [user]);
+
+  const adminName = user?.fullname || 'School Admin';
+
   return (
     <div className="min-h-screen flex flex-col bg-gray-50">
       <div className="flex flex-1">
         {/* Sidebar */}
         <aside className="w-72 bg-white shadow-lg flex flex-col py-6 px-4 min-h-screen border-r">
           <div className="flex items-center gap-3 mb-8 px-2">
-            <img src="logo/Riyada.png" alt="Riyada Trainings Logo" className="h-10 w-10 rounded-full object-cover" />
+            <img src="/logo/Riyada.png" alt="Riyada Trainings Logo" className="h-10 w-10 rounded-full object-cover" />
             <span className="text-lg font-bold text-blue-800">Riyada Trainings</span>
           </div>
           <ul className="space-y-1">
@@ -1586,7 +1647,7 @@ const SchoolAdminDashboardPage: React.FC = () => {
         </aside>
         {/* Main Content */}
         <div className="flex-1 flex flex-col">
-          <MainNavbar adminName={adminName} setActiveSection={setActiveSection} />
+          <MainNavbar adminName={adminName} schoolName={schoolName} setActiveSection={setActiveSection} />
           <main className="flex-1 flex flex-col p-8">
             {sectionComponents[activeSection]}
           </main>
