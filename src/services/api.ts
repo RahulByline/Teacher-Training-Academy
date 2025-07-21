@@ -98,6 +98,25 @@ export const apiService = {
           // If roles fetch fails, fallback to empty array
           roles = [];
         }
+
+        // 4. Fetch the user's company ID using Iomad-specific web service
+        try {
+          const companyResponse = await api.get('', {
+            params: {
+              wsfunction: 'block_iomad_company_admin_get_user_companies',
+              userid: userData.id,
+            },
+          });
+          // The response is an object containing a 'companies' array.
+          // We'll take the first one as the primary company.
+          if (companyResponse.data && Array.isArray(companyResponse.data.companies) && companyResponse.data.companies.length > 0) {
+            userData.companyid = companyResponse.data.companies[0].id;
+          }
+        } catch (e) {
+          // If company fetch fails, it might not be a company user, which is fine.
+          console.warn('Could not fetch user company, may not be an Iomad user:', e);
+        }
+
         // Attach roles to userData for detectUserRole
         userData.roles = roles;
         const role = detectUserRole(username, userData);
@@ -111,6 +130,7 @@ export const apiService = {
           profileimageurl: userData.profileimageurl,
           lastaccess: userData.lastaccess,
           role,
+          companyid: userData.companyid,
         };
       }
       return null;
@@ -464,6 +484,7 @@ export const apiService = {
           userid: enrollment.id.toString(),
           fullname: enrollment.fullname,
           email: enrollment.email,
+          roles: enrollment.roles || [], // Ensure roles are included
           timeenrolled: enrollment.firstaccess || Date.now() / 1000,
           progress: Math.floor(Math.random() * 100),
         }));
