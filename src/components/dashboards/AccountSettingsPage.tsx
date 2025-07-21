@@ -50,23 +50,24 @@ const AccountSettingsPage: React.FC = () => {
   if (!profile) return <div className="flex justify-center items-center h-96 text-gray-500">No profile data available.</div>;
 
   return (
-    <div className="w-full p-8 m-8 max-w-5xl bg-white rounded-2xl shadow">
-      <h2 className="text-2xl font-bold mb-2">Account Settings</h2>
-      <div className="text-gray-500 mb-6">Manage your profile and preferences</div>
-      {/* Tabs */}
-      <div className="flex border-b mb-8">
-        {TABS.map((t, i) => (
-          <button
-            key={t}
-            className={`px-6 py-2 -mb-px border-b-2 font-medium text-sm transition-colors ${tab === i ? 'border-indigo-600 text-indigo-700' : 'border-transparent text-gray-500 hover:text-indigo-600'}`}
-            onClick={() => setTab(i)}
-          >
-            {t}
-          </button>
-        ))}
-      </div>
-      {/* Tab Content */}
-      {tab === 0 && (
+    <div className="flex justify-center items-start min-h-screen w-full bg-[#f9fafb] overflow-y-auto">
+      <div className="w-full p-8 m-8 max-w-5xl bg-white rounded-2xl shadow mb-[10px]">
+        <h2 className="text-2xl font-bold mb-2">Account Settings</h2>
+        <div className="text-gray-500 mb-6">Manage your profile and preferences</div>
+        {/* Tabs */}
+        <div className="flex border-b mb-8">
+          {TABS.map((t, i) => (
+            <button
+              key={t}
+              className={`px-6 py-2 -mb-px border-b-2 font-medium text-sm transition-colors ${tab === i ? 'border-indigo-600 text-indigo-700' : 'border-transparent text-gray-500 hover:text-indigo-600'}`}
+              onClick={() => setTab(i)}
+            >
+              {t}
+            </button>
+          ))}
+        </div>
+        {/* Tab Content */}
+        {tab === 0 && (
       <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-8">
           {/* Left: Profile Info */}
         <div className="flex flex-col items-center md:items-start">
@@ -159,6 +160,7 @@ const AccountSettingsPage: React.FC = () => {
       {tab !== 0 && (
         <div className="flex items-center justify-center h-64 text-gray-400 text-lg">Coming soon...</div>
       )}
+    </div>
     </div>
   );
 };

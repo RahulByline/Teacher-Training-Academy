@@ -31,7 +31,7 @@ const CommunityPage: React.FC = () => {
 
   return (
     <div className="min-h-screen w-full bg-[#f9fafb] flex flex-col items-center justify-start py-12 px-2 md:px-8">
-      <div className="w-full max-w-5xl mx-auto">
+      <div className="w-full">
         <div className="flex items-center gap-3 mb-8">
           <Users className="w-10 h-10 text-indigo-500" />
           <h1 className="text-3xl font-bold text-gray-900">Trainer Community</h1>
