@@ -26,7 +26,7 @@ export const Footer: React.FC = () => {
               className="flex items-center space-x-3 mb-6"
             >
               <img
-                src="/Riyada.png"
+                src="logo/Riyada.png"
                 alt="Riyada Logo"
                 className="h-12 w-12"
               />

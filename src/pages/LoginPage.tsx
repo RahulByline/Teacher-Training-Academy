@@ -72,7 +72,7 @@ export const LoginPage: React.FC = () => {
           'school': ['principal', 'manager', 'school_admin', 'companymanager', ],
           'trainer': ['trainer'],
           'trainee': ['teacher', 'student'],
-          'cluster-lead': ['cluster_lead']
+          'cluster-lead': ['cluster_admin']
         };
 
         if (allowedRoles[roleKey]?.includes(userRole || '')) {

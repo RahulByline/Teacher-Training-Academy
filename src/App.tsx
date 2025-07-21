@@ -21,6 +21,7 @@ import TrainerDashboardRoutes from './components/routes/TrainerDashboardRoutes';
 import { useAuth } from './context/AuthContext';
 import TeacherDashboardRoutes from './components/routes/TeacherDashboardRoutes';
 import SchoolAdminDashboardPage from './components/pages/courses/SchoolAdminDashboardPage';
+import ClusterDashboard from './components/dashboards/clusterDashboard';
  
 function DashboardRouteWrapper() {
   const { user, loading } = useAuth();
@@ -137,6 +138,14 @@ function App() {
                   element={
                     <ProtectedRoute>
                       <SchoolAdminDashboardPage />
+                    </ProtectedRoute>
+                  }
+                />
+                <Route
+                  path="/clusterdashboard"
+                  element={
+                    <ProtectedRoute>
+                      <ClusterDashboard />
                     </ProtectedRoute>
                   }
                 />
