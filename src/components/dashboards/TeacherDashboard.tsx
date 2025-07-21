@@ -6,7 +6,7 @@ import {
   BookOpen, TrendingUp, Award, Calendar, Clock, Target, Star, Users, Trophy, ChevronRight, Play, BarChart3, MessageSquare, Folder, Settings, User, LogOut, Bell, ChevronDown, Menu, X, User as UserIcon
 } from 'lucide-react';
 import { motion } from 'framer-motion';
-import { Outlet, useNavigate, useLocation, NavLink, Routes, Route } from 'react-router-dom';
+import { Outlet, useNavigate, useLocation, NavLink, Routes, Route, Link } from 'react-router-dom';
 import { Course } from '../../types';
  
 const sidebarItems = [
@@ -207,6 +207,7 @@ export const TeacherDashboard: React.FC = () => {
     return <div className="flex justify-center items-center min-h-screen text-lg">{t('Loading...')}</div>;
   }
  
+  // Main component render
   return (
     <div className="full-screen-dashboard flex w-screen h-screen bg-[#f9fafb] font-sans overflow-hidden">
       {/* Mobile Menu Overlay */}
@@ -388,3 +389,5 @@ export const TeacherDashboard: React.FC = () => {
     </div>
   );
 };
+    
+export default TeacherDashboard;

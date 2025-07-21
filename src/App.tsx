@@ -22,6 +22,7 @@ import { useAuth } from './context/AuthContext';
 import TeacherDashboardRoutes from './components/routes/TeacherDashboardRoutes';
 import SchoolAdminDashboardPage from './components/pages/courses/SchoolAdminDashboardPage';
 import ClusterDashboard from './components/dashboards/clusterDashboard';
+import CourseViewerPage from './pages/CourseViewerPage'; // Import the new page
  
 function DashboardRouteWrapper() {
   const { user, loading } = useAuth();
@@ -149,6 +150,7 @@ function App() {
                     </ProtectedRoute>
                   }
                 />
+                <Route path="/course/:courseId/view" element={<ProtectedRoute><CourseViewerPage /></ProtectedRoute>} />
 
                 <Route path="*" element={<Navigate to="/" replace />} />
               </Routes>
