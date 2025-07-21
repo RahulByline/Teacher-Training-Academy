@@ -1,6 +1,7 @@
 // src/services/apiService.ts
 import axios from 'axios';
 import { Course, School } from '../types';
+import api from '../config/axiosConfig'; // Correctly import the 'api' instance from its source
 
 const API_URL = import.meta.env.VITE_MOODLE_API_URL || 'https://iomad.bylinelms.com/webservice/rest/server.php';
 
@@ -248,22 +249,67 @@ export async function createCourseModule(moduleData: any): Promise<any> {
 /**
  * Get all course contents (sections and modules) for a course
  */
-export async function getCourseContents(courseId: string): Promise<any[]> {
-  const url = API_URL;
-  const params = new URLSearchParams();
-  params.append('wstoken', '4a2ba2d6742afc7d13ce4cf486ba7633');
-  params.append('wsfunction', 'core_course_get_contents');
-  params.append('moodlewsrestformat', 'json');
-  params.append('courseid', courseId);
-  try {
-    const response = await axios.post(url, params, {
-      headers: { 'Content-Type': 'application/x-www-form-urlencoded' }
-    });
-    if (Array.isArray(response.data)) {
-      return response.data;
+export const getCourseContents = async (courseId: string) => {
+    // 1. Get base structure from Moodle
+    const baseContentsResponse = await axios.post(API_URL, new URLSearchParams({
+        wstoken: '4a2ba2d6742afc7d13ce4cf486ba7633', // Replace with your real token
+        wsfunction: 'core_course_get_contents',
+        courseid: courseId,
+        moodlewsrestformat: 'json'
+    }));
+
+    if (!Array.isArray(baseContentsResponse.data)) {
+        return [];
     }
-    return [];
-  } catch (error: any) {
-    throw new Error(error.message || 'Failed to fetch course contents');
-  }
-} 
+
+    // 2. Fetch rich content for specific module types in parallel
+    const enrichedSections = await Promise.all(
+        baseContentsResponse.data.map(async (section: any) => {
+            if (!section.modules) {
+                return section; // Return section as is if it has no modules
+            }
+            
+            const enrichedModules = await Promise.all(
+                section.modules.map(async (module: any) => {
+                    // If it's a page, fetch its HTML content using a more reliable function
+                    if (module.modname === 'page') {
+                        try {
+                            const pageData = await api.get('', { params: {
+                                wsfunction: 'mod_page_view_page',
+                                pageid: String(module.instance) // 'instance' is the ID of the page module itself
+                            }});
+                            // The content is directly in the response for this function
+                            if (pageData.data && pageData.data.page) {
+                                module.pagecontent = pageData.data.page.content;
+                            }
+                        } catch (e) {
+                            console.warn(`Could not fetch content for page ${module.id}`, e);
+                        }
+                    }
+                    
+                    // For labels, the description IS the content. Let's sanitize and make it consistent.
+                    if (module.modname === 'label' && module.description) {
+                        module.renderedContent = module.description;
+                    }
+
+                    // For assignments, the description is the intro
+                    if (module.modname === 'assign' && module.description) {
+                        module.renderedContent = module.description;
+                    }
+                    
+                    // For files and URLs, extract the primary URL for easy access
+                    if ((module.modname === 'resource' || module.modname === 'url') && module.contents?.length > 0) {
+                        module.mainUrl = module.contents[0].fileurl;
+                        module.fileName = module.contents[0].filename;
+                    }
+
+                    return module;
+                })
+            );
+            section.modules = enrichedModules;
+            return section;
+        })
+    );
+
+    return enrichedSections;
+}; 
