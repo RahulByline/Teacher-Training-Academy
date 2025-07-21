@@ -504,7 +504,7 @@ export const TrainerDashboard: React.FC = () => {
         </nav>
         <div className="flex flex-col items-center gap-2 mt-8">
           <img
-            src={user.profileimageurl || '/public/logo-BYbhmxQK-removebg-preview.png'}
+            src={user.profileimageurl || '/logo/Riyada.png'}
             alt={user.fullname || 'User'}
             className="w-12 h-12 rounded-full border-2 border-indigo-400 object-cover cursor-pointer"
             onClick={() => navigate(`/dashboard/settings/${user.id}`)}
@@ -523,7 +523,7 @@ export const TrainerDashboard: React.FC = () => {
             <button className="relative p-2 rounded-full hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-indigo-400"><Bell className="w-6 h-6 text-gray-500" /></button>
             <div className="relative">
               <button className="flex items-center gap-2 p-1 rounded-full hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-indigo-400">
-                <img src={user.profileimageurl || '/public/logo-BYbhmxQK-removebg-preview.png'} alt={user.fullname || 'User'} className="w-8 h-8 rounded-full object-cover" />
+                <img src={user.profileimageurl || '/logo/Riyada.png'} alt={user.fullname || 'User'} className="w-8 h-8 rounded-full object-cover" />
                 <ChevronDown className="w-4 h-4 text-gray-500" />
               </button>
               {/* Dropdown could go here */}

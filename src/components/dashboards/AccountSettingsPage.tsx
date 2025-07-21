@@ -71,10 +71,10 @@ const AccountSettingsPage: React.FC = () => {
           {/* Left: Profile Info */}
         <div className="flex flex-col items-center md:items-start">
             <img
-              src={profile.profileimageurl || '/logo-BYbhmxQK-removebg-preview.png'}
+              src={profile.profileimageurl || '/logo/Riyada.png'}
               alt={profile.fullname || 'User'}
               className="w-24 h-24 rounded-full object-cover mb-2 border-4 border-indigo-100 cursor-pointer"
-              onError={e => { (e.currentTarget as HTMLImageElement).src = '/logo-BYbhmxQK-removebg-preview.png'; }}
+              onError={e => { (e.currentTarget as HTMLImageElement).src = '/logo/Riyada.png'; }}
             />
             <div className="font-bold text-lg mb-1">{profile.fullname || `${profile.firstname || ''} ${profile.lastname || ''}`}</div>
             <div className="text-xs text-gray-500 mb-2">

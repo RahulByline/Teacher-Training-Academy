@@ -277,7 +277,7 @@ export const TeacherDashboard: React.FC = () => {
               className="w-12 h-12 rounded-full border-2 border-indigo-400 object-cover cursor-pointer hover:border-indigo-600 transition-colors"
               onClick={handleProfileClick}
               title="Click to view profile"
-              onError={e => { (e.currentTarget as HTMLImageElement).src = '/public/logo-BYbhmxQK-removebg-preview.png'; }}
+              onError={e => { (e.currentTarget as HTMLImageElement).src = '/logo/Riyada.png'; }}
             />
           ) : (
             <div

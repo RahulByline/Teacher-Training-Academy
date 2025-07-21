@@ -1465,7 +1465,7 @@ export const AdminDashboard: React.FC = () => {
       <div className="w-80 bg-white border-r border-gray-200 flex-shrink-0">
         <div className="p-6">
           <div className="text-xl font-bold text-blue-700 mb-8 flex items-center gap-2">
-            <img src="/Riyada.png" alt="Riyada Logo" className="w-10 h-10 object-contain rounded-full bg-white border" />
+            <img src="/logo/Riyada.png" alt="Riyada Logo" className="w-10 h-10 object-contain rounded-full bg-white border" />
             Riyada Trainings
           </div>
           <nav className="space-y-2">

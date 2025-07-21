@@ -35,7 +35,7 @@ const PeerProfileModal = ({ peer, onClose }: { peer: any, onClose: () => void })
       <button className="absolute top-4 right-4 p-2 rounded-full hover:bg-gray-100" onClick={onClose}><X className="w-5 h-5" /></button>
       <div className="flex flex-col items-center gap-3">
         <img
-          src={peer.profileimageurl || '/public/logo-BYbhmxQK-removebg-preview.png'}
+          src={peer.profileimageurl || '/logo/Riyada.png'}
           alt={peer.fullname}
           className="w-20 h-20 rounded-full object-cover border-4 border-indigo-200 mb-2 bg-white"
         />
@@ -142,7 +142,7 @@ const TeacherPeerNetworkPage: React.FC = () => {
                   tabIndex={0}
                 >
                   <img
-                    src={peer.profileimageurl || '/public/logo-BYbhmxQK-removebg-preview.png'}
+                    src={peer.profileimageurl || '/logo/Riyada.png'}
                     alt={peer.fullname}
                     className="w-16 h-16 rounded-full object-cover border-2 border-indigo-200 mb-3 bg-white"
                   />
@@ -166,7 +166,7 @@ const TeacherPeerNetworkPage: React.FC = () => {
                   tabIndex={0}
                 >
                   <img
-                    src={peer.profileimageurl || '/public/logo-BYbhmxQK-removebg-preview.png'}
+                    src={peer.profileimageurl || '/logo/Riyada.png'}
                     alt={peer.fullname}
                     className="w-12 h-12 rounded-full object-cover border-2 border-indigo-200 bg-white"
                   />

@@ -37,7 +37,7 @@ export const Header: React.FC = () => {
             whileHover={{ scale: 1.05 }}
           >
             <img
-              src="/Riyada.png"
+              src="/logo/Riyada.png"
               alt="Riyada Logo"
               className="h-10 w-10"
             />
@@ -67,10 +67,10 @@ export const Header: React.FC = () => {
             <LanguageToggle />
             {/* Profile Avatar */}
             <img
-              src={user?.profileimageurl || '/public/logo-BYbhmxQK-removebg-preview.png'}
+              src={user?.profileimageurl || '/logo/Riyada.png'}
               alt={user?.fullname || 'User'}
               className="w-8 h-8 rounded-full object-cover border"
-              onError={e => { (e.currentTarget as HTMLImageElement).src = '/public/logo-BYbhmxQK-removebg-preview.png'; }}
+              onError={e => { (e.currentTarget as HTMLImageElement).src = '/logo/Riyada.png'; }}
             />
             {/* Mobile Menu Button */}
             <button
