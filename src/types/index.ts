@@ -9,8 +9,11 @@ export interface User {
   lastaccess?: number;
   role?: UserRole;
   company?: string;
+  companyid?: string;
   department?: string;
   phone?: string;
+  schoolName?: string;
+  rolename?: string;
 }
  
 export interface Course {
