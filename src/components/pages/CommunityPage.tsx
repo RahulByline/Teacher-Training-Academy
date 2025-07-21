@@ -58,10 +58,10 @@ const CommunityPage: React.FC = () => {
               {filteredMembers.map((member) => (
                 <div key={member.id} className="bg-gray-50 rounded-2xl shadow hover:shadow-xl transition-all duration-200 p-6 flex flex-col items-center group">
                   <img
-                    src={member.profileimageurl || '/logo-BYbhmxQK-removebg-preview.png'}
+                    src={member.profileimageurl || '/logo/Riyada.png'}
                     alt={member.fullname}
                     className="w-16 h-16 rounded-full object-cover border-2 border-indigo-200 mb-3 bg-white"
-                    onError={e => { (e.currentTarget as HTMLImageElement).src = '/logo-BYbhmxQK-removebg-preview.png'; }}
+                    onError={e => { (e.currentTarget as HTMLImageElement).src = '/logo/Riyada.png'; }}
                   />
                   <div className="font-semibold text-gray-900 text-lg text-center mb-1 truncate w-full" title={member.fullname}>{member.fullname}</div>
                   <div className="text-xs text-indigo-700 font-medium mb-1 flex items-center gap-1"><UserIcon className="w-4 h-4" />{member.role}</div>
