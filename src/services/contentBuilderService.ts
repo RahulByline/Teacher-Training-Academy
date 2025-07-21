@@ -57,4 +57,59 @@ export async function batchImport(courseid: number, structure: any) {
   params.append('structure', JSON.stringify(structure));
   const { data } = await axios.post(MOODLE_API_URL, params);
   return data;
+}
+
+export async function deleteActivity(cmid: number) {
+    const params = new URLSearchParams();
+    params.append('wstoken', TOKEN);
+    params.append('wsfunction', 'local_contentbuilder_delete_activity');
+    params.append('moodlewsrestformat', 'json');
+    params.append('cmid', String(cmid));
+    const { data } = await axios.post(MOODLE_API_URL, params);
+    if (data.exception) {
+        throw new Error(data.message);
+    }
+    return data;
+}
+
+export async function updateActivity(cmid: number, name: string) {
+    const params = new URLSearchParams();
+    params.append('wstoken', TOKEN);
+    params.append('wsfunction', 'local_contentbuilder_update_activity');
+    params.append('moodlewsrestformat', 'json');
+    params.append('cmid', String(cmid));
+    params.append('name', name);
+    const { data } = await axios.post(MOODLE_API_URL, params);
+    if (data.exception) {
+        throw new Error(data.message);
+    }
+    return data;
+}
+
+export async function deleteSection(sectionid: number) {
+    const params = new URLSearchParams();
+    params.append('wstoken', TOKEN);
+    params.append('wsfunction', 'local_contentbuilder_delete_section');
+    params.append('moodlewsrestformat', 'json');
+    params.append('sectionid', String(sectionid));
+    const { data } = await axios.post(MOODLE_API_URL, params);
+    if (data.exception) {
+        throw new Error(data.message);
+    }
+    return data;
+}
+
+export async function updateSection(sectionid: number, name: string, summary: string) {
+    const params = new URLSearchParams();
+    params.append('wstoken', TOKEN);
+    params.append('wsfunction', 'local_contentbuilder_update_section');
+    params.append('moodlewsrestformat', 'json');
+    params.append('sectionid', String(sectionid));
+    params.append('name', name);
+    params.append('summary', summary);
+    const { data } = await axios.post(MOODLE_API_URL, params);
+    if (data.exception) {
+        throw new Error(data.message);
+    }
+    return data;
 } 

@@ -30,7 +30,7 @@ interface CourseSection {
     modules: ContentModule[];
 }
 
-const ModuleDisplay: React.FC<{ module: ContentModule }> = ({ module }) => {
+const ModuleDisplay: React.FC<{ module: ContentModule; onDelete: () => void; onUpdate: (newName: string) => void; }> = ({ module, onDelete, onUpdate }) => {
     const [isExpanded, setIsExpanded] = useState(false);
     const [imageUrl, setImageUrl] = useState<string | null>(null);
     const [isLoadingImage, setIsLoadingImage] = useState(false);
@@ -92,8 +92,8 @@ const ModuleDisplay: React.FC<{ module: ContentModule }> = ({ module }) => {
                     <Button size="sm" variant="ghost" className="text-gray-500 hover:text-gray-800" onClick={() => setIsExpanded(!isExpanded)}>
                         {isExpanded ? <EyeOff className="w-4 h-4"/> : <Eye className="w-4 h-4"/>}
                     </Button>
-                    <Button size="sm" variant="ghost" className="text-gray-500 hover:text-gray-800"><Edit className="w-4 h-4"/></Button>
-                    <Button size="sm" variant="ghost" className="text-gray-500 hover:text-red-600"><Trash2 className="w-4 h-4"/></Button>
+                    <Button size="sm" variant="ghost" className="text-gray-500 hover:text-gray-800" onClick={() => onUpdate(module.name)}><Edit className="w-4 h-4"/></Button>
+                    <Button size="sm" variant="ghost" className="text-gray-500 hover:text-red-600" onClick={onDelete}><Trash2 className="w-4 h-4"/></Button>
                 </div>
             </div>
             <AnimatePresence>
@@ -154,6 +154,14 @@ const ManageCourseContentPage: React.FC = () => {
   const [showBatchModal, setShowBatchModal] = useState(false);
   const [batchJson, setBatchJson] = useState('');
   const [batchError, setBatchError] = useState<string | null>(null);
+
+  // --- NEW State for Edit/Delete ---
+  const [showConfirmDeleteModal, setShowConfirmDeleteModal] = useState< {type: 'section' | 'activity', id: number} | null >(null);
+  const [showEditSectionModal, setShowEditSectionModal] = useState<CourseSection | null>(null);
+  const [showEditActivityModal, setShowEditActivityModal] = useState<ContentModule | null>(null);
+  const [editName, setEditName] = useState('');
+  const [editSummary, setEditSummary] = useState('');
+
 
   useEffect(() => {
     fetchContent();
@@ -283,6 +291,73 @@ const ManageCourseContentPage: React.FC = () => {
       setSubmitting(false);
     }
   };
+
+  // --- NEW Edit/Delete Handlers ---
+  const handleDelete = async () => {
+      if (!showConfirmDeleteModal) return;
+
+      setSubmitting(true);
+      setError(null);
+      try {
+          if (showConfirmDeleteModal.type === 'section') {
+              await contentBuilderService.deleteSection(showConfirmDeleteModal.id);
+          } else {
+              await contentBuilderService.deleteActivity(showConfirmDeleteModal.id);
+          }
+          setShowConfirmDeleteModal(null);
+          fetchContent(); // Refresh the list
+      } catch (err: any) {
+          setError(err.message || `Failed to delete ${showConfirmDeleteModal.type}`);
+      } finally {
+          setSubmitting(false);
+      }
+  };
+
+  const handleUpdateSection = async (e: React.FormEvent) => {
+      e.preventDefault();
+      if (!showEditSectionModal) return;
+
+      setSubmitting(true);
+      setError(null);
+      try {
+          await contentBuilderService.updateSection(showEditSectionModal.id, editName, editSummary);
+          setShowEditSectionModal(null);
+          fetchContent();
+      } catch (err: any) {
+          setError(err.message || 'Failed to update section');
+      } finally {
+          setSubmitting(false);
+      }
+  };
+
+  const handleUpdateActivity = async (e: React.FormEvent) => {
+      e.preventDefault();
+      if (!showEditActivityModal) return;
+
+      setSubmitting(true);
+      setError(null);
+      try {
+          await contentBuilderService.updateActivity(showEditActivityModal.id, editName);
+          setShowEditActivityModal(null);
+          fetchContent();
+      } catch (err: any) {
+          setError(err.message || 'Failed to update activity');
+      } finally {
+          setSubmitting(false);
+      }
+  };
+
+  const openEditSectionModal = (section: CourseSection) => {
+      setShowEditSectionModal(section);
+      setEditName(section.name);
+      setEditSummary(section.summary);
+  };
+
+  const openEditActivityModal = (module: ContentModule) => {
+      setShowEditActivityModal(module);
+      setEditName(module.name);
+  };
+
   
   const activityTypes = [
     { value: 'resource', label: 'File' },
@@ -333,15 +408,22 @@ const ManageCourseContentPage: React.FC = () => {
                   {section.name || `Section ${section.section}`}
                 </h2>
                 <div className="flex items-center gap-2">
-                    <Button size="sm" variant="ghost" className="text-gray-500 hover:text-gray-800"><Edit className="w-4 h-4"/></Button>
-                    <Button size="sm" variant="ghost" className="text-gray-500 hover:text-red-600"><Trash2 className="w-4 h-4"/></Button>
+                    <Button size="sm" variant="ghost" className="text-gray-500 hover:text-gray-800" onClick={() => openEditSectionModal(section)}><Edit className="w-4 h-4"/></Button>
+                    <Button size="sm" variant="ghost" className="text-gray-500 hover:text-red-600" onClick={() => setShowConfirmDeleteModal({type: 'section', id: section.id})}><Trash2 className="w-4 h-4"/></Button>
                 </div>
               </div>
               <div className="p-4 space-y-3">
                 {section.modules.length === 0 ? (
                   <div className="text-center text-gray-500 py-4">No activities in this section.</div>
                 ) : (
-                  section.modules.map(mod => <ModuleDisplay key={mod.id} module={mod} />)
+                  section.modules.map(mod => 
+                    <ModuleDisplay 
+                        key={mod.id} 
+                        module={mod} 
+                        onDelete={() => setShowConfirmDeleteModal({type: 'activity', id: mod.id})}
+                        onUpdate={() => openEditActivityModal(mod)}
+                    />
+                  )
                 )}
               </div>
               <div className="p-4 border-t dark:border-gray-700">
@@ -460,6 +542,64 @@ const ManageCourseContentPage: React.FC = () => {
               {batchError && <div className="text-red-600 text-sm p-2 bg-red-50 rounded-md">{batchError}</div>}
               <Button type="submit" disabled={submitting} className="w-full mt-4">Import Content</Button>
             </form>
+          </div>
+        </div>
+      )}
+
+      {/* --- NEW MODALS for Edit/Delete --- */}
+      {showEditSectionModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-30 flex items-center justify-center z-50 p-4">
+          <div className="bg-white dark:bg-gray-900 rounded-xl shadow-lg p-6 w-full max-w-md relative">
+            <button className="absolute top-3 right-3 text-gray-400 hover:text-gray-700" onClick={() => setShowEditSectionModal(null)}>&times;</button>
+            <h2 className="text-xl font-bold mb-4">Edit Section</h2>
+            <form onSubmit={handleUpdateSection} className="space-y-4">
+              <div>
+                <label className="block font-medium mb-1">Section Name</label>
+                <input type="text" value={editName} onChange={e => setEditName(e.target.value)} className="w-full border rounded px-3 py-2" />
+              </div>
+              <div>
+                <label className="block font-medium mb-1">Summary</label>
+                <textarea value={editSummary} onChange={e => setEditSummary(e.target.value)} className="w-full border rounded px-3 py-2" />
+              </div>
+              <Button type="submit" disabled={submitting} className="w-full mt-4">
+                {submitting ? <Loader2 className="animate-spin w-4 h-4 mr-2 inline"/> : null} Save Changes
+              </Button>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {showEditActivityModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-30 flex items-center justify-center z-50 p-4">
+          <div className="bg-white dark:bg-gray-900 rounded-xl shadow-lg p-6 w-full max-w-md relative">
+            <button className="absolute top-3 right-3 text-gray-400 hover:text-gray-700" onClick={() => setShowEditActivityModal(null)}>&times;</button>
+            <h2 className="text-xl font-bold mb-4">Edit Activity</h2>
+            <form onSubmit={handleUpdateActivity} className="space-y-4">
+              <div>
+                <label className="block font-medium mb-1">Activity Name</label>
+                <input type="text" value={editName} onChange={e => setEditName(e.target.value)} className="w-full border rounded px-3 py-2" />
+              </div>
+              {/* Note: More complex editing would require fetching all module settings */}
+              <Button type="submit" disabled={submitting} className="w-full mt-4">
+                {submitting ? <Loader2 className="animate-spin w-4 h-4 mr-2 inline"/> : null} Save Changes
+              </Button>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {showConfirmDeleteModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-30 flex items-center justify-center z-50 p-4">
+          <div className="bg-white dark:bg-gray-900 rounded-xl shadow-lg p-6 w-full max-w-sm relative">
+            <h2 className="text-xl font-bold mb-4">Confirm Deletion</h2>
+            <p className="text-gray-600 dark:text-gray-300 mb-6">Are you sure you want to delete this {showConfirmDeleteModal.type}? This action cannot be undone.</p>
+            {error && <div className="text-red-600 text-sm mb-4 p-2 bg-red-50 rounded-md">{error}</div>}
+            <div className="flex justify-end gap-3">
+                <Button variant="secondary" onClick={() => setShowConfirmDeleteModal(null)} disabled={submitting}>Cancel</Button>
+                <Button variant="danger" onClick={handleDelete} disabled={submitting}>
+                    {submitting ? <Loader2 className="animate-spin w-4 h-4 mr-2 inline"/> : null} Delete
+                </Button>
+            </div>
           </div>
         </div>
       )}
