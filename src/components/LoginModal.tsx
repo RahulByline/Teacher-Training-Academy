@@ -19,7 +19,7 @@ const roleIcons = {
   teacher: '👨‍🏫',
   trainer: '👩‍💼',
   principal: '🏫',
-  cluster_lead: '🌐',
+  cluster_admin: '🌐',
   admin: '⚡',
   school_admin: '🏫', // Added for linter fix
 };
@@ -28,7 +28,7 @@ const roleColors = {
   teacher: 'from-blue-500 to-blue-600',
   trainer: 'from-green-500 to-green-600',
   principal: 'from-purple-500 to-purple-600',
-  cluster_lead: 'from-orange-500 to-orange-600',
+  cluster_admin: 'from-orange-500 to-orange-600',
   admin: 'from-red-500 to-red-600',
   school_admin: 'from-purple-500 to-purple-600', // Added for linter fix
 };

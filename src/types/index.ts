@@ -11,6 +11,7 @@ export interface User {
   company?: string;
   department?: string;
   phone?: string;
+  country?: string;
 }
  
 export interface Course {
@@ -87,7 +88,7 @@ export interface ApiResponse<T> {
   error?: string;
 }
  
-export type UserRole = 'teacher' | 'trainer' | 'principal' | 'cluster_lead' | 'admin' | 'school_admin';
+export type UserRole = 'teacher' | 'trainer' | 'principal' | 'cluster_admin' | 'admin' | 'school_admin';
  
 export interface DashboardStats {
   totalCourses: number;

@@ -49,7 +49,7 @@ const roleCards = [
     features: ['School Analytics', 'Teacher Reports', 'Progress Monitoring']
   },
   {
-    role: 'cluster_lead' as UserRole,
+    role: 'cluster_admin' as UserRole,
     icon: Network,
     title: 'Cluster Lead',
     titleAr: 'قائد المجموعة',

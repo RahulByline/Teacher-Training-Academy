@@ -1562,7 +1562,7 @@ const SchoolAdminDashboardPage: React.FC = () => {
         {/* Sidebar */}
         <aside className="w-72 bg-white shadow-lg flex flex-col py-6 px-4 min-h-screen border-r">
           <div className="flex items-center gap-3 mb-8 px-2">
-            <img src="/Riyada.png" alt="Riyada Trainings Logo" className="h-10 w-10 rounded-full object-cover" />
+            <img src="logo/Riyada.png" alt="Riyada Trainings Logo" className="h-10 w-10 rounded-full object-cover" />
             <span className="text-lg font-bold text-blue-800">Riyada Trainings</span>
           </div>
           <ul className="space-y-1">

@@ -36,7 +36,7 @@ const detectUserRole = (username: string, userData?: any): UserRole | undefined 
       'editingteacher': 'teacher', // recognize 'editingteacher' as 'teacher'
       'teacher': 'teacher',
       'student': 'teacher', // treat student as teacher for dashboard access
-      'cluster_lead': 'cluster_lead',
+      'cluster_admin': 'cluster_admin',
       'superadmin': 'admin',
       'siteadmin': 'admin',
     };

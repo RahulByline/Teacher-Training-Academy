@@ -4,6 +4,7 @@ import { DashboardLayout } from './DashboardLayout';
 
 import { TrainerDashboard } from './dashboards/TrainerDashboard';
 import { AdminDashboard } from './dashboards/AdminDashboard';
+import ClusterDashboard from './dashboards/clusterDashboard';
 import { LoadingSpinner } from './LoadingSpinner';
 import { Navigate } from 'react-router-dom';
 
@@ -34,9 +35,10 @@ export const DashboardPage: React.FC = () => {
       case 'trainer':
         return <TrainerDashboard />;
       case 'principal':
-      case 'cluster_lead':
       case 'admin':
         return <AdminDashboard />;
+      case 'cluster_admin':
+        return <Navigate to="/clusterdashboard" replace />;
       default:
         // For teachers, redirect to the new teacher dashboard
         return <Navigate to="/teacher-dashboard" replace />;
