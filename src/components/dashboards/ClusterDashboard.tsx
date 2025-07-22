@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import {
-  LayoutDashboard, Network, School, Users, BookOpen, CalendarCheck, Award, FileText, CheckCircle, Settings, Search, Bell, Plus, ChevronDown, UserCheck, X
+    LayoutGrid, Briefcase, Users, BookOpen, CalendarCheck2, Star, FileText, Headset, Settings, LogOut, Bell, Search, ChevronDown, MapPin, School, UserCheck, GraduationCap, TrendingUp, Target, Download, RefreshCw, BarChart2, ArrowLeft, Camera, X, Eye, Plus
 } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import { motion } from 'framer-motion';
@@ -8,7 +8,7 @@ import { ComposableMap, Geographies, Geography, Marker } from "react-simple-maps
 import {
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
   PieChart, Pie, Cell,
-  LineChart, Line, Legend
+  LineChart, Line, Legend, LabelList
 } from 'recharts';
 
 
@@ -46,38 +46,46 @@ const certificationData = [
 
 
 const ClusterDashboard = () => {
-  return (
+    const [activeSection, setActiveSection] = useState('Dashboard');
+
+    return (
         <div className="flex h-screen bg-gray-100 font-sans">
-            <Sidebar />
+            <Sidebar activeSection={activeSection} setActiveSection={setActiveSection} />
             <div className="flex-1 flex flex-col overflow-hidden">
                 <Header />
-                <MainContent />
+                <MainContent activeSection={activeSection} />
             </div>
-    </div>
-  );
+        </div>
+    );
 };
 
-const Sidebar = () => {
+interface SidebarProps {
+    activeSection: string;
+    setActiveSection: (section: string) => void;
+}
+
+const Sidebar: React.FC<SidebarProps> = ({ activeSection, setActiveSection }) => {
     const menuItems = [
-        { name: 'Dashboard', icon: LayoutDashboard, active: true },
-        { name: 'Manage Clusters', icon: Network },
+        { name: 'Dashboard', icon: LayoutGrid },
+        { name: 'Manage Clusters', icon: Briefcase },
         { name: 'Schools Overview', icon: School },
         { name: 'Trainer & Trainee Insights', icon: Users },
         { name: 'Courses Management', icon: BookOpen },
-        { name: 'Attendance Monitoring', icon: CalendarCheck },
-        { name: 'Competencies', icon: Award },
+        { name: 'Attendance Monitoring', icon: CalendarCheck2 },
+        { name: 'Competencies', icon: GraduationCap },
         { name: 'Reports', icon: FileText },
-        { name: 'Approve ILT/VILT Events', icon: CheckCircle },
+        { name: 'Approve ILT/VILT Events', icon: Star },
         { name: 'Settings', icon: Settings },
     ];
     return (
         <aside className="w-64 bg-white shadow-md flex-shrink-0">
-            <div className="p-6">
-                <h1 className="text-2xl font-bold text-gray-800">Riyada Trainings</h1>
+            <div className="p-6 flex items-center gap-3">
+                <img src="/logo/Riyada.png" alt="Riyada Trainings Logo" className="w-10 h-10" />
+                <h1 className="text-xl font-bold text-gray-800">Riyada Trainings</h1>
             </div>
             <nav className="mt-6">
                 {menuItems.map(item => (
-                    <a key={item.name} href="#" className={`flex items-center px-6 py-3 text-gray-600 hover:bg-gray-200 ${item.active ? 'bg-blue-100 text-gray-700' : ''}`}>
+                    <a key={item.name} href="#" onClick={() => setActiveSection(item.name)} className={`flex items-center px-6 py-3 text-gray-600 hover:bg-gray-200 ${activeSection === item.name ? 'bg-blue-100 text-gray-700' : ''}`}>
                         <item.icon className="w-5 h-5" />
                         <span className="mx-4 font-medium">{item.name}</span>
                     </a>
@@ -130,8 +138,43 @@ const Header = () => {
     </header>
 )};
 
-const MainContent = () => (
-    <main className="flex-1 p-6 overflow-y-auto">
+interface MainContentProps {
+    activeSection: string;
+}
+
+const MainContent: React.FC<MainContentProps> = ({ activeSection }) => {
+    const renderSection = () => {
+        switch (activeSection) {
+            case 'Dashboard':
+                return <DashboardContent />;
+            case 'Schools Overview':
+                return <SchoolsOverviewSection />;
+            case 'Trainer & Trainee Insights':
+                return <TrainerInsightsSection />;
+            case 'Courses Management':
+                return <CoursesManagementSection />;
+            case 'Attendance Monitoring':
+                return <AttendanceMonitoringSection />;
+            case 'Competencies':
+                return <CompetencyDevelopmentSection />;
+            case 'Reports':
+                return <ReportsCenterSection />;
+            case 'Settings':
+                return <AccountSettingsSection />;
+            default:
+                return <PlaceholderSection title={activeSection} />;
+        }
+    };
+
+    return (
+        <main className="flex-1 p-6 overflow-y-auto">
+            {renderSection()}
+        </main>
+    );
+};
+
+const DashboardContent = () => (
+    <>
         <div className="mb-6">
             <h2 className="text-3xl font-bold text-gray-800">Management Dashboard</h2>
             <p className="text-gray-600">Comprehensive analytics of Cluster-Level Teacher Training</p>
@@ -229,8 +272,269 @@ const MainContent = () => (
                 <RegionalInfographicMap />
             </div>
         </div>
-    </main>
+    </>
 );
+
+const SchoolsOverviewSection = () => {
+    const schoolsData = [
+        { name: 'Al-Rowad International School', teachers: 85, trained: 95, principal: 'Dr. Evelyn Reed' },
+        { name: 'Manarat Al-Riyadh School', teachers: 110, trained: 88, principal: 'Mr. David Chen' },
+        { name: 'Najd National School', teachers: 92, trained: 76, principal: 'Ms. Sarah Jenkins' },
+        { name: 'Al-Faris International School', teachers: 78, trained: 98, principal: 'Mr. Robert Frost' },
+    ];
+
+    return (
+        <div>
+            <h2 className="text-3xl font-bold text-gray-800 mb-6">Schools Overview</h2>
+            <div className="bg-white rounded-lg shadow-md p-6">
+                <table className="w-full text-left">
+                    <thead>
+                        <tr className="border-b text-sm text-gray-500">
+                            <th className="py-3 px-4 font-medium">SCHOOL NAME</th>
+                            <th className="py-3 px-4 font-medium"># TEACHERS</th>
+                            <th className="py-3 px-4 font-medium">% TRAINED</th>
+                            <th className="py-3 px-4 font-medium">PRINCIPAL</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {schoolsData.map((school, index) => (
+                            <tr key={index} className="border-b">
+                                <td className="py-4 px-4">{school.name}</td>
+                                <td className="py-4 px-4">{school.teachers}</td>
+                                <td className="py-4 px-4">
+                                    <div className="w-3/4 bg-gray-200 rounded-full h-4">
+                                        <div 
+                                            className={`h-4 rounded-full text-white text-xs flex items-center justify-center ${school.trained > 80 ? 'bg-green-500' : 'bg-yellow-500'}`}
+                                            style={{ width: `${school.trained}%` }}
+                                        >
+                                            {school.trained}%
+                                        </div>
+                                    </div>
+                                </td>
+                                <td className="py-4 px-4">{school.principal}</td>
+                            </tr>
+                        ))}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    );
+};
+
+const TrainerInsightsSection = () => {
+    const topTrainers = [
+        { name: 'Abdullah Al-Qahtani', avgRating: '4.9/5.0', tag: 'Top 5%', tagColor: 'bg-green-100 text-green-700', avatar: 'https://randomuser.me/api/portraits/men/1.jpg' },
+        { name: 'Noura Al-Mutairi', avgRating: '4.8/5.0', tag: 'Top 10%', tagColor: 'bg-green-100 text-green-700', avatar: 'https://randomuser.me/api/portraits/women/2.jpg' },
+        { name: 'Khaled Al-Ghamdi', avgRating: '4.7/5.0', tag: 'Consistent', tagColor: 'bg-blue-100 text-blue-700', avatar: 'https://randomuser.me/api/portraits/men/3.jpg' },
+    ];
+
+    const feedbackData = [
+        { course: 'Pedagogy', score: 4.8, color: '#3b82f6' },
+        { course: 'Digital Tools', score: 4.5, color: '#10b981' },
+        { course: 'Management', score: 4.2, color: '#f59e0b' },
+        { course: 'AI Intro', score: 4.7, color: '#8b5cf6' },
+    ];
+    
+    return (
+        <div>
+            <h2 className="text-3xl font-bold text-gray-800 mb-6">Trainer Insights</h2>
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                {/* Top Trainers by Rating */}
+                <div className="bg-white rounded-lg shadow-md p-6">
+                    <h3 className="text-lg font-semibold text-gray-800 mb-4">Top Trainers by Rating</h3>
+                    <div className="space-y-4">
+                        {topTrainers.map(trainer => (
+                            <div key={trainer.name} className="flex items-center justify-between">
+                                <div className="flex items-center">
+                                    <img src={trainer.avatar} alt={trainer.name} className="w-12 h-12 rounded-full mr-4" />
+                                    <div>
+                                        <div className="font-semibold">{trainer.name}</div>
+                                        <div className="text-sm text-gray-500">{trainer.avgRating}</div>
+                                    </div>
+                                </div>
+                                <div className={`px-3 py-1 text-xs font-semibold rounded-full ${trainer.tagColor}`}>
+                                    {trainer.tag}
+                                </div>
+                            </div>
+                        ))}
+                    </div>
+                </div>
+                {/* Feedback Scores by Course */}
+                <div className="bg-white rounded-lg shadow-md p-6">
+                    <h3 className="text-lg font-semibold text-gray-800 mb-4">Feedback Scores by Course</h3>
+                    <ResponsiveContainer width="100%" height={200}>
+                        <BarChart data={feedbackData} layout="vertical" margin={{ left: 10, right: 10 }}>
+                            <CartesianGrid strokeDasharray="3 3" horizontal={false} />
+                            <XAxis type="number" domain={[0, 5]} ticks={[0, 0.5, 1.0, 1.5, 2.0, 2.5, 3.0, 3.5, 4.0, 4.5, 5.0]} />
+                            <YAxis type="category" dataKey="course" width={80} />
+                            <Tooltip />
+                            <Legend />
+                            <Bar dataKey="score" name="Avg. Feedback Score">
+                                {feedbackData.map((entry, index) => (
+                                    <Cell key={`cell-${index}`} fill={entry.color} />
+                                ))}
+                            </Bar>
+                        </BarChart>
+                    </ResponsiveContainer>
+                </div>
+            </div>
+        </div>
+    );
+};
+
+const CoursesManagementSection = () => {
+    const coursesData = [
+        { title: 'Advanced Pedagogy', type: 'VILT', enrolled: 150, status: 'Active' },
+        { title: 'Digital Tools for Educators', type: 'Self-Paced', enrolled: 320, status: 'Active' },
+        { title: 'Classroom Management 101', type: 'ILT', enrolled: 75, status: 'Upcoming' },
+        { title: 'Intro to AI in Education', type: 'VILT', enrolled: 95, status: 'Archived' },
+    ];
+
+    const getStatusClass = (status: string) => {
+        switch (status) {
+            case 'Active': return 'bg-green-100 text-green-700';
+            case 'Upcoming': return 'bg-yellow-100 text-yellow-700';
+            case 'Archived': return 'bg-gray-100 text-gray-700';
+            default: return 'bg-gray-100 text-gray-700';
+        }
+    };
+
+    return (
+        <div>
+            <h2 className="text-3xl font-bold text-gray-800 mb-6">Courses Management</h2>
+            <div className="bg-white rounded-lg shadow-md p-6">
+                <table className="w-full text-left">
+                    <thead>
+                        <tr className="border-b text-sm text-gray-500">
+                            <th className="py-3 px-4 font-medium">COURSE TITLE</th>
+                            <th className="py-3 px-4 font-medium">TYPE</th>
+                            <th className="py-3 px-4 font-medium">ENROLLED</th>
+                            <th className="py-3 px-4 font-medium">STATUS</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {coursesData.map((course, index) => (
+                            <tr key={index} className="border-b">
+                                <td className="py-4 px-4 font-semibold text-gray-700">{course.title}</td>
+                                <td className="py-4 px-4">{course.type}</td>
+                                <td className="py-4 px-4">{course.enrolled}</td>
+                                <td className="py-4 px-4">
+                                    <span className={`px-3 py-1 text-xs font-semibold rounded-full ${getStatusClass(course.status)}`}>
+                                        {course.status}
+                                    </span>
+                                </td>
+                            </tr>
+                        ))}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    );
+};
+
+const CompetencyDevelopmentSection = () => {
+    const competencies = [
+        { name: 'Digital Literacy', proficiency: 75, color: '#34D399' },
+        { name: 'Pedagogical Skills', proficiency: 60, color: '#60A5FA' },
+        { name: 'Classroom Management', proficiency: 45, color: '#FBBF24' },
+    ];
+
+    return (
+        <div>
+            <h2 className="text-3xl font-bold text-gray-800 mb-6">Competency Development</h2>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                {competencies.map((comp, index) => (
+                    <motion.div
+                        key={index}
+                        className="bg-white rounded-lg shadow-md p-6 flex flex-col items-center justify-center text-center"
+                        initial={{ opacity: 0, y: 20 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ duration: 0.5, delay: index * 0.1 }}
+                    >
+                        <h3 className="text-lg font-semibold text-gray-800 mb-4 h-12 flex items-center">{comp.name}</h3>
+                        <div className="w-48 h-48">
+                            <RadialChart proficiency={comp.proficiency} color={comp.color} />
+                        </div>
+                        <p className="text-sm text-gray-500 mt-4">Cluster-wide proficiency</p>
+                    </motion.div>
+                ))}
+            </div>
+        </div>
+    );
+};
+
+interface RadialChartProps {
+    proficiency: number;
+    color: string;
+}
+
+const RadialChart: React.FC<RadialChartProps> = ({ proficiency, color }) => {
+    const data = [
+        { name: 'achieved', value: proficiency },
+        { name: 'remaining', value: 100 - proficiency }
+    ];
+
+    return (
+        <ResponsiveContainer width="100%" height="100%">
+            <PieChart>
+                <Pie
+                    data={data}
+                    cx="50%"
+                    cy="50%"
+                    dataKey="value"
+                    innerRadius={60}
+                    outerRadius={75}
+                    startAngle={90}
+                    endAngle={450}
+                    paddingAngle={0}
+                    cornerRadius={10}
+                    stroke="none"
+                >
+                    <Cell key="achieved" fill={color} />
+                    <Cell key="remaining" fill="#f3f4f6" />
+                </Pie>
+            </PieChart>
+        </ResponsiveContainer>
+    );
+}
+
+const AttendanceMonitoringSection = () => {
+    const attendanceData = [
+        { session: 'Advanced Pedagogy - Week 3', date: 'July 15, 2025', type: 'VILT', attendance: 98, present: 147, total: 150 },
+        { session: 'Classroom Management Workshop', date: 'July 12, 2025', type: 'ILT', attendance: 95, present: 71, total: 75 },
+        { session: 'Advanced Pedagogy - Week 2', date: 'July 8, 2025', type: 'VILT', attendance: 88, present: 132, total: 150 },
+    ];
+
+    return (
+        <div>
+            <h2 className="text-3xl font-bold text-gray-800 mb-6">Attendance Monitoring</h2>
+            <div className="bg-white rounded-lg shadow-md p-6">
+                <table className="w-full text-left">
+                    <thead>
+                        <tr className="border-b text-sm text-gray-500">
+                            <th className="py-3 px-4 font-medium">SESSION / COURSE</th>
+                            <th className="py-3 px-4 font-medium">DATE</th>
+                            <th className="py-3 px-4 font-medium">TYPE</th>
+                            <th className="py-3 px-4 font-medium">ATTENDANCE</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {attendanceData.map((item, index) => (
+                            <tr key={index} className="border-b">
+                                <td className="py-4 px-4 font-semibold text-gray-700">{item.session}</td>
+                                <td className="py-4 px-4">{item.date}</td>
+                                <td className="py-4 px-4">{item.type}</td>
+                                <td className={`py-4 px-4 font-semibold ${item.attendance >= 90 ? 'text-green-600' : 'text-red-600'}`}>
+                                    {item.attendance}% ({item.present}/{item.total})
+                                </td>
+                            </tr>
+                        ))}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    );
+};
 
 
 // Helper Components
@@ -299,6 +603,12 @@ const ChartCard: React.FC<ChartCardProps> = ({ title, description, children }) =
         <h3 className="font-medium text-gray-800">{title}</h3>
         <p className="mt-2 text-sm text-gray-600">{description}</p>
         <div className="mt-4">{children}</div>
+    </div>
+);
+
+const PlaceholderSection = ({ title }: { title: string }) => (
+    <div className="p-6 bg-white rounded-lg shadow-md">
+        <h2 className="text-3xl font-bold text-gray-400">Welcome to {title}</h2>
     </div>
 );
 
@@ -413,6 +723,294 @@ const SchoolModal: React.FC<SchoolModalProps> = ({ school, onClose }) => (
                 </div>
             </div>
         </motion.div>
+    </div>
+);
+
+const AccountSettingsSection = () => {
+    const { user } = useAuth();
+    
+    const [profile, setProfile] = useState({
+        firstName: user?.firstname || '',
+        lastName: user?.lastname || '',
+        email: user?.email || '',
+        phone: user?.phone || '+966 50 123 4567',
+        school: user?.schoolName || 'Riyada Trainigs',
+        role: user?.rolename || 'Cluster Admin',
+        bio: 'Cluster Admin',
+        interests: ['STEM Education', 'Project-Based Learning', 'Educational Technology'],
+        learningPreferences: ['Instructor-Led Training (ILT)', 'Virtual Instructor-Led Training (VILT)', 'Self-Paced Learning'],
+    });
+
+    const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
+        const { name, value } = e.target;
+        setProfile(prev => ({ ...prev, [name]: value }));
+    };
+
+    const handleCheckboxChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const { name, checked } = e.target;
+        setProfile(prev => {
+            const newPrefs = checked
+                ? [...prev.learningPreferences, name]
+                : prev.learningPreferences.filter(pref => pref !== name);
+            return { ...prev, learningPreferences: newPrefs };
+        });
+    };
+    
+    const removeInterest = (interestToRemove: string) => {
+        setProfile(prev => ({
+            ...prev,
+            interests: prev.interests.filter(interest => interest !== interestToRemove)
+        }));
+    };
+
+    const competencies = [
+        { name: 'Classroom Management', level: 'Advanced', value: 90, color: 'bg-green-500' },
+        { name: 'Digital Learning', level: 'Intermediate', value: 75, color: 'bg-blue-500' },
+        { name: 'Assessment Design', level: 'Beginner', value: 40, color: 'bg-yellow-500' },
+    ];
+
+    const tabs = ['Profile Information', 'Password & Security', 'Notifications', 'Language & Region', 'Linked Accounts'];
+
+    return (
+        <div>
+            <button className="flex items-center text-blue-600 font-semibold mb-4">
+                <ArrowLeft className="w-5 h-5 mr-2" />
+                Back to Dashboard
+            </button>
+            <h2 className="text-3xl font-bold text-gray-800">Account Settings</h2>
+            <p className="text-gray-500 mb-6">Manage your profile and preferences</p>
+
+            <div className="border-b mb-6">
+                <nav className="-mb-px flex space-x-8">
+                    {tabs.map(tab => (
+                        <a
+                            key={tab}
+                            href="#"
+                            className={`py-4 px-1 inline-flex items-center gap-2 text-sm whitespace-nowrap ${
+                                tab === 'Profile Information'
+                                    ? 'text-blue-600 border-b-2 border-blue-600 font-semibold'
+                                    : 'text-gray-500 hover:text-blue-600'
+                            }`}
+                        >
+                            {tab}
+                        </a>
+                    ))}
+                </nav>
+            </div>
+            
+            <div className="bg-white rounded-lg shadow-md p-8">
+                <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                    {/* Left Column */}
+                    <div className="lg:col-span-1">
+                        <div className="flex flex-col items-center">
+                             <div className="relative">
+                                <img src={user?.profileimageurl || "https://randomuser.me/api/portraits/women/44.jpg"} alt="Profile" className="w-32 h-32 rounded-full object-cover" />
+                                <button className="absolute bottom-1 right-1 bg-blue-600 text-white rounded-full p-2 hover:bg-blue-700">
+                                    <Camera className="w-4 h-4" />
+                                </button>
+                            </div>
+                            <h3 className="text-xl font-bold mt-4">{profile.firstName} {profile.lastName}</h3>
+                            <p className="text-gray-600">{profile.role}</p>
+                            <p className="text-gray-500 text-sm">{profile.school}</p>
+                        </div>
+
+                        <div className="mt-8">
+                            <h4 className="font-semibold text-gray-800 mb-4">Teaching Competencies</h4>
+                            <div className="space-y-4">
+                                {competencies.map(c => (
+                                    <div key={c.name}>
+                                        <div className="flex justify-between text-sm mb-1">
+                                            <span className="font-medium">{c.name}</span>
+                                            <span className="text-gray-500">{c.level}</span>
+                                        </div>
+                                        <div className="w-full bg-gray-200 rounded-full h-2">
+                                            <div className={`${c.color} h-2 rounded-full`} style={{ width: `${c.value}%` }}></div>
+                                        </div>
+                                    </div>
+                                ))}
+                            </div>
+                        </div>
+                    </div>
+                    
+                    {/* Right Column */}
+                    <div className="lg:col-span-2">
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <div>
+                                <label className="block text-sm font-medium text-gray-700">First Name</label>
+                                <input type="text" name="firstName" value={profile.firstName} onChange={handleInputChange} className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500" />
+                            </div>
+                            <div>
+                                <label className="block text-sm font-medium text-gray-700">Last Name</label>
+                                <input type="text" name="lastName" value={profile.lastName} onChange={handleInputChange} className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500" />
+                            </div>
+                        </div>
+                        <div className="mt-6">
+                            <label className="block text-sm font-medium text-gray-700">Email Address</label>
+                            <input type="email" name="email" value={profile.email} onChange={handleInputChange} className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500" />
+                            <p className="text-xs text-gray-500 mt-1">This email is used for notifications and login</p>
+                        </div>
+                        <div className="mt-6">
+                            <label className="block text-sm font-medium text-gray-700">Phone Number</label>
+                            <input type="tel" name="phone" value={profile.phone} onChange={handleInputChange} className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500" />
+                        </div>
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-6">
+                            <div>
+                                <label className="block text-sm font-medium text-gray-700">School</label>
+                                <select name="school" value={profile.school} onChange={handleInputChange} className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500">
+                                    <option>Maarif Al Riyadh School</option>
+                                    <option>Jeddah International School</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label className="block text-sm font-medium text-gray-700">Role</label>
+                                 <select name="role" value={profile.role} onChange={handleInputChange} className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500" disabled>
+                                    <option>Cluster Admin</option>
+                                    <option>Teacher</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div className="mt-6">
+                            <label className="block text-sm font-medium text-gray-700">Professional Bio</label>
+                            <textarea name="bio" value={profile.bio} onChange={handleInputChange} rows={4} className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500"></textarea>
+                        </div>
+                        
+                        <div className="mt-8">
+                            <h4 className="font-semibold text-gray-800">Professional Interests</h4>
+                            <div className="flex flex-wrap gap-2 mt-2">
+                                {profile.interests.map(interest => (
+                                    <span key={interest} className="flex items-center bg-blue-100 text-blue-800 text-sm font-medium pl-3 pr-2 py-1 rounded-full">
+                                        {interest}
+                                        <button onClick={() => removeInterest(interest)} className="ml-2 text-blue-600 hover:text-blue-800">
+                                            <X className="w-3 h-3"/>
+                                        </button>
+                                    </span>
+                                ))}
+                            </div>
+                             <button className="mt-3 text-sm font-semibold text-blue-600 hover:text-blue-700">+ Add Interest</button>
+                        </div>
+
+                        <div className="mt-8">
+                             <h4 className="font-semibold text-gray-800">Learning Preferences</h4>
+                             <div className="mt-3 space-y-2">
+                                {['Instructor-Led Training (ILT)', 'Virtual Instructor-Led Training (VILT)', 'Self-Paced Learning'].map(pref => (
+                                    <label key={pref} className="flex items-center">
+                                        <input
+                                            type="checkbox"
+                                            name={pref}
+                                            checked={profile.learningPreferences.includes(pref)}
+                                            onChange={handleCheckboxChange}
+                                            className="h-4 w-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
+                                        />
+                                        <span className="ml-2 text-sm text-gray-700">{pref}</span>
+                                    </label>
+                                ))}
+                            </div>
+                        </div>
+
+                         <div className="mt-8 pt-6 border-t flex justify-end gap-3">
+                            <button className="py-2 px-4 border border-gray-300 rounded-md text-sm font-medium text-gray-700 hover:bg-gray-50">Cancel</button>
+                            <button className="py-2 px-4 bg-blue-600 text-white rounded-md text-sm font-medium hover:bg-blue-700">Save Changes</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    );
+};
+
+const ReportsCenterSection = () => {
+    const reports = [
+        {
+            icon: BarChart2,
+            title: 'Q2 Training Completion Report',
+            description: 'Summary of all training activities from April-June.',
+            iconColor: 'text-blue-500',
+            bgColor: 'bg-blue-100'
+        },
+        {
+            icon: RefreshCw,
+            title: 'Annual ROI Analysis',
+            description: 'Return on investment based on performance data.',
+            iconColor: 'text-green-500',
+            bgColor: 'bg-green-100'
+        },
+        {
+            icon: FileText,
+            title: 'Full Attendance Records (CSV)',
+            description: 'Raw attendance data for all sessions this year.',
+            iconColor: 'text-yellow-500',
+            bgColor: 'bg-yellow-100'
+        },
+    ];
+
+    return (
+        <div>
+            <h2 className="text-3xl font-bold text-gray-800 mb-6">Reports Center</h2>
+            <div className="space-y-4">
+                {reports.map((report, index) => (
+                    <motion.div
+                        key={index}
+                        className="bg-white rounded-lg shadow-md p-4 flex items-center justify-between"
+                        initial={{ opacity: 0, x: -20 }}
+                        animate={{ opacity: 1, x: 0 }}
+                        transition={{ duration: 0.5, delay: index * 0.1 }}
+                    >
+                        <div className="flex items-center">
+                            <div className={`p-3 rounded-lg ${report.bgColor}`}>
+                                <report.icon className={`w-6 h-6 ${report.iconColor}`} />
+                            </div>
+                            <div className="ml-4">
+                                <h3 className="text-md font-semibold text-gray-800">{report.title}</h3>
+                                <p className="text-sm text-gray-500">{report.description}</p>
+                            </div>
+                        </div>
+                        <button className="flex items-center bg-blue-600 text-white font-semibold py-2 px-4 rounded-lg hover:bg-blue-700 transition-colors">
+                            <Download className="w-5 h-5 mr-2" />
+                            Download
+                        </button>
+                    </motion.div>
+                ))}
+            </div>
+        </div>
+    );
+};
+
+interface ReportCardProps {
+    report: {
+        id: number;
+        title: string;
+        date: string;
+        type: string;
+        status: string;
+        downloadLink: string;
+        previewLink: string;
+        icon: React.ElementType;
+        iconColor: string;
+        bgColor: string;
+    };
+}
+
+const ReportCard: React.FC<ReportCardProps> = ({ report }) => (
+    <div className="bg-white rounded-lg shadow-md p-6">
+        <div className="flex items-center justify-between mb-4">
+            <h3 className="text-lg font-semibold text-gray-800">{report.title}</h3>
+            <div className={`p-2 rounded-full ${report.bgColor}`}>
+                <report.icon className={`w-6 h-6 ${report.iconColor}`} />
+            </div>
+        </div>
+        <p className="text-sm text-gray-600 mb-4">{report.type} Report</p>
+        <p className="text-sm text-gray-500 mb-4">Date: {report.date}</p>
+        <p className="text-sm text-gray-500 mb-4">Status: <span className={`px-2 py-1 text-xs font-semibold rounded-full ${
+            report.status === 'Completed' ? 'bg-green-100 text-green-700' : 'bg-yellow-100 text-yellow-700'
+        }`}>{report.status}</span></p>
+        <div className="mt-4 flex items-center text-sm text-gray-600">
+            <Download className="w-4 h-4 mr-2" />
+            <a href={report.downloadLink} className="hover:underline">Download</a>
+        </div>
+        <div className="mt-2 flex items-center text-sm text-gray-600">
+            <Eye className="w-4 h-4 mr-2" />
+            <a href={report.previewLink} className="hover:underline">Preview</a>
+        </div>
     </div>
 );
 
