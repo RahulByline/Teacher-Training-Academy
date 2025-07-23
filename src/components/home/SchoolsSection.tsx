@@ -8,6 +8,7 @@ import { Building, Users, MapPin, ChevronRight, Globe, Mail, Phone } from 'lucid
 import { LoadingSpinner } from '../LoadingSpinner';
 import { School } from '../../types';
 import { getAllCompanies } from '../../services/apiService';
+import { apiService } from '../../services/api';
 import SchoolsCarousel from '../home/SchoolsCarousel';
 
 export const SchoolsSection: React.FC = () => {
@@ -28,7 +29,21 @@ export const SchoolsSection: React.FC = () => {
       setError(null);
       try {
         const companies = await getAllCompanies();
-        setSchools(companies);
+        // Fetch logo for each company in parallel
+        const companiesWithLogos = await Promise.all(
+          companies.map(async (company: School) => {
+            let logo = company.logo || null;
+            if (!logo && company.id) {
+              try {
+                logo = await apiService.getCompanyLogoUrl(company.id);
+              } catch (e) {
+                logo = null;
+              }
+            }
+            return { ...company, logo };
+          })
+        );
+        setSchools(companiesWithLogos);
       } catch (error) {
         console.error('Error fetching schools:', error);
         setError('Failed to fetch schools from IOMAD API');
