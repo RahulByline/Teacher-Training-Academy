@@ -480,6 +480,8 @@ export const TrainerDashboard: React.FC = () => {
 
   // --- Main Content ---
   const isDashboardRoot = location.pathname === '/dashboard' || location.pathname === '/dashboard/';
+  const isSettingsPage = location.pathname.startsWith('/dashboard/settings');
+  const isRoadmapPage = location.pathname.startsWith('/dashboard/roadmap');
   return (
     <div className="flex min-h-screen min-w-screen w-full h-full bg-[#f9fafb] font-sans">
       {/* Sidebar */}
@@ -515,22 +517,27 @@ export const TrainerDashboard: React.FC = () => {
       </aside>
       {/* Main Content */}
       <div className="flex-1 flex flex-col min-w-0 w-full h-full">
-        {/* Top Bar */}
-        <header className="flex items-center justify-between bg-white px-4 py-4 shadow rounded-bl-2xl w-full">
-          <div className="text-lg md:text-2xl font-bold text-gray-900">{t('Welcome')}, {user.fullname || user.firstname || user.username || ''}</div>
-          <div className="flex items-center gap-4">
-            <span className="text-gray-500 text-sm hidden md:inline">{today}</span>
-            <button className="relative p-2 rounded-full hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-indigo-400"><Bell className="w-6 h-6 text-gray-500" /></button>
-            <div className="relative">
-              <button className="flex items-center gap-2 p-1 rounded-full hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-indigo-400">
-                <img src={user.profileimageurl || '/logo/Riyada.png'} alt={user.fullname || 'User'} className="w-8 h-8 rounded-full object-cover" />
-                <ChevronDown className="w-4 h-4 text-gray-500" />
-              </button>
-              {/* Dropdown could go here */}
+        {/* Top Bar - hide for settings and roadmap */}
+        {!(isSettingsPage || isRoadmapPage) && (
+          <header className="flex items-center justify-between bg-white px-4 py-4 shadow rounded-bl-2xl w-full flex-shrink-0">
+            <div className="flex items-center gap-4">
+              <div className="text-lg md:text-2xl font-bold text-gray-900">{t('Welcome')}, {user.fullname || user.firstname || user.username || ''}</div>
             </div>
-            <button className="flex items-center gap-2 ml-4 px-3 py-2 bg-gray-700 hover:bg-gray-600 rounded-lg text-sm text-gray-200" onClick={handleLogout}><LogOut className="w-4 h-4" /> {t('Logout')}</button>
-          </div>
-        </header>
+            <div className="flex items-center gap-4">
+              <span className="text-gray-500 text-sm hidden md:inline">{today}</span>
+              <button className="relative p-2 rounded-full hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-indigo-400"><Bell className="w-6 h-6 text-gray-500" /></button>
+              <div className="relative">
+                <button className="flex items-center gap-2 p-1 rounded-full hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-indigo-400">
+                  <img src={user.profileimageurl || '/logo/Riyada.png'} alt={user.fullname || 'User'} className="w-8 h-8 rounded-full object-cover" />
+                  <ChevronDown className="w-4 h-4 text-gray-500" />
+                </button>
+                {/* Dropdown could go here */}
+              </div>
+              <button className="flex items-center gap-2 ml-4 px-3 py-2 bg-gray-700 hover:bg-gray-600 rounded-lg text-sm text-gray-200" onClick={handleLogout}><LogOut className="w-4 h-4" /> {t('Logout')}</button>
+            </div>
+          </header>
+        )}
+        {/* Main Content Area */}
         {isDashboardRoot ? (
           // Overview Section
           <section className="px-4 py-6">
