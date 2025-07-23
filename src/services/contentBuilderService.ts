@@ -77,8 +77,10 @@ export async function updateActivity(cmid: number, name: string) {
     params.append('wstoken', TOKEN);
     params.append('wsfunction', 'local_contentbuilder_update_activity');
     params.append('moodlewsrestformat', 'json');
-    params.append('cmid', String(cmid));
-    params.append('name', name);
+    // Wrap parameters in the 'activitydata' object as required by the refactored PHP function
+    params.append('activitydata[cmid]', String(cmid));
+    params.append('activitydata[name]', name);
+
     const { data } = await axios.post(MOODLE_API_URL, params);
     if (data.exception) {
         throw new Error(data.message);
