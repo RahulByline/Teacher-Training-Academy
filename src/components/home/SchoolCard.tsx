@@ -38,7 +38,7 @@ const SchoolCard: React.FC<SchoolCardProps> = ({
           <img
             src={image}
             alt={name}
-            className="h-full w-full object-cover"
+            className="h-auto w-full object-cover"
             onError={(e) => {
               // Handle image error if needed
             }}

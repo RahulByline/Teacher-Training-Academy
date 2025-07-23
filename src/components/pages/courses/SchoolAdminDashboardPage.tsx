@@ -40,15 +40,11 @@ const MainNavbar = ({ adminName, schoolName, setActiveSection }: { adminName: st
   const [schoolLogo, setSchoolLogo] = useState<string | null>(null);
 
   useEffect(() => {
-    // Fetch school logo
+    // Fetch school logo using apiService.getCompanyLogoUrl
     const fetchSchoolLogo = async () => {
       if (user?.company) {
-        const school = await schoolsService.getSchoolById(Number(user.company));
-        if (school && school.logo) {
-            setSchoolLogo(school.logo);
-        } else {
-            setSchoolLogo(null);
-        }
+        const logoUrl = await apiService.getCompanyLogoUrl(user.company);
+        setSchoolLogo(logoUrl || null);
       } else {
         setSchoolLogo(null);
       }
@@ -74,10 +70,15 @@ const MainNavbar = ({ adminName, schoolName, setActiveSection }: { adminName: st
     <nav className="w-full flex items-center justify-between py-4 px-8 bg-white border-b mb-6" style={{ minHeight: '64px' }}>
       {/* Left: + icon and Riyada Trainings */}
       <div className="flex items-center gap-3">
-        <span className="h-9 w-9 flex items-center justify-center rounded-full bg-blue-50">
+        {schoolLogo ? (
+            <img src={schoolLogo} alt="School Logo" className="h-12 w-auto object-cover border" />
+          ) : (
+          <span className="h-9 w-9 flex items-center justify-center">
           <Plus className="w-6 h-6 text-blue-500" />
         </span>
-        <span className="text-xl font-bold text-gray-900">{schoolName || 'School Dashboard'}</span>
+        )}
+        
+        {/* <span className="text-xl font-bold text-gray-900">{schoolName || 'School Dashboard'}</span> */}
       </div>
       {/* Center: Search bar */}
       <div className="flex-1 flex justify-center">
