@@ -66,12 +66,12 @@ export const Header: React.FC = () => {
             <ThemeToggle />
             <LanguageToggle />
             {/* Profile Avatar */}
-            <img
-              src={user?.profileimageurl || '/logo/Riyada.png'}
+            {/* <img
+              // src={user?.profileimageurl || '/logo/Riyada.png'}
               alt={user?.fullname || 'User'}
               className="w-8 h-8 rounded-full object-cover border"
               onError={e => { (e.currentTarget as HTMLImageElement).src = '/logo/Riyada.png'; }}
-            />
+            /> */}
             {/* Mobile Menu Button */}
             <button
               className="md:hidden p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800"

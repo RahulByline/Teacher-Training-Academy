@@ -1,16 +1,26 @@
 import React, { useState, useEffect } from 'react';
 import {
-    LayoutGrid, Briefcase, Users, BookOpen, CalendarCheck2, Star, FileText, Headset, Settings, LogOut, Bell, Search, ChevronDown, MapPin, School, UserCheck, GraduationCap, TrendingUp, Target, Download, RefreshCw, BarChart2, ArrowLeft, Camera, X, Eye, Plus
+    LayoutGrid, Briefcase, Users, BookOpen, CalendarCheck2, Star, FileText, Headset, Settings, LogOut, Bell, Search, ChevronDown, MapPin, School as SchoolIcon, UserCheck, GraduationCap, TrendingUp, Target, Download, RefreshCw, BarChart2, ArrowLeft, Camera, X, Eye, Plus, Minus // ⬇️ CHANGE: Added Minus icon
 } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import { motion } from 'framer-motion';
-import { ComposableMap, Geographies, Geography, Marker } from "react-simple-maps";
+// ⬇️ CHANGE: Imported ZoomableGroup
+import { ComposableMap, Geographies, Geography, Marker, ZoomableGroup } from "react-simple-maps";
 import {
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
   PieChart, Pie, Cell,
   LineChart, Line, Legend, LabelList
 } from 'recharts';
 
+// Define the type for a school object
+interface SchoolType {
+  id: number;
+  name: string;
+  city: string;
+  country: string;
+  coordinates: [number, number];
+  image: string;
+}
 
 // Mock Data for Charts
 const participationData = [
@@ -67,14 +77,12 @@ interface SidebarProps {
 const Sidebar: React.FC<SidebarProps> = ({ activeSection, setActiveSection }) => {
     const menuItems = [
         { name: 'Dashboard', icon: LayoutGrid },
-        { name: 'Manage Clusters', icon: Briefcase },
-        { name: 'Schools Overview', icon: School },
+        { name: 'Schools Overview', icon: SchoolIcon },
         { name: 'Trainer & Trainee Insights', icon: Users },
         { name: 'Courses Management', icon: BookOpen },
         { name: 'Attendance Monitoring', icon: CalendarCheck2 },
         { name: 'Competencies', icon: GraduationCap },
         { name: 'Reports', icon: FileText },
-        { name: 'Approve ILT/VILT Events', icon: Star },
         { name: 'Settings', icon: Settings },
     ];
     return (
@@ -101,7 +109,6 @@ const Header = () => {
 
     const handleLogout = () => {
         logout();
-        // The AuthProvider should handle redirecting to the login page
     };
     
     return (
@@ -180,15 +187,13 @@ const DashboardContent = () => (
             <p className="text-gray-600">Comprehensive analytics of Cluster-Level Teacher Training</p>
         </div>
 
-        {/* Info Cards */}
         <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-4">
-            <InfoCard title="Total Schools in Cluster" value="25" Icon={School} iconColor="text-blue-600" bgColor="bg-blue-100" />
+            <InfoCard title="Total Schools in Cluster" value="25" Icon={SchoolIcon} iconColor="text-blue-600" bgColor="bg-blue-100" />
             <InfoCard title="Total Active Teachers" value="1,250" Icon={Users} iconColor="text-green-600" bgColor="bg-green-100" />
             <InfoCard title="Total Trainers" value="50" Icon={UserCheck} iconColor="text-yellow-600" bgColor="bg-yellow-100" />
             <InfoCard title="Total Courses" value="75" Icon={BookOpen} iconColor="text-purple-600" bgColor="bg-purple-100" />
         </div>
 
-        {/* Main Charts */}
         <div className="grid grid-cols-1 gap-6 mt-8 lg:grid-cols-3">
             <div className="col-span-1 p-6 bg-white rounded-lg shadow-md lg:col-span-2">
                 <ChartHeader title="School-wise Training Participation" />
@@ -214,7 +219,6 @@ const DashboardContent = () => (
             </div>
         </div>
 
-        {/* Additional Cards */}
         <div className="grid grid-cols-1 gap-6 mt-8 md:grid-cols-2 lg:grid-cols-4">
             <ChartCard title="Competency Development" description="Track the growth of teacher competencies.">
                 <ResponsiveContainer width="100%" height={200}>
@@ -265,7 +269,6 @@ const DashboardContent = () => (
             </ChartCard>
         </div>
 
-        {/* Regional School Map */}
         <div className="p-6 mt-8 bg-white rounded-lg shadow-md">
             <h3 className="text-lg font-medium text-gray-800">Regional School Map</h3>
             <div className="mt-4 h-[450px]">
@@ -339,7 +342,6 @@ const TrainerInsightsSection = () => {
         <div>
             <h2 className="text-3xl font-bold text-gray-800 mb-6">Trainer Insights</h2>
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-                {/* Top Trainers by Rating */}
                 <div className="bg-white rounded-lg shadow-md p-6">
                     <h3 className="text-lg font-semibold text-gray-800 mb-4">Top Trainers by Rating</h3>
                     <div className="space-y-4">
@@ -359,7 +361,6 @@ const TrainerInsightsSection = () => {
                         ))}
                     </div>
                 </div>
-                {/* Feedback Scores by Course */}
                 <div className="bg-white rounded-lg shadow-md p-6">
                     <h3 className="text-lg font-semibold text-gray-800 mb-4">Feedback Scores by Course</h3>
                     <ResponsiveContainer width="100%" height={200}>
@@ -612,94 +613,127 @@ const PlaceholderSection = ({ title }: { title: string }) => (
     </div>
 );
 
-const geoUrl = "https://raw.githubusercontent.com/zcreativelabs/react-simple-maps/master/topojson-maps/world-110m.json";
+// --- START: MODIFIED MAP AND MODAL COMPONENTS ---
 
-// Define interfaces for our data structures
-interface School {
-    id: number;
-    name: string;
-    city: string;
-    country: string;
-    coordinates: [number, number];
-    image: string;
-}
-
-// Mock school data - in a real app, this would come from your API
-const mockSchools: School[] = [
-    { id: 1, name: "Riyada International School", city: "Riyadh", country: "Saudi Arabia", coordinates: [46.7219, 24.6877], image: "https://via.placeholder.com/400x200.png?text=Riyada+International" },
-    { id: 2, name: "Jeddah Knowledge School", city: "Jeddah", country: "Saudi Arabia", coordinates: [39.2176, 21.5433], image: "https://via.placeholder.com/400x200.png?text=Jeddah+Knowledge" },
-    { id: 3, name: "Dubai Modern Education", city: "Dubai", country: "United Arab Emirates", coordinates: [55.2708, 25.2048], image: "https://via.placeholder.com/400x200.png?text=Dubai+Modern" },
-    { id: 4, name: "Cairo American College", city: "Cairo", country: "Egypt", coordinates: [31.2357, 30.0444], image: "https://via.placeholder.com/400x200.png?text=Cairo+American" }
+const mockSchools: SchoolType[] = [
+  { id: 1, name: "Riyada International School", city: "Riyadh", country: "Saudi Arabia", coordinates: [46.7219, 24.6877], image: "https://via.placeholder.com/400x200.png?text=Riyada+International" },
+  { id: 2, name: "Jeddah Knowledge School", city: "Jeddah", country: "Saudi Arabia", coordinates: [39.2176, 21.5433], image: "https://via.placeholder.com/400x200.png?text=Jeddah+Knowledge" },
+  { id: 3, name: "Dubai Modern Education", city: "Dubai", country: "United Arab Emirates", coordinates: [55.2708, 25.2048], image: "https://via.placeholder.com/400x200.png?text=Dubai+Modern" },
+  { id: 4, name: "Cairo American College", city: "Cairo", country: "Egypt", coordinates: [31.2357, 30.0444], image: "https://via.placeholder.com/400x200.png?text=Cairo+American" }
 ];
+
+const geoUrl = "https://cdn.jsdelivr.net/npm/world-atlas@2/countries-110m.json";
 
 const RegionalInfographicMap = () => {
     const { user } = useAuth();
-    const [schools, setSchools] = useState<School[]>([]);
-    const [highlightedCountry, setHighlightedCountry] = useState<string | null>(null);
-    const [selectedSchool, setSelectedSchool] = useState<School | null>(null);
+    const [selectedSchool, setSelectedSchool] = useState<SchoolType | null>(null);
+    // ⬇️ CHANGE: State to manage map position (zoom and center)
+    const [position, setPosition] = useState<{ coordinates: [number, number]; zoom: number }>({ coordinates: [0, 0], zoom: 1 });
 
-    useEffect(() => {
-        // Fetch schools and set highlighted country based on user
-        // Using mock data for now
-        setSchools(mockSchools);
-        if(user && user.country) {
-            setHighlightedCountry(user.country);
-        } else {
-            // Fallback for demo
-            setHighlightedCountry("Saudi Arabia");
-        }
-    }, [user]);
+    const highlightedCountry = user?.country || "Saudi Arabia";
+    
+    // ⬇️ CHANGE: Handlers for zoom and pan
+    const handleZoomIn = () => {
+        if (position.zoom >= 4) return;
+        setPosition(pos => ({ ...pos, zoom: pos.zoom * 2 }));
+    };
+
+    const handleZoomOut = () => {
+        if (position.zoom <= 1) return;
+        setPosition(pos => ({ ...pos, zoom: pos.zoom / 2 }));
+    };
+
+    const handleMoveEnd = (position: { coordinates: [number, number]; zoom: number }) => {
+        setPosition(position);
+    };
 
     return (
-        <div className="relative">
-            <ComposableMap projectionConfig={{ scale: 180 }}>
-                <Geographies geography={geoUrl}>
-                    {({ geographies }) =>
-                        geographies.map((geo: any) => (
-                            <Geography
-                                key={geo.rsmKey}
-                                geography={geo}
-                                style={{
-                                    default: { fill: "#E9EAEA", outline: "none" },
-                                    hover: { fill: "#D6D6DA", outline: "none" },
-                                    pressed: { fill: "#D6D6DA", outline: "none" },
-                                }}
-                                fill={geo.properties.NAME === highlightedCountry ? "#a0c4ff" : "#E9EAEA"}
-                            />
-                        ))
-                    }
-                </Geographies>
-                {schools.map(({ id, name, coordinates, country }) => (
-                     highlightedCountry === country && (
-                        <Marker key={id} coordinates={coordinates}>
-                            <motion.g
-                                onClick={() => setSelectedSchool(mockSchools.find(s => s.id === id) || null)}
-                                initial={{ scale: 0 }}
-                                animate={{ scale: 1 }}
-                                transition={{ type: "spring", stiffness: 260, damping: 20, delay: 0.2 }}
-                                whileHover={{ scale: 1.5 }}
-                                style={{ cursor: 'pointer' }}
-                                transform="translate(0, -14)"
-                            >
-                                <path
-                                    d="M-7 0a7 7 0 1 1 14 0c0 3.866-7 14-7 14s-7-10.134-7-14z"
-                                    fill="#3b82f6"
-                                    stroke="#fff"
-                                    strokeWidth={1.5}
-                                />
-                                <circle cx="0" cy="0" r="3" fill="white" />
-                            </motion.g>
-                        </Marker>
-                     )
-                ))}
+        <div className="relative border rounded-lg bg-gray-50 h-full w-full">
+            <ComposableMap
+                projection="geoMercator"
+                projectionConfig={{
+                    rotate: [-50, -25, 0], 
+                    scale: 600
+                }}
+                style={{ width: "100%", height: "100%" }}
+            >
+                {/* ⬇️ CHANGE: Wrap Geographies and Markers in ZoomableGroup */}
+                <ZoomableGroup
+                    zoom={position.zoom}
+                    center={position.coordinates}
+                    onMoveEnd={handleMoveEnd}
+                >
+                    <Geographies geography={geoUrl}>
+                        {({ geographies }) =>
+                            geographies.map((geo: any) => {
+                                const countryName = geo.properties.name; 
+                                return (
+                                    <Geography
+                                        key={geo.rsmKey}
+                                        geography={geo}
+                                        fill={countryName === highlightedCountry ? "#a0c4ff" : "#E9EAEA"}
+                                        stroke="#FFFFFF"
+                                        style={{
+                                            default: { outline: "none" },
+                                            hover: { fill: "#D6D6DA", outline: "none" },
+                                            pressed: { fill: "#D6D6DA", outline: "none" },
+                                        }}
+                                    />
+                                );
+                            })
+                        }
+                    </Geographies>
+
+                    {mockSchools.map((school) => {
+                        if (school.country === highlightedCountry) {
+                            return (
+                                <Marker key={school.id} coordinates={school.coordinates}>
+                                    <motion.g
+                                        onClick={() => setSelectedSchool(school)}
+                                        whileHover={{ scale: 1.5, zIndex: 99 }}
+                                        style={{ cursor: 'pointer' }}
+                                        transform="translate(0, -14)"
+                                    >
+                                        <path
+                                            d="M-7 0a7 7 0 1 1 14 0c0 3.866-7 14-7 14s-7-10.134-7-14z"
+                                            fill="#3b82f6"
+                                            stroke="#fff"
+                                            strokeWidth={1.5}
+                                        />
+                                        <circle cx="0" cy="0" r="3" fill="white" />
+                                    </motion.g>
+                                </Marker>
+                            );
+                        }
+                        return null;
+                    })}
+                </ZoomableGroup>
             </ComposableMap>
+
+            {/* ⬇️ CHANGE: Add zoom control buttons */}
+            <div className="absolute bottom-4 right-4 flex flex-col space-y-2">
+                <button
+                    onClick={handleZoomIn}
+                    className="p-2 bg-white rounded-full shadow-md hover:bg-gray-100 focus:outline-none"
+                >
+                    <Plus className="w-5 h-5 text-gray-700" />
+                </button>
+                <button
+                    onClick={handleZoomOut}
+                    className="p-2 bg-white rounded-full shadow-md hover:bg-gray-100 focus:outline-none"
+                >
+                    <Minus className="w-5 h-5 text-gray-700" />
+                </button>
+            </div>
+
             {selectedSchool && <SchoolModal school={selectedSchool} onClose={() => setSelectedSchool(null)} />}
         </div>
     );
 };
 
+
 interface SchoolModalProps {
-    school: School;
+    school: SchoolType;
     onClose: () => void;
 }
 const SchoolModal: React.FC<SchoolModalProps> = ({ school, onClose }) => (
@@ -725,6 +759,7 @@ const SchoolModal: React.FC<SchoolModalProps> = ({ school, onClose }) => (
         </motion.div>
     </div>
 );
+// --- END: MODIFIED MAP AND MODAL COMPONENTS ---
 
 const AccountSettingsSection = () => {
     const { user } = useAuth();
@@ -974,45 +1009,5 @@ const ReportsCenterSection = () => {
         </div>
     );
 };
-
-interface ReportCardProps {
-    report: {
-        id: number;
-        title: string;
-        date: string;
-        type: string;
-        status: string;
-        downloadLink: string;
-        previewLink: string;
-        icon: React.ElementType;
-        iconColor: string;
-        bgColor: string;
-    };
-}
-
-const ReportCard: React.FC<ReportCardProps> = ({ report }) => (
-    <div className="bg-white rounded-lg shadow-md p-6">
-        <div className="flex items-center justify-between mb-4">
-            <h3 className="text-lg font-semibold text-gray-800">{report.title}</h3>
-            <div className={`p-2 rounded-full ${report.bgColor}`}>
-                <report.icon className={`w-6 h-6 ${report.iconColor}`} />
-            </div>
-        </div>
-        <p className="text-sm text-gray-600 mb-4">{report.type} Report</p>
-        <p className="text-sm text-gray-500 mb-4">Date: {report.date}</p>
-        <p className="text-sm text-gray-500 mb-4">Status: <span className={`px-2 py-1 text-xs font-semibold rounded-full ${
-            report.status === 'Completed' ? 'bg-green-100 text-green-700' : 'bg-yellow-100 text-yellow-700'
-        }`}>{report.status}</span></p>
-        <div className="mt-4 flex items-center text-sm text-gray-600">
-            <Download className="w-4 h-4 mr-2" />
-            <a href={report.downloadLink} className="hover:underline">Download</a>
-        </div>
-        <div className="mt-2 flex items-center text-sm text-gray-600">
-            <Eye className="w-4 h-4 mr-2" />
-            <a href={report.previewLink} className="hover:underline">Preview</a>
-        </div>
-    </div>
-);
-
 
 export default ClusterDashboard;
