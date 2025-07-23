@@ -47,7 +47,7 @@ export default function TraineesPage() {
  
   return (
     <div className="flex flex-col w-full h-full min-h-screen min-w-screen bg-[#f9fafb] p-8">
-      <h1 className="text-2xl font-bold mb-6">My Trainees</h1>
+      {/* <h1 className="text-2xl font-bold mb-6">My Trainees</h1> */}
       <div className="bg-white rounded-2xl shadow-md p-6 w-full h-full">
         <div className="flex items-center justify-between mb-4">
           <div className="flex items-center space-x-2">
