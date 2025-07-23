@@ -46,12 +46,12 @@ const LearningPage: React.FC = () => {
         {courses.map(course => (
           <Link to={`/course/${course.id}/view`} key={course.id} className="bg-white dark:bg-gray-800 rounded-lg shadow p-4 flex flex-col justify-between hover:shadow-xl hover:-translate-y-1 transition-all">
             <div>
-              <img 
-                src={course.courseimage || fallbackImage} 
-                alt={course.fullname} 
+                      <img
+                        src={course.courseimage || fallbackImage}
+                        alt={course.fullname}
                 className="w-full h-40 object-cover rounded-md mb-4" 
                 onError={(e) => { (e.currentTarget as HTMLImageElement).src = fallbackImage; }}
-              />
+                      />
               <h3 className="font-semibold text-lg mb-2 text-gray-900 dark:text-white">{course.fullname}</h3>
               <div className="w-full bg-gray-200 rounded-full h-2.5 dark:bg-gray-700">
                 <div className="bg-blue-600 h-2.5 rounded-full" style={{ width: `${course.progress || 0}%` }}></div>

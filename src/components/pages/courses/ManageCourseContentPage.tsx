@@ -162,6 +162,11 @@ const ManageCourseContentPage: React.FC = () => {
   const [editName, setEditName] = useState('');
   const [editSummary, setEditSummary] = useState('');
 
+  // --- NEW State for Assignment ---
+  const [assignmentDueDate, setAssignmentDueDate] = useState('');
+  const [assignmentCutoffDate, setAssignmentCutoffDate] = useState('');
+  const [assignmentMaxGrade, setAssignmentMaxGrade] = useState(100);
+
 
   useEffect(() => {
     fetchContent();
@@ -228,8 +233,14 @@ const ManageCourseContentPage: React.FC = () => {
         ]);
       } else if (addType === 'assignment') {
         if (!assignmentTitle) throw new Error('Assignment title is required');
+        // Convert datetime-local to Unix timestamp (seconds)
+        const duedate = assignmentDueDate ? Math.floor(new Date(assignmentDueDate).getTime() / 1000) : 0;
+        const cutoffdate = assignmentCutoffDate ? Math.floor(new Date(assignmentCutoffDate).getTime() / 1000) : 0;
         await contentBuilderService.addActivity(Number(courseId), currentSection, 'assign', assignmentTitle, [
           { name: 'description', value: assignmentDesc },
+          { name: 'duedate', value: duedate },
+          { name: 'cutoffdate', value: cutoffdate },
+          { name: 'grade', value: assignmentMaxGrade },
         ]);
       } else if (addType === 'quiz') {
         if (!quizTitle) throw new Error('Quiz title is required');
@@ -251,6 +262,7 @@ const ManageCourseContentPage: React.FC = () => {
       setAssignmentTitle(''); setAssignmentDesc('');
       setQuizTitle(''); setQuizDesc('');
       setScormFile(null); setScormTitle(''); setScormDesc('');
+      setAssignmentDueDate(''); setAssignmentCutoffDate(''); setAssignmentMaxGrade(100);
       fetchContent();
     } catch (err: any) {
       setError(err.message || 'Failed to add content');
@@ -337,6 +349,10 @@ const ManageCourseContentPage: React.FC = () => {
       setSubmitting(true);
       setError(null);
       try {
+          // --- DEBUG LOGGING ADDED ---
+          console.log('Attempting to update activity. Cmid:', showEditActivityModal.id, 'New Name:', editName);
+          // --- END DEBUG LOGGING ---
+          
           await contentBuilderService.updateActivity(showEditActivityModal.id, editName);
           setShowEditActivityModal(null);
           fetchContent();
@@ -489,6 +505,9 @@ const ManageCourseContentPage: React.FC = () => {
                 <>
                   <div><label className="block font-medium mb-1">Title</label><input type="text" value={assignmentTitle} onChange={e => setAssignmentTitle(e.target.value)} className="w-full border rounded px-3 py-2" /></div>
                   <div><label className="block font-medium mb-1">Description</label><textarea value={assignmentDesc} onChange={e => setAssignmentDesc(e.target.value)} className="w-full border rounded px-3 py-2" /></div>
+                  <div><label className="block font-medium mb-1">Due Date</label><input type="datetime-local" value={assignmentDueDate} onChange={e => setAssignmentDueDate(e.target.value)} className="w-full border rounded px-3 py-2" /></div>
+                  <div><label className="block font-medium mb-1">Cutoff Date</label><input type="datetime-local" value={assignmentCutoffDate} onChange={e => setAssignmentCutoffDate(e.target.value)} className="w-full border rounded px-3 py-2" /></div>
+                  <div><label className="block font-medium mb-1">Max Grade</label><input type="number" value={assignmentMaxGrade} onChange={e => setAssignmentMaxGrade(Number(e.target.value))} className="w-full border rounded px-3 py-2" min={0} max={100} /></div>
                 </>
               )}
               {addType === 'quiz' && (

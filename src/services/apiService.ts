@@ -198,7 +198,7 @@ export async function createCategory(categoryData: {
   } catch (error: any) {
     throw new Error(error.message || 'Failed to create category');
   }
-}
+} 
 
 /**
  * Create a module (resource/activity) in a course using core_course_create_modules

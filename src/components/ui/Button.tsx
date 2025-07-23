@@ -34,7 +34,7 @@ export const Button: React.FC<ButtonProps> = ({
   ...props
 }) => {
   const baseClasses = 'inline-flex items-center justify-center gap-2 font-medium rounded-lg transition-all duration-200 focus:ring-4 focus:ring-opacity-50 disabled:opacity-50 disabled:cursor-not-allowed';
-  
+
   return (
     <button
       className={`${baseClasses} ${variants[variant]} ${sizes[size]} ${className}`}
