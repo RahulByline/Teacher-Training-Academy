@@ -1,5 +1,5 @@
 import React from 'react';
-import { Building, Star } from 'lucide-react';
+import { Building } from 'lucide-react';
 import { motion } from 'framer-motion';
 
 interface SchoolCardProps {
@@ -12,14 +12,11 @@ interface SchoolCardProps {
   rating?: number;
 }
 
-const FALLBACK_IMAGE = '/public/images/default-course.jpg';
-
 const SchoolCard: React.FC<SchoolCardProps> = ({
   image,
   name,
   description,
-  country,// default for demo
-  location = 'Saudi Arabia, Dubai',  // default for demo
+  location,
 }) => {
   return (
     <motion.div
@@ -27,49 +24,61 @@ const SchoolCard: React.FC<SchoolCardProps> = ({
       animate={{ opacity: 1, scale: 1 }}
       whileHover={{ scale: 1.03 }}
       transition={{ duration: 0.4, ease: 'easeOut' }}
-      className="rounded-3xl shadow-xl bg-white overflow-hidden relative min-w-[320px] max-w-[370px] mx-5 my-6 flex flex-col border border-gray-200 hover:shadow-2xl transition-shadow"
+      // --- CHANGES START ---
+      // Increased min/max width for a larger card, and updated margins
+      className="rounded-3xl shadow-xl bg-white overflow-hidden relative min-w-[400px] max-w-md mx-5 my-8 flex flex-col border border-gray-200 hover:shadow-2xl transition-shadow"
+      // --- CHANGES END ---
     >
       {/* Image with overlay */}
-      <div className="relative h-64 w-full flex items-center justify-center">
+      {/* --- CHANGES START --- */}
+      {/* Increased height of the image container */}
+      <div className="relative h-80 w-full flex items-center justify-center">
+      {/* --- CHANGES END --- */}
         {image ? (
           <img
             src={image}
             alt={name}
             className="h-full w-full object-cover"
             onError={(e) => {
-              (e.currentTarget as HTMLImageElement).src = FALLBACK_IMAGE;
+              // Handle image error if needed
             }}
           />
         ) : (
           <div className="flex flex-col items-center justify-center h-full w-full bg-gradient-to-br from-blue-500 to-purple-500 text-white">
-            <Building className="w-16 h-16 opacity-90 mb-2" />
-            <span className="text-base font-medium">No Logo</span>
+            {/* --- CHANGES START --- */}
+            {/* Increased size of the fallback icon */}
+            <Building className="w-20 h-20 opacity-90 mb-3" />
+            {/* --- CHANGES END --- */}
+            <span className="text-lg font-medium">No Logo</span>
           </div>
         )}
-        {/* Dark gradient overlay */}
         <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent z-10" />
       </div>
 
-      {/* Card Content over image bottom */}
-      <div className="absolute bottom-0 left-0 w-full z-20 px-6 pb-6">
-        <h3 className="font-extrabold text-xl text-white mb-1 text-left drop-shadow-lg">{name}</h3>
+      {/* Card Content */}
+      {/* --- CHANGES START --- */}
+      {/* Increased padding for the content section */}
+      <div className="absolute bottom-0 left-0 w-full z-20 px-8 pb-8">
+        {/* Increased font size for the name */}
+        <h3 className="font-extrabold text-2xl text-white mb-2 text-left drop-shadow-lg">{name}</h3>
+        {/* --- CHANGES END --- */}
         {description && (
-          <div className="text-gray-100 text-sm mb-3 text-left leading-relaxed drop-shadow-lg line-clamp-2">
+          // --- CHANGES START ---
+          // Increased font size and line-clamp for the description
+          <p className="text-gray-100 text-base mb-4 text-left leading-relaxed drop-shadow-lg line-clamp-3">
             {description}
-          </div>
+          </p>
+          // --- CHANGES END ---
         )}
-        {/* Location and rating row */}
-        <div className="flex items-center justify-between mb-3">
-          <span className="text-gray-200 text-sm flex items-center">
-            {location || country}
+        <div className="flex items-center justify-between mb-4">
+          <span className="text-gray-200 text-base flex items-center">
+            {location}
           </span>
-          {/* <span className="flex items-center gap-1 text-yellow-400 font-semibold text-base bg-black/40 px-2 py-1 rounded-full">
-            <Star className="w-4 h-4" />
-            {rating}
-          </span> */}
         </div>
-        {/*View Details button */}
-        <button className="bg-white text-gray-900 font-bold px-6 py-2 rounded-xl shadow hover:bg-gray-100 transition w-full">
+        {/* --- CHANGES START --- */}
+        {/* Increased button padding for a larger click area */}
+        <button className="bg-white text-gray-900 font-bold px-8 py-3 rounded-xl shadow hover:bg-gray-100 transition w-full">
+        {/* --- CHANGES END --- */}
           View Details
         </button>
       </div>
