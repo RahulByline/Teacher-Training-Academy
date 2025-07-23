@@ -95,26 +95,10 @@ function App() {
                 />
                
                 <Route
-                  path="/add-category"
-                  element={
-                    <ProtectedRoute>
-                      <AddCategoryPage />
-                    </ProtectedRoute>
-                  }
-                />
-                <Route
                   path="/school/*"
                   element={
                     <ProtectedRoute>
                       <SchoolManagementRoutes />
-                    </ProtectedRoute>
-                  }
-                />
-                <Route
-                  path="/courses-categories/*"
-                  element={
-                    <ProtectedRoute>
-                      <CourseCategoryRoutes />
                     </ProtectedRoute>
                   }
                 />
