@@ -50,12 +50,12 @@ const RoadmapPage: React.FC = () => {
   const roadmapToShow = roadmap.length ? roadmap : mockRoadmap;
 
   return (
-    <div className="flex flex-col items-center justify-center w-full h-full min-h-screen bg-[#f9fafb] p-8">
-      <div className="flex items-center gap-3 mb-6">
+    <div className="flex flex-col w-full h-full min-h-screen bg-[#f9fafb] p-4 pt-2 mt-[10px]">
+      <div className="flex items-center gap-3 mb-4 mt-2">
         <TrendingUp className="w-8 h-8 text-indigo-500" />
         <h1 className="text-2xl font-bold text-gray-900">My Roadmap</h1>
       </div>
-      <div className="bg-white rounded-2xl shadow-md p-8 w-full max-w-2xl">
+      <div className="bg-white rounded-2xl shadow-md p-6 w-full">
         <h2 className="text-lg font-semibold mb-4 text-gray-800">Certification Roadmap</h2>
         {loading ? (
           <div className="text-center text-gray-500 py-8">Loading...</div>
