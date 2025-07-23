@@ -41,6 +41,15 @@ import { Button } from '../ui/Button';
 import { DashboardHeader } from '../dashboard/DashboardHeader';
 import { MetricCard } from '../dashboard/MetricCard';
 import { AdminProfileModal } from './AdminProfileModal';
+import AddCategoryPage from '../../pages/AddCategoryPage';
+import { UserEnrolmentsPage } from '../pages/courses/UserEnrolmentsPage';
+import ManageCoursesContent from '../pages/courses/ManageCoursesContent';
+import { IomadSettingsPage } from '../pages/courses/IomadSettingsPage';
+import { AssignToSchoolPage } from '../pages/courses/AssignToSchoolPage';
+import { SchoolGroupsPage } from '../pages/courses/SchoolGroupsPage';
+import { AssignCourseGroupsPage } from '../pages/courses/AssignCourseGroupsPage';
+import { TeachingLocationsPage } from '../pages/courses/TeachingLocationsPage';
+import { LearningPathsPage } from '../pages/courses/LearningPathsPage';
 
 interface AdminStats {
   totalUsers: number;
@@ -628,7 +637,27 @@ export const AdminDashboard: React.FC = () => {
       case 'users':
         return <UsersDashboard />;
       case 'courses-categories':
-        return <ManageCoursesCategories />;
+        return <ManageCoursesCategories onSectionChange={setActiveSection} />;
+      case 'courses-programs':
+        return <ManageCoursesCategories onSectionChange={setActiveSection} />;
+      case 'add-category':
+        return <AddCategoryPage />;
+      case 'user-enrolments':
+        return <UserEnrolmentsPage />;
+      case 'manage-content':
+        return <ManageCoursesContent />;
+      case 'iomad-settings':
+        return <IomadSettingsPage />;
+      case 'assign-to-school':
+        return <AssignToSchoolPage />;
+      case 'school-groups':
+        return <SchoolGroupsPage />;
+      case 'assign-course-groups':
+        return <AssignCourseGroupsPage />;
+      case 'teaching-locations':
+        return <TeachingLocationsPage />;
+      case 'learning-paths':
+        return <LearningPathsPage />;
       case 'training-completion':
         return (
           <div className="bg-white rounded-xl shadow-lg p-6">
