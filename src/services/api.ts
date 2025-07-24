@@ -140,29 +140,6 @@ export const apiService = {
     }
   },
 
-  // Fetch the logo URL for a company (school) using the custom IOMAD plugin
-async getCompanyLogoUrl(companyid: string | number): Promise<string | null> {
-  try {
-    const response = await api.get('', {
-      params: {
-        wstoken: API_TOKEN,
-        wsfunction: 'local_companylogo_get_company_logo_url',
-        moodlewsrestformat: 'json',
-        companyid: companyid,
-      },
-    });
-
-    if (response.data && response.data.logo_url) {
-      return response.data.logo_url;
-    }
-
-    return null;
-  } catch (error) {
-    console.error('Error fetching company logo URL:', error);
-    return null;
-  }
-},
-
   async getAllUsers(): Promise<User[]> {
     try {
       const response = await api.get('', {
@@ -1066,8 +1043,22 @@ async getCompanyLogoUrl(companyid: string | number): Promise<string | null> {
         date: 'Yesterday',
       },
     ];
-  }
+  },
+  
+    async getActiveUsersCount(): Promise<number> {
+    try {
+      const users = await this.getAllUsers();
+      const thirtyDaysAgo = Math.floor(Date.now() / 1000) - (30 * 24 * 60 * 60);
+      
+      return users.filter(user => user.lastaccess && user.lastaccess > thirtyDaysAgo).length;
+    } catch (error) {
+      console.error('Error fetching active users count:', error);
+      return 0;
+    }
+  },
 };
+
+
 
 export async function createCategory(categoryData: {
   name: string;

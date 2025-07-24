@@ -41,7 +41,6 @@ export const TeacherDashboard: React.FC = () => {
   const [recentActivity, setRecentActivity] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-  const [schoolLogo, setSchoolLogo] = useState<string | null>(null);
   const navigate = useNavigate();
   const location = useLocation();
   const [openSub, setOpenSub] = useState<string | null>(null);
@@ -204,20 +203,6 @@ export const TeacherDashboard: React.FC = () => {
     courseId: activity.courseId
   }));
  
-  useEffect(() => {
-    async function fetchSchoolLogo() {
-      if (user && user.company) {
-        try {
-          const logoUrl = await apiService.getCompanyLogoUrl(user.company);
-          setSchoolLogo(logoUrl);
-        } catch (e) {
-          setSchoolLogo(null);
-        }
-      }
-    }
-    fetchSchoolLogo();
-  }, [user?.company]);
- 
   if (loading) {
     return <div className="flex justify-center items-center min-h-screen text-lg">{t('Loading...')}</div>;
   }
@@ -325,13 +310,7 @@ export const TeacherDashboard: React.FC = () => {
             >
               <Menu className="w-6 h-6" />
             </button>
-            {schoolLogo && (
-              <img
-                src={schoolLogo}
-                alt="School Logo"
-                className="h-auto w-13 object-contain"
-              />
-            )}
+            <div className="text-lg md:text-2xl font-bold text-gray-900">Welcome, {user?.fullname || user?.firstname || user?.username || ''}</div>
           </div>
           <div className="flex items-center gap-4">
             <span className="text-gray-500 text-sm hidden md:inline">Q2 2025 (Apr-Jun)</span>
@@ -390,7 +369,7 @@ export const TeacherDashboard: React.FC = () => {
                 ) : (
                   <UserIcon className="w-8 h-8 rounded-full object-cover" />
                 )}
-                <ChevronRight className="w-4 h-4 text-gray-500" />
+                <ChevronDown className="w-4 h-4 text-gray-500" />
               </button>
             </div>
             <button 

@@ -22,7 +22,6 @@ import {
   Download,
   Search,
   Filter,
-  ChevronRight,
   Building,
   Settings,
   CheckCircle,
@@ -110,6 +109,15 @@ export const AdminDashboard: React.FC = () => {
 
   useEffect(() => {
     fetchDashboardData();
+    // Fetch real active users count and update stats
+    (async () => {
+      try {
+        const activeUsers = await apiService.getActiveUsersCount();
+        setStats(prev => ({ ...prev, activeUsers }));
+      } catch (e) {
+        // fallback: do nothing
+      }
+    })();
   }, []);
 
   const fetchDashboardData = async () => {
@@ -422,7 +430,7 @@ export const AdminDashboard: React.FC = () => {
                 <div className="bg-white rounded-2xl shadow p-6 mb-2">
                   <div className="grid grid-cols-2 gap-4 mb-4">
                     <div className="bg-blue-50 rounded-lg p-3 flex flex-col items-center">
-                      <div className="text-2xl font-bold text-blue-700">1,248</div>
+                      <div className="text-2xl font-bold text-blue-700">{stats.activeUsers}</div>
                       <div className="text-xs text-gray-500">Active Members</div>
                     </div>
                     <div className="bg-green-50 rounded-lg p-3 flex flex-col items-center">
@@ -722,7 +730,7 @@ export const AdminDashboard: React.FC = () => {
   const statCards = [
     {
       title: 'Total Active Teachers',
-      value: '1,248',
+      value: stats.activeUsers,
       icon: <Users className="w-6 h-6 text-blue-500" />, 
       iconBg: 'bg-blue-50',
       growth: '+8.2%',
