@@ -1,0 +1,325 @@
+<?php
+require_once("$CFG->libdir/externallib.php");
+require_once("$CFG->dirroot/course/lib.php");
+require_once("$CFG->dirroot/mod/assign/lib.php");
+require_once($CFG->dirroot . '/course/modlib.php');
+
+class local_contentbuilder_external extends external_api {
+
+    // 1. Create a new section in a course
+    public static function create_section_parameters() {
+        return new external_function_parameters([
+            'courseid' => new external_value(PARAM_INT, 'Course ID'),
+            'name'     => new external_value(PARAM_TEXT, 'Section name'),
+            'summary'  => new external_value(PARAM_RAW, 'Section summary', VALUE_OPTIONAL),
+            'summaryformat' => new external_value(PARAM_INT, 'Summary format', VALUE_DEFAULT, FORMAT_HTML),
+        ]);
+    }
+    public static function create_section($courseid, $name, $summary = '', $summaryformat = FORMAT_HTML) {
+        global $DB;
+        $params = self::validate_parameters(self::create_section_parameters(), compact('courseid', 'name', 'summary', 'summaryformat'));
+        require_capability('moodle/course:update', context_course::instance($courseid));
+        $maxsection = $DB->get_field_sql("SELECT MAX(section) FROM {course_sections} WHERE course = ?", [$courseid]);
+        $sectionnum = $maxsection + 1;
+        $newsection = new \stdClass();
+        $newsection->course        = $courseid;
+        $newsection->section       = $sectionnum;
+        $newsection->name          = $name;
+        $newsection->summary       = $summary;
+        $newsection->summaryformat = $summaryformat;
+        $newsection->sequence      = '';
+        $newsection->visible       = 1;
+        $newsection->availability  = null;
+        $newsection->timemodified  = time();
+        $sectionid = $DB->insert_record('course_sections', $newsection);
+        rebuild_course_cache($courseid, true);
+        return ['sectionid' => $sectionid, 'sectionnum' => $sectionnum];
+    }
+    public static function create_section_returns() {
+        return new external_single_structure([
+            'sectionid' => new external_value(PARAM_INT, 'Section ID'),
+            'sectionnum' => new external_value(PARAM_INT, 'Section number'),
+        ]);
+    }
+
+    // 2. Add an activity/resource to a section
+    public static function add_activity_parameters() {
+        return new external_function_parameters([
+            'courseid' => new external_value(PARAM_INT, 'Course ID'),
+            'sectionnum' => new external_value(PARAM_INT, 'Section number'),
+            'modname' => new external_value(PARAM_TEXT, 'Module name (e.g. assign, resource, page, quiz, scorm, etc.)'),
+            'name' => new external_value(PARAM_TEXT, 'Activity name'),
+            'options' => new external_multiple_structure(
+                new external_single_structure([
+                    'name' => new external_value(PARAM_TEXT, 'Option name'),
+                    'value' => new external_value(PARAM_RAW, 'Option value'),
+                ]), 'Module options', VALUE_DEFAULT, []
+            ),
+        ]);
+    }
+    public static function add_activity($courseid, $sectionnum, $modname, $name, $options = []) {
+        global $DB, $USER, $CFG;
+        require_once("$CFG->dirroot/course/modlib.php");
+        $params = self::validate_parameters(self::add_activity_parameters(), compact('courseid', 'sectionnum', 'modname', 'name', 'options'));
+        require_capability('moodle/course:manageactivities', context_course::instance($courseid));
+        $module = $DB->get_record('modules', ['name' => $modname], '*', MUST_EXIST);
+        $modinfo = [
+            'course' => $courseid,
+            'section' => $sectionnum,
+            'module' => $module->id,
+            'modulename' => $modname,
+            'name' => $name,
+            'visible' => 1,
+        ];
+        foreach ($options as $opt) {
+            $modinfo[$opt['name']] = $opt['value'];
+        }
+        switch ($modname) {
+            case 'assign':
+                if (isset($modinfo['description'])) {
+                    $modinfo['intro'] = $modinfo['description'];
+                    unset($modinfo['description']);
+                }
+                $defaults = [
+                    'intro' => '', 'introformat' => FORMAT_HTML, 'alwaysshowdescription' => 1,
+                    'submissiondrafts' => 1, 'requiresubmissionstatement' => 0, 'sendnotifications' => 0,
+                    'sendlatenotifications' => 0, 'sendstudentnotifications' => 1, 'duedate' => 0,
+                    'allowsubmissionsfromdate' => time(), 'cutoffdate' => 0, 'gradingduedate' => 0,
+                    'grade' => 100, 'completionsubmit' => 0, 'teamsubmission' => 0,
+                    'requireallteammemberssubmit' => 0, 'blindmarking' => 0, 'maxattempts' => -1,
+                    'attemptreopenmethod' => 'manual', 'markingworkflow' => 0, 'markingallocation' => 0,
+                ];
+                break;
+            case 'resource': $defaults = ['display' => 0]; break;
+            case 'label':
+                $modinfo['intro'] = $name;
+                $modinfo['introformat'] = FORMAT_HTML;
+                $defaults = [];
+                break;
+            case 'zoom':
+                if (isset($modinfo['description'])) {
+                    $modinfo['intro'] = $modinfo['description'];
+                    unset($modinfo['description']);
+                }
+                $defaults = [
+                    'intro' => '', 'introformat' => FORMAT_HTML, 'start_time' => time(),
+                    'duration' => 60, 'password' => '', 'waiting_room' => 1,
+                    'host_video' => 0, 'participant_video' => 0, 'join_before_host' => 0
+                ];
+                break;
+            case 'attendance': $defaults = ['grade' => 100]; break;
+            default: $defaults = []; break;
+        }
+        foreach ($defaults as $key => $value) {
+            if (!isset($modinfo[$key])) {
+                $modinfo[$key] = $value;
+            }
+        }
+        $course = $DB->get_record('course', ['id' => $courseid], '*', MUST_EXIST);
+        $cm = add_moduleinfo((object)$modinfo, $course, null);
+        $cmid = 0;
+        if (is_object($cm) && isset($cm->coursemodule)) {
+            $cmid = $cm->coursemodule;
+        } else if (is_object($cm) && isset($cm->id)) {
+            $cmid = $cm->id;
+        } else if (is_numeric($cm)) {
+            $cmid = $DB->get_field('course_modules', 'id', [
+                'instance' => $cm,
+                'course' => $courseid,
+                'module' => $module->id
+            ]);
+        }
+        return ['cmid' => $cmid];
+    }
+    public static function add_activity_returns() {
+        return new external_single_structure([
+            'cmid' => new external_value(PARAM_INT, 'Course module ID'),
+        ]);
+    }
+
+    // 3. Update an activity (object style)
+    public static function update_activity_parameters() {
+        return new external_function_parameters([
+            'activitydata' => new external_single_structure([
+                'cmid' => new external_value(PARAM_INT, 'Course module ID'),
+                'name' => new external_value(PARAM_TEXT, 'New activity name', VALUE_OPTIONAL),
+                'options' => new external_multiple_structure(
+                    new external_single_structure([
+                        'name' => new external_value(PARAM_TEXT, 'Option name'),
+                        'value' => new external_value(PARAM_RAW, 'Option value'),
+                    ]), 'Module options', VALUE_DEFAULT, []
+                )
+            ])
+        ]);
+    }
+    public static function update_activity($activitydata) {
+        global $DB, $CFG;
+        require_once("$CFG->dirroot/course/modlib.php");
+        $cmid = (int)$activitydata['cmid'];
+        if ($cmid <= 0) {
+            throw new invalid_parameter_exception('Invalid cmid');
+        }
+        $cm = get_coursemodule_from_id(null, $cmid, 0, false, MUST_EXIST);
+        require_capability('moodle/course:manageactivities', context_module::instance($cm->id));
+        $course = $DB->get_record('course', ['id' => $cm->course], '*', MUST_EXIST);
+        $instance = $DB->get_record($cm->modname, ['id' => $cm->instance], '*', MUST_EXIST);
+        if (isset($activitydata['name'])) {
+            $instance->name = $activitydata['name'];
+        }
+        if (isset($activitydata['options']) && !empty($activitydata['options'])) {
+            foreach($activitydata['options'] as $opt) {
+                $instance->{$opt['name']} = $opt['value'];
+            }
+        }
+        $instance->timemodified = time();
+        $instance->modulename = $cm->modname;
+        update_moduleinfo($cm, $instance, $course);
+        return ['success' => true];
+    }
+    public static function update_activity_returns() {
+        return new external_single_structure([
+            'success' => new external_value(PARAM_BOOL, 'Success'),
+        ]);
+    }
+
+    // 4. Delete an activity
+    public static function delete_activity_parameters() {
+        return new external_function_parameters([
+            'cmid' => new external_value(PARAM_INT, 'Course Module ID')
+        ]);
+    }
+    public static function delete_activity($cmid) {
+        global $CFG, $DB;
+        require_once("$CFG->dirroot/course/lib.php");
+        $cmid = (int)$cmid;
+        if ($cmid <= 0) { return ['success' => true]; }
+        if (!$cm = $DB->get_record('course_modules', ['id' => $cmid])) {
+            return ['success' => true];
+        }
+        require_capability('moodle/course:manageactivities', context_module::instance($cm->id));
+        course_delete_module($cm->id);
+        if ($DB->record_exists('course_modules', ['id' => $cmid])) {
+            throw new moodle_exception('errordeletemodule', 'error', '', null, $cmid);
+        }
+        return ['success' => true];
+    }
+    public static function delete_activity_returns() {
+        return new external_single_structure([
+            'success' => new external_value(PARAM_BOOL, 'Success'),
+        ]);
+    }
+
+    // 5. Delete a section
+    public static function delete_section_parameters() {
+        return new external_function_parameters([
+            'courseid' => new external_value(PARAM_INT, 'Course ID'),
+            'sectionnum' => new external_value(PARAM_INT, 'Section number'),
+        ]);
+    }
+    public static function delete_section($courseid, $sectionnum) {
+        global $DB, $CFG;
+        require_once("$CFG->dirroot/course/lib.php");
+        require_capability('moodle/course:update', context_course::instance($courseid));
+        course_delete_section($courseid, $sectionnum, true);
+        rebuild_course_cache($courseid, true);
+        return ['success' => true];
+    }
+    public static function delete_section_returns() {
+        return new external_single_structure([
+            'success' => new external_value(PARAM_BOOL, 'Success'),
+        ]);
+    }
+
+    // --- NEW: UPDATE SECTION ---
+    public static function update_section_parameters() {
+        return new external_function_parameters([
+            'sectionid' => new external_value(PARAM_INT, 'Section ID'),
+            'name' => new external_value(PARAM_TEXT, 'New section name', VALUE_OPTIONAL),
+            'summary' => new external_value(PARAM_RAW, 'New section summary', VALUE_OPTIONAL)
+        ]);
+    }
+    public static function update_section($sectionid, $name = null, $summary = null) {
+        global $DB;
+        $params = self::validate_parameters(self::update_section_parameters(), compact('sectionid', 'name', 'summary'));
+
+        $section = $DB->get_record('course_sections', ['id' => $sectionid], '*', MUST_EXIST);
+        require_capability('moodle/course:update', context_course::instance($section->course));
+
+        if ($name !== null) $section->name = $name;
+        if ($summary !== null) $section->summary = $summary;
+        
+        $DB->update_record('course_sections', $section);
+        rebuild_course_cache($section->course, true);
+        return ['success' => true];
+    }
+    public static function update_section_returns() {
+        return new external_single_structure(['success' => new external_value(PARAM_BOOL, 'Success status')]);
+    }
+
+    // --- NEW: DELETE SECTION ---
+    public static function delete_section_parameters() {
+        return new external_function_parameters([
+            'sectionid' => new external_value(PARAM_INT, 'Section ID to delete')
+        ]);
+    }
+    public static function delete_section($sectionid) {
+        global $DB, $CFG;
+        require_once("$CFG->dirroot/course/lib.php");
+        $params = self::validate_parameters(self::delete_section_parameters(), compact('sectionid'));
+        
+        $section = $DB->get_record('course_sections', ['id' => $sectionid], '*', MUST_EXIST);
+        require_capability('moodle/course:update', context_course::instance($section->course));
+
+        course_delete_section($section->course, $section->section);
+        rebuild_course_cache($section->course, true);
+        return ['success' => true];
+    }
+    public static function delete_section_returns() {
+        return new external_single_structure(['success' => new external_value(PARAM_BOOL, 'Success status')]);
+    }
+
+    // (Other functions like upload_file and batch_import remain the same)
+    public static function upload_file_parameters() {
+        return new external_function_parameters([
+            'contextid' => new external_value(PARAM_INT, 'Context ID'), 'component' => new external_value(PARAM_TEXT, 'Component'),
+            'filearea'  => new external_value(PARAM_TEXT, 'File area'), 'itemid'    => new external_value(PARAM_INT, 'Item ID'),
+            'filepath'  => new external_value(PARAM_TEXT, 'File path'), 'filename'  => new external_value(PARAM_FILE, 'File name'),
+            'filecontent' => new external_value(PARAM_RAW, 'Base64-encoded file content'),
+        ]);
+    }
+    public static function upload_file($contextid, $component, $filearea, $itemid, $filepath, $filename, $filecontent) {
+        global $USER;
+        $params = self::validate_parameters(self::upload_file_parameters(), compact('contextid', 'component', 'filearea', 'itemid', 'filepath', 'filename', 'filecontent'));
+        $fs = get_file_storage();
+        $decoded = base64_decode($filecontent);
+        $file = $fs->create_file_from_string([
+            'contextid' => $contextid, 'component' => $component, 'filearea'  => $filearea,
+            'itemid'    => $itemid, 'filepath'  => $filepath, 'filename'  => $filename, 'userid'    => $USER->id,
+        ], $decoded);
+        return ['fileurl' => moodle_url::make_pluginfile_url($file->get_contextid(), $file->get_component(), $file->get_filearea(), $file->get_itemid(), $file->get_filepath(), $file->get_filename())->out(false)];
+    }
+    public static function upload_file_returns() {
+        return new external_single_structure(['fileurl' => new external_value(PARAM_URL, 'File URL')]);
+    }
+    public static function batch_import_parameters() {
+        return new external_function_parameters([
+            'courseid' => new external_value(PARAM_INT, 'Course ID'),
+            'structure' => new external_value(PARAM_RAW, 'JSON structure'),
+        ]);
+    }
+    public static function batch_import($courseid, $structure) {
+        $params = self::validate_parameters(self::batch_import_parameters(), compact('courseid', 'structure'));
+        $data = json_decode($structure, true);
+        if (!is_array($data)) { throw new invalid_parameter_exception('Invalid structure JSON'); }
+        foreach ($data as $sectiondata) {
+            $sectionid = self::create_section($courseid, $sectiondata['section']['name'], $sectiondata['section']['summary'] ?? '');
+            foreach ($sectiondata['activities'] as $activity) {
+                self::add_activity($courseid, $sectionid['sectionnum'], $activity['modname'], $activity['name'], $activity['options'] ?? []);
+            }
+        }
+        return ['success' => true];
+    }
+    public static function batch_import_returns() {
+        return new external_single_structure(['success' => new external_value(PARAM_BOOL, 'Success')]);
+    }
+} 

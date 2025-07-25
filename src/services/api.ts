@@ -140,29 +140,6 @@ export const apiService = {
     }
   },
 
-  // Fetch the logo URL for a company (school) using the custom IOMAD plugin
-async getCompanyLogoUrl(companyid: string | number): Promise<string | null> {
-  try {
-    const response = await api.get('', {
-      params: {
-        wstoken: API_TOKEN,
-        wsfunction: 'local_companylogo_get_company_logo_url',
-        moodlewsrestformat: 'json',
-        companyid: companyid,
-      },
-    });
-
-    if (response.data && response.data.logo_url) {
-      return response.data.logo_url;
-    }
-
-    return null;
-  } catch (error) {
-    console.error('Error fetching company logo URL:', error);
-    return null;
-  }
-},
-
   async getAllUsers(): Promise<User[]> {
     try {
       const response = await api.get('', {
