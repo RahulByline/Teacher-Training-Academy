@@ -33,14 +33,18 @@ interface CourseFeature {
   title: string;
   description: string;
   icon: React.ComponentType<any>;
-  route: string;
   color: string;
   count?: number;
   isActive?: boolean;
   subtitle?: string;
+  section: string;
 }
 
-export const ManageCoursesCategories: React.FC = () => {
+interface ManageCoursesCategoriesProps {
+  onSectionChange: (section: string) => void;
+}
+
+export const ManageCoursesCategories: React.FC<ManageCoursesCategoriesProps> = ({ onSectionChange }) => {
   const { t } = useTranslation();
   const navigate = useNavigate();
   const [loading, setLoading] = useState(true);
@@ -58,7 +62,7 @@ export const ManageCoursesCategories: React.FC = () => {
       description: 'Add new courses and organize them into categories',
       subtitle: 'Course Management',
       icon: Plus,
-      route: '/add-category',
+      section: 'add-category',
       color: 'from-green-500 to-emerald-600',
       count: stats.totalCategories,
       isActive: true
@@ -69,7 +73,7 @@ export const ManageCoursesCategories: React.FC = () => {
       description: 'Manage student enrollments and track progress',
       subtitle: 'Enrollment Management',
       icon: Users,
-      route: '/courses-categories/user-enrolments',
+      section: 'user-enrolments',
       color: 'from-blue-500 to-cyan-600',
       count: stats.totalEnrollments,
       isActive: true
@@ -80,7 +84,7 @@ export const ManageCoursesCategories: React.FC = () => {
       description: 'Manage Course Content Add Activities, Quiz, Etc...',
       subtitle: 'Enrollment Management',
       icon: Users,
-      route: '/courses-categories/manage-content',
+      section: 'manage-content',
       color: 'from-purple-500 to-violet-600',
       count: stats.totalEnrollments,
       isActive: true
@@ -91,7 +95,7 @@ export const ManageCoursesCategories: React.FC = () => {
       description: 'Configure advanced course settings and parameters',
       subtitle: 'Course Configuration',
       icon: Settings,
-      route: '/courses-categories/iomad-settings',
+      section: 'iomad-settings',
       color: 'from-orange-500 to-red-600',
       isActive: true
     },
@@ -101,7 +105,7 @@ export const ManageCoursesCategories: React.FC = () => {
       description: 'Assign courses to specific schools and institutions',
       subtitle: 'School Assignment',
       icon: Building,
-      route: '/courses-categories/assign-to-school',
+      section: 'assign-to-school',
       color: 'from-teal-500 to-cyan-600',
       isActive: true
     },
@@ -111,7 +115,7 @@ export const ManageCoursesCategories: React.FC = () => {
       description: 'Create and manage groups within schools',
       subtitle: 'Group Management',
       icon: UserPlus,
-      route: '/courses-categories/school-groups',
+      section: 'school-groups',
       color: 'from-indigo-500 to-purple-600',
       isActive: true
     },
@@ -121,7 +125,7 @@ export const ManageCoursesCategories: React.FC = () => {
       description: 'Assign courses to specific user groups',
       subtitle: 'Group Assignment',
       icon: Layers,
-      route: '/courses-categories/assign-course-groups',
+      section: 'assign-course-groups',
       color: 'from-pink-500 to-rose-600',
       isActive: true
     },
@@ -131,7 +135,7 @@ export const ManageCoursesCategories: React.FC = () => {
       description: 'Manage physical and virtual teaching locations',
       subtitle: 'Location Management',
       icon: MapPin,
-      route: '/courses-categories/teaching-locations',
+      section: 'teaching-locations',
       color: 'from-yellow-500 to-orange-600',
       isActive: true
     },
@@ -141,7 +145,7 @@ export const ManageCoursesCategories: React.FC = () => {
       description: 'Create structured learning journeys and pathways',
       subtitle: 'Path Management',
       icon: Route,
-      route: '/courses-categories/learning-paths',
+      section: 'learning-paths',
       color: 'from-orange-500 to-red-600',
       count: stats.activeLearningPaths,
       isActive: true
@@ -182,7 +186,7 @@ export const ManageCoursesCategories: React.FC = () => {
 
   const handleFeatureClick = (feature: CourseFeature) => {
     if (feature.isActive) {
-      navigate(feature.route);
+      onSectionChange(feature.section);
     }
   };
 
@@ -212,7 +216,7 @@ export const ManageCoursesCategories: React.FC = () => {
             <RefreshCw className="w-4 h-4" />
             Refresh
           </Button>
-          <Button onClick={() => navigate('/add-category')}>
+          <Button onClick={() => onSectionChange('add-category')}>
             <Plus className="w-4 h-4" />
             Quick Add
           </Button>
@@ -363,7 +367,7 @@ export const ManageCoursesCategories: React.FC = () => {
         
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           <Button
-            onClick={() => navigate('/add-category')}
+            onClick={() => onSectionChange('add-category')}
             className="bg-gradient-to-r from-green-500 to-emerald-600 justify-start h-auto p-4"
           >
             <div className="flex items-center gap-3">
@@ -376,7 +380,7 @@ export const ManageCoursesCategories: React.FC = () => {
           </Button>
           
           <Button
-            onClick={() => navigate('/courses-categories/user-enrolments')}
+            onClick={() => onSectionChange('user-enrolments')}
             variant="outline"
             className="justify-start h-auto p-4"
           >
@@ -390,7 +394,7 @@ export const ManageCoursesCategories: React.FC = () => {
           </Button>
           
           <Button
-            onClick={() => navigate('/courses-categories/learning-paths')}
+            onClick={() => onSectionChange('learning-paths')}
             variant="outline"
             className="justify-start h-auto p-4"
           >

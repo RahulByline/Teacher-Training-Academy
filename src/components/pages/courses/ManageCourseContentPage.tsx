@@ -349,10 +349,7 @@ const ManageCourseContentPage: React.FC = () => {
       setSubmitting(true);
       setError(null);
       try {
-          // --- DEBUG LOGGING ADDED ---
-          console.log('Attempting to update activity. Cmid:', showEditActivityModal.id, 'New Name:', editName);
-          // --- END DEBUG LOGGING ---
-          
+                    
           await contentBuilderService.updateActivity(showEditActivityModal.id, editName);
           setShowEditActivityModal(null);
           fetchContent();

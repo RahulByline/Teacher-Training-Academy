@@ -70,7 +70,6 @@ export const AdminDashboard: React.FC = () => {
     totalCourses: 0,
     activeUsers: 0,
     completionRate: 0,
-    totalEnrollments: 0,
     certificatesIssued: 0
   });
   const [loading, setLoading] = useState(true);
@@ -163,7 +162,7 @@ export const AdminDashboard: React.FC = () => {
       {/* Stats Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-6">
         {[
-          { label: 'Total Users', value: stats.totalUsers, icon: Users, color: 'bg-blue-500', change: '+12%' },
+          { label: 'Total Users', value: stats.totalUsers? stats.totalUsers : "-", icon: Users, color: 'bg-blue-500', change: '+12%' },
           { label: 'Total Courses', value: stats.totalCourses, icon: BookOpen, color: 'bg-green-500', change: '+8%' },
           { label: 'Active Users', value: stats.activeUsers, icon: Activity, color: 'bg-purple-500', change: '+15%' },
           { label: 'Completion Rate', value: `${stats.completionRate}%`, icon: Award, color: 'bg-orange-500', change: '+3%' },
@@ -1066,206 +1065,52 @@ export const AdminDashboard: React.FC = () => {
   };
 
   const MasterTrainerAndSuccessionSection = () => {
-    // TODO: Replace mock data with real data integration here
-    const trainers = [
-      {
-        name: 'Sarah Al-Otaibi',
-        subject: 'Mathematics',
-        avatar: 'https://randomuser.me/api/portraits/women/44.jpg',
-        specialization: 'Advanced Pedagogy',
-        progress: 92,
-        progressColor: 'bg-green-500',
-        certification: 'Level 3',
-        certColor: 'bg-green-100 text-green-700',
-        status: 'Active Trainer',
-        statusColor: 'text-green-600'
-      },
-      {
-        name: 'Mohammed Al-Ghamdi',
-        subject: 'Science',
-        avatar: 'https://randomuser.me/api/portraits/men/32.jpg',
-        specialization: 'Digital Learning',
-        progress: 78,
-        progressColor: 'bg-blue-500',
-        certification: 'Level 2',
-        certColor: 'bg-blue-100 text-blue-700',
-        status: 'In Training',
-        statusColor: 'text-blue-600'
-      },
-      {
-        name: 'Fatima Al-Zahrani',
-        subject: 'Languages',
-        avatar: 'https://randomuser.me/api/portraits/women/65.jpg',
-        specialization: 'Assessment Design',
-        progress: 65,
-        progressColor: 'bg-purple-500',
-        certification: 'Level 2',
-        certColor: 'bg-purple-100 text-purple-700',
-        status: 'In Training',
-        statusColor: 'text-purple-600'
-      },
-      {
-        name: 'Khalid Al-Harbi',
-        subject: 'Physical Education',
-        avatar: 'https://randomuser.me/api/portraits/men/45.jpg',
-        specialization: 'Classroom Management',
-        progress: 45,
-        progressColor: 'bg-orange-500',
-        certification: 'Level 1',
-        certColor: 'bg-yellow-100 text-yellow-700',
-        status: 'Candidate',
-        statusColor: 'text-orange-600'
-      }
-    ];
-    const succession = [
-      {
-        label: 'Academic Coordinators',
-        icon: 'users',
-        value: 17,
-        total: 20,
-        color: 'bg-blue-100 text-blue-700',
-        bar: 'bg-blue-500',
-        desc: '3 positions to be filled in next 6 months',
-        tag: 'Leadership',
-        tagColor: 'bg-green-100 text-green-700'
-      },
-      {
-        label: 'Department Heads',
-        icon: 'users',
-        value: 13,
-        total: 20,
-        color: 'bg-purple-100 text-purple-700',
-        bar: 'bg-purple-500',
-        desc: '7 positions to be filled in next 12 months',
-        tag: '',
-        tagColor: ''
-      },
-      {
-        label: 'School Leaders',
-        icon: 'users',
-        value: 9,
-        total: 20,
-        color: 'bg-green-100 text-green-700',
-        bar: 'bg-green-500',
-        desc: '11 positions to be filled in next 18 months',
-        tag: '',
-        tagColor: ''
-      }
-    ];
-    const candidates = [
-      {
-        name: 'Sarah Al-Otaibi',
-        avatar: 'https://randomuser.me/api/portraits/women/44.jpg',
-        score: 94,
-        status: 'Ready',
-        statusColor: 'bg-green-100 text-green-700'
-      },
-      {
-        name: 'Mohammed Al-Ghamdi',
-        avatar: 'https://randomuser.me/api/portraits/men/32.jpg',
-        score: 87,
-        status: 'In Development',
-        statusColor: 'bg-blue-100 text-blue-700'
-      },
-      {
-        name: 'Fatima Al-Zahrani',
-        avatar: 'https://randomuser.me/api/portraits/women/65.jpg',
-        score: 82,
-        status: 'In Development',
-        statusColor: 'bg-blue-100 text-blue-700'
-      }
-    ];
+    // Fetch trainers for Master Trainer Development section
+    const [trainers, setTrainers] = useState<User[]>([]);
+    useEffect(() => {
+      (async () => {
+        try {
+          const allUsers = await apiService.getAllUsers();
+          const trainers = allUsers.filter((user: User) => user.username?.includes('trainer'));
+          setTrainers(trainers);
+          console.log('Fetched trainers:', trainers);
+        } catch (e) {
+
+          setTrainers([]);
+        }
+      })();
+    }, []);
     return (
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
-        {/* Master Trainer Development */}
-        <div className="col-span-2 bg-white rounded-xl shadow p-6">
-          <div className="flex items-center justify-between mb-4">
-            <h2 className="text-lg font-bold text-gray-900">Master Trainer Development</h2>
-            <a href="#" className="text-blue-600 text-sm font-medium hover:underline">View all trainers →</a>
-          </div>
-          <div className="overflow-x-auto">
-            <table className="w-full text-sm">
-              <thead>
-                <tr className="border-b text-gray-500">
-                  <th className="py-2 px-4 text-left font-semibold">TEACHER</th>
-                  <th className="py-2 px-4 text-left font-semibold">SPECIALIZATION</th>
-                  <th className="py-2 px-4 text-left font-semibold">PROGRESS</th>
-                  <th className="py-2 px-4 text-left font-semibold">CERTIFICATION</th>
-                  <th className="py-2 px-4 text-left font-semibold">STATUS</th>
-                </tr>
-              </thead>
-              <tbody>
-                {trainers.map((t, i) => (
-                  <tr key={i} className="border-b last:border-0">
-                    <td className="py-3 px-4 flex items-center gap-3">
-                      <img src={t.avatar} alt={t.name} className="w-9 h-9 rounded-full object-cover border" />
-                      <div>
-                        <div className="font-medium text-gray-900">{t.name}</div>
-                        <div className="text-xs text-gray-500">{t.subject}</div>
-                      </div>
-                    </td>
-                    <td className="py-3 px-4">{t.specialization}</td>
-                    <td className="py-3 px-4">
-                      <div className="flex items-center gap-2">
-                        <div className="w-32 bg-gray-200 rounded-full h-2">
-                          <div className={`${t.progressColor} h-2 rounded-full`} style={{ width: `${t.progress}%` }}></div>
-                        </div>
-                        <span className="text-xs font-semibold text-gray-700">{t.progress}% Complete</span>
-                      </div>
-                    </td>
-                    <td className="py-3 px-4">
-                      <span className={`px-3 py-1 rounded-full text-xs font-semibold ${t.certColor}`}>{t.certification}</span>
-                    </td>
-                    <td className="py-3 px-4">
-                      <span className={`font-semibold text-xs ${t.statusColor}`}>{t.status}</span>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        </div>
-        {/* Succession Planning */}
-        <div className="bg-white rounded-xl shadow p-6 flex flex-col justify-between">
-          <div className="flex items-center justify-between mb-4">
-            <h2 className="text-lg font-bold text-gray-900">Succession Planning</h2>
-            <span className="text-xs bg-green-100 text-green-700 px-3 py-1 rounded-full font-semibold">Leadership</span>
-          </div>
-          <div className="space-y-3 mb-6">
-            {succession.map((s, i) => (
-              <div key={i} className={`rounded-lg px-4 py-3 ${s.color} flex items-center gap-4`}> 
-                <div className="flex-1">
-                  <div className="flex items-center gap-2 mb-1">
-                    <span className="font-semibold text-gray-900">{s.label}</span>
-                    {s.tag && <span className={`text-xs px-2 py-0.5 rounded-full ml-2 ${s.tagColor}`}>{s.tag}</span>}
+      <div className="col-span-2 bg-white rounded-xl shadow p-6">
+        <h2 className="text-lg font-bold mb-4">Master Trainer Development</h2>
+        <table className="w-full text-sm">
+          <thead>
+            <tr className="text-left text-gray-500 border-b">
+              <th className="py-2">Teacher</th>
+              <th className="py-2">Specialization</th>
+              <th className="py-2">Progress</th>
+              <th className="py-2">Certification</th>
+              <th className="py-2">Status</th>
+            </tr>
+          </thead>
+          <tbody>
+            {trainers.map(trainer => (
+              <tr key={trainer.id} className="border-b">
+                <td className="py-2 flex items-center gap-3">
+                  <img src={trainer.profileimageurl} alt={trainer.fullname} className="w-10 h-10 rounded-full object-cover" />
+                  <div>
+                    <div className="font-semibold text-gray-900">{trainer.fullname}</div>
+                    <div className="text-xs text-gray-500">{trainer.department || ''}</div>
                   </div>
-                  <div className="flex items-center gap-2">
-                    <div className="w-32 bg-gray-200 rounded-full h-2">
-                      <div className={`${s.bar} h-2 rounded-full`} style={{ width: `${(s.value/s.total)*100}%` }}></div>
-                    </div>
-                    <span className="text-xs font-semibold text-gray-700">{s.value}/{s.total}</span>
-                  </div>
-                  <div className="text-xs text-gray-500 mt-1">{s.desc}</div>
-                </div>
-              </div>
+                </td>
+                <td className="py-2">-</td>
+                <td className="py-2">-</td>
+                <td className="py-2">-</td>
+                <td className="py-2">-</td>
+              </tr>
             ))}
-          </div>
-          <div className="border-t pt-4 mt-4">
-            <div className="font-semibold text-xs text-gray-500 mb-2">Top Leadership Candidates</div>
-            <div className="space-y-2">
-              {candidates.map((c, i) => (
-                <div key={i} className="flex items-center gap-3">
-                  <img src={c.avatar} alt={c.name} className="w-7 h-7 rounded-full object-cover border" />
-                  <div className="flex-1">
-                    <div className="font-medium text-gray-900 text-xs">{c.name}</div>
-                    <div className="text-xs text-gray-500">Leadership Score: {c.score}%</div>
-                  </div>
-                  <span className={`px-2 py-0.5 rounded-full text-xs font-semibold ${c.statusColor}`}>{c.status}</span>
-                </div>
-              ))}
-            </div>
-          </div>
-        </div>
+          </tbody>
+        </table>
       </div>
     );
   };
