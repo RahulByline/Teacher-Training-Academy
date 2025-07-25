@@ -262,19 +262,19 @@ export const coursesService = {
     return response.data;
   },
 
-  /**
-   * Get license info for a course in a school
-   */
-  async getCourseLicenseInfo(companyId: number, courseId: number): Promise<any> {
-    const params = new URLSearchParams();
-    params.append('wstoken', IOMAD_TOKEN);
-    params.append('wsfunction', 'block_iomad_company_admin_get_license_info');
-    params.append('moodlewsrestformat', 'json');
-    params.append('companyid', String(companyId));
-    params.append('courseid', String(courseId));
-    const response = await axios.post(IOMAD_BASE_URL, params);
-    return response.data;
-  },
+// Get license info for a course in a school
+async getCourseLicenseInfo(companyId: number, courseId: number): Promise<any> {
+  const params = new URLSearchParams();
+  params.append('wstoken', IOMAD_TOKEN);
+  params.append('wsfunction', 'block_iomad_company_admin_get_license_info');
+  params.append('moodlewsrestformat', 'json');
+  params.append('criteria[0][key]', 'companyid');
+  params.append('criteria[0][value]', String(companyId));
+  params.append('criteria[1][key]', 'courseid');
+  params.append('criteria[1][value]', String(courseId));
+  const response = await axios.post(IOMAD_BASE_URL, params);
+  return response.data;
+},
 
   /**
    * Get learning paths (mock implementation)
@@ -367,22 +367,22 @@ export const coursesService = {
   },
 
   // Get all courses assigned to a company (school)
-  async getCompanyCourses(companyId: number): Promise<any[]> {
-    const params = new URLSearchParams();
-    params.append('wstoken', IOMAD_TOKEN);
-    params.append('wsfunction', 'block_iomad_company_admin_get_company_courses');
-    params.append('moodlewsrestformat', 'json');
-    params.append('criteria[0][companyid]', String(companyId));
-    params.append('criteria[0][shared]', '0');
-    const response = await axios.post(IOMAD_BASE_URL, params);
-    if (response.data && Array.isArray(response.data.companies) && response.data.companies.length > 0) {
-      return response.data.companies[0].courses || [];
-    }
-    if (response.data && Array.isArray(response.data.courses)) {
-      return response.data.courses;
-    }
-    return [];
-  },
+async getCompanyCourses(companyId: number): Promise<any[]> {
+  const params = new URLSearchParams();
+  params.append('wstoken', IOMAD_TOKEN);
+  params.append('wsfunction', 'block_iomad_company_admin_get_company_courses');
+  params.append('moodlewsrestformat', 'json');
+  params.append('criteria[0][companyid]', String(companyId));
+  params.append('criteria[0][shared]', '0');
+  const response = await axios.post(IOMAD_BASE_URL, params);
+  if (response.data && Array.isArray(response.data.companies) && response.data.companies.length > 0) {
+    return response.data.companies[0].courses || [];
+  }
+  if (response.data && Array.isArray(response.data.courses)) {
+    return response.data.courses;
+  }
+  return [];
+},
 
   // Enroll a user in a course
   async enrollUserInCourse(courseId: string, userId: string, roleId: number = 5): Promise<boolean> {

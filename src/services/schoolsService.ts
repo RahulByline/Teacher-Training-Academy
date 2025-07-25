@@ -32,9 +32,9 @@ export const schoolsService = {
           'criteria[0][value]': '',
         },
       });
- 
+
       console.log('IOMAD getAllSchools API response:', response.data); // <-- Keep this for debugging
- 
+
       // Handle different response formats from IOMAD
       let companies = [];
       if (response.data && Array.isArray(response.data)) {
@@ -44,7 +44,7 @@ export const schoolsService = {
       } else if (response.data && typeof response.data === 'object') {
         companies = [response.data];
       }
- 
+
       return companies.map((company: any) => ({
         id: company.id,
         name: company.name,
@@ -61,6 +61,54 @@ export const schoolsService = {
     } catch (error) {
       console.error('Error fetching schools:', error);
       throw new Error('Failed to fetch schools from IOMAD');
+    }
+  },
+
+  /**
+   * Get license data by license ID (block_iomad_company_admin_get_license_from_id)
+   * @param licenseId number
+   * @returns license object with courses
+   */
+  async getLicenseById(licenseId: number): Promise<any> {
+    try {
+      const params = new URLSearchParams();
+      params.append('wsfunction', 'block_iomad_company_admin_get_license_from_id');
+      params.append('wstoken', IOMAD_TOKEN);
+      params.append('moodlewsrestformat', 'json');
+      params.append('licenseid', String(licenseId));
+      const response = await axios.post(IOMAD_BASE_URL, params);
+      if (response.data && response.data.license) {
+        return response.data;
+      }
+      throw new Error('License not found');
+    } catch (error) {
+      console.error('Error fetching license by ID:', error);
+      throw new Error('Failed to fetch license by ID');
+    }
+  },
+
+  /**
+   * Get company (school) course allocations (block_iomad_company_admin_get_company_courses)
+   * @param companyId number
+   * @param shared number (0 = not shared, 1 = shared courses)
+   * @returns companies array with courses
+   */
+  async getCompanyCoursesWithAllocations(companyId: number, shared: number = 0): Promise<any[]> {
+    try {
+      const params = new URLSearchParams();
+      params.append('wsfunction', 'block_iomad_company_admin_get_company_courses');
+      params.append('wstoken', IOMAD_TOKEN);
+      params.append('moodlewsrestformat', 'json');
+      params.append('criteria[0][companyid]', String(companyId));
+      params.append('criteria[0][shared]', String(shared));
+      const response = await axios.post(IOMAD_BASE_URL, params);
+      if (response.data && Array.isArray(response.data.companies)) {
+        return response.data.companies;
+      }
+      throw new Error('No companies/courses found');
+    } catch (error) {
+      console.error('Error fetching company courses with allocations:', error);
+      throw new Error('Failed to fetch company courses with allocations');
     }
   },
  
